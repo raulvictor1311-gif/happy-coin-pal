@@ -9,8 +9,92 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RelatorioRouteImport } from './routes/relatorio'
+import { Route as PatrimonioRouteImport } from './routes/patrimonio'
+import { Route as ParcelasRouteImport } from './routes/parcelas'
+import { Route as NovaRouteImport } from './routes/nova'
+import { Route as MetasRouteImport } from './routes/metas'
+import { Route as MaisRouteImport } from './routes/mais'
+import { Route as IndicarRouteImport } from './routes/indicar'
+import { Route as FeedbackRouteImport } from './routes/feedback'
+import { Route as ExtratoRouteImport } from './routes/extrato'
+import { Route as DesafiosRouteImport } from './routes/desafios'
+import { Route as ConquistasRouteImport } from './routes/conquistas'
+import { Route as CartoesRouteImport } from './routes/cartoes'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RelatorioRoute = RelatorioRouteImport.update({
+  id: '/relatorio',
+  path: '/relatorio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatrimonioRoute = PatrimonioRouteImport.update({
+  id: '/patrimonio',
+  path: '/patrimonio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParcelasRoute = ParcelasRouteImport.update({
+  id: '/parcelas',
+  path: '/parcelas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NovaRoute = NovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MetasRoute = MetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaisRoute = MaisRouteImport.update({
+  id: '/mais',
+  path: '/mais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicarRoute = IndicarRouteImport.update({
+  id: '/indicar',
+  path: '/indicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExtratoRoute = ExtratoRouteImport.update({
+  id: '/extrato',
+  path: '/extrato',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesafiosRoute = DesafiosRouteImport.update({
+  id: '/desafios',
+  path: '/desafios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConquistasRoute = ConquistasRouteImport.update({
+  id: '/conquistas',
+  path: '/conquistas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartoesRoute = CartoesRouteImport.update({
+  id: '/cartoes',
+  path: '/cartoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +103,228 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
+  '/auth': typeof AuthRoute
+  '/cartoes': typeof CartoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/desafios': typeof DesafiosRoute
+  '/extrato': typeof ExtratoRoute
+  '/feedback': typeof FeedbackRoute
+  '/indicar': typeof IndicarRoute
+  '/mais': typeof MaisRoute
+  '/metas': typeof MetasRoute
+  '/nova': typeof NovaRoute
+  '/parcelas': typeof ParcelasRoute
+  '/patrimonio': typeof PatrimonioRoute
+  '/relatorio': typeof RelatorioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
+  '/auth': typeof AuthRoute
+  '/cartoes': typeof CartoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/desafios': typeof DesafiosRoute
+  '/extrato': typeof ExtratoRoute
+  '/feedback': typeof FeedbackRoute
+  '/indicar': typeof IndicarRoute
+  '/mais': typeof MaisRoute
+  '/metas': typeof MetasRoute
+  '/nova': typeof NovaRoute
+  '/parcelas': typeof ParcelasRoute
+  '/patrimonio': typeof PatrimonioRoute
+  '/relatorio': typeof RelatorioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
+  '/auth': typeof AuthRoute
+  '/cartoes': typeof CartoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/desafios': typeof DesafiosRoute
+  '/extrato': typeof ExtratoRoute
+  '/feedback': typeof FeedbackRoute
+  '/indicar': typeof IndicarRoute
+  '/mais': typeof MaisRoute
+  '/metas': typeof MetasRoute
+  '/nova': typeof NovaRoute
+  '/parcelas': typeof ParcelasRoute
+  '/patrimonio': typeof PatrimonioRoute
+  '/relatorio': typeof RelatorioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/ajuda'
+    | '/auth'
+    | '/cartoes'
+    | '/conquistas'
+    | '/desafios'
+    | '/extrato'
+    | '/feedback'
+    | '/indicar'
+    | '/mais'
+    | '/metas'
+    | '/nova'
+    | '/parcelas'
+    | '/patrimonio'
+    | '/relatorio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/ajuda'
+    | '/auth'
+    | '/cartoes'
+    | '/conquistas'
+    | '/desafios'
+    | '/extrato'
+    | '/feedback'
+    | '/indicar'
+    | '/mais'
+    | '/metas'
+    | '/nova'
+    | '/parcelas'
+    | '/patrimonio'
+    | '/relatorio'
+  id:
+    | '__root__'
+    | '/'
+    | '/ajuda'
+    | '/auth'
+    | '/cartoes'
+    | '/conquistas'
+    | '/desafios'
+    | '/extrato'
+    | '/feedback'
+    | '/indicar'
+    | '/mais'
+    | '/metas'
+    | '/nova'
+    | '/parcelas'
+    | '/patrimonio'
+    | '/relatorio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AjudaRoute: typeof AjudaRoute
+  AuthRoute: typeof AuthRoute
+  CartoesRoute: typeof CartoesRoute
+  ConquistasRoute: typeof ConquistasRoute
+  DesafiosRoute: typeof DesafiosRoute
+  ExtratoRoute: typeof ExtratoRoute
+  FeedbackRoute: typeof FeedbackRoute
+  IndicarRoute: typeof IndicarRoute
+  MaisRoute: typeof MaisRoute
+  MetasRoute: typeof MetasRoute
+  NovaRoute: typeof NovaRoute
+  ParcelasRoute: typeof ParcelasRoute
+  PatrimonioRoute: typeof PatrimonioRoute
+  RelatorioRoute: typeof RelatorioRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/relatorio': {
+      id: '/relatorio'
+      path: '/relatorio'
+      fullPath: '/relatorio'
+      preLoaderRoute: typeof RelatorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patrimonio': {
+      id: '/patrimonio'
+      path: '/patrimonio'
+      fullPath: '/patrimonio'
+      preLoaderRoute: typeof PatrimonioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parcelas': {
+      id: '/parcelas'
+      path: '/parcelas'
+      fullPath: '/parcelas'
+      preLoaderRoute: typeof ParcelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nova': {
+      id: '/nova'
+      path: '/nova'
+      fullPath: '/nova'
+      preLoaderRoute: typeof NovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/metas': {
+      id: '/metas'
+      path: '/metas'
+      fullPath: '/metas'
+      preLoaderRoute: typeof MetasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mais': {
+      id: '/mais'
+      path: '/mais'
+      fullPath: '/mais'
+      preLoaderRoute: typeof MaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicar': {
+      id: '/indicar'
+      path: '/indicar'
+      fullPath: '/indicar'
+      preLoaderRoute: typeof IndicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/extrato': {
+      id: '/extrato'
+      path: '/extrato'
+      fullPath: '/extrato'
+      preLoaderRoute: typeof ExtratoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desafios': {
+      id: '/desafios'
+      path: '/desafios'
+      fullPath: '/desafios'
+      preLoaderRoute: typeof DesafiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conquistas': {
+      id: '/conquistas'
+      path: '/conquistas'
+      fullPath: '/conquistas'
+      preLoaderRoute: typeof ConquistasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartoes': {
+      id: '/cartoes'
+      path: '/cartoes'
+      fullPath: '/cartoes'
+      preLoaderRoute: typeof CartoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +337,20 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AjudaRoute: AjudaRoute,
+  AuthRoute: AuthRoute,
+  CartoesRoute: CartoesRoute,
+  ConquistasRoute: ConquistasRoute,
+  DesafiosRoute: DesafiosRoute,
+  ExtratoRoute: ExtratoRoute,
+  FeedbackRoute: FeedbackRoute,
+  IndicarRoute: IndicarRoute,
+  MaisRoute: MaisRoute,
+  MetasRoute: MetasRoute,
+  NovaRoute: NovaRoute,
+  ParcelasRoute: ParcelasRoute,
+  PatrimonioRoute: PatrimonioRoute,
+  RelatorioRoute: RelatorioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
