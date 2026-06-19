@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as PatrimonioRouteImport } from './routes/patrimonio'
 import { Route as ParcelasRouteImport } from './routes/parcelas'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as MetasRouteImport } from './routes/metas'
 import { Route as MaisRouteImport } from './routes/mais'
@@ -38,6 +39,11 @@ const PatrimonioRoute = PatrimonioRouteImport.update({
 const ParcelasRoute = ParcelasRouteImport.update({
   id: '/parcelas',
   path: '/parcelas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NovaRoute = NovaRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/nova': typeof NovaRoute
+  '/offline': typeof OfflineRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/nova': typeof NovaRoute
+  '/offline': typeof OfflineRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/nova': typeof NovaRoute
+  '/offline': typeof OfflineRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/mais'
     | '/metas'
     | '/nova'
+    | '/offline'
     | '/parcelas'
     | '/patrimonio'
     | '/relatorio'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/mais'
     | '/metas'
     | '/nova'
+    | '/offline'
     | '/parcelas'
     | '/patrimonio'
     | '/relatorio'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/mais'
     | '/metas'
     | '/nova'
+    | '/offline'
     | '/parcelas'
     | '/patrimonio'
     | '/relatorio'
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   MaisRoute: typeof MaisRoute
   MetasRoute: typeof MetasRoute
   NovaRoute: typeof NovaRoute
+  OfflineRoute: typeof OfflineRoute
   ParcelasRoute: typeof ParcelasRoute
   PatrimonioRoute: typeof PatrimonioRoute
   RelatorioRoute: typeof RelatorioRoute
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/parcelas'
       fullPath: '/parcelas'
       preLoaderRoute: typeof ParcelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nova': {
@@ -348,6 +368,7 @@ const rootRouteChildren: RootRouteChildren = {
   MaisRoute: MaisRoute,
   MetasRoute: MetasRoute,
   NovaRoute: NovaRoute,
+  OfflineRoute: OfflineRoute,
   ParcelasRoute: ParcelasRoute,
   PatrimonioRoute: PatrimonioRoute,
   RelatorioRoute: RelatorioRoute,
