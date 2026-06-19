@@ -94,31 +94,15 @@ export interface FinanceState {
 const STORAGE_KEY = "finlux:v1";
 
 const DEFAULT_STATE: FinanceState = {
-  userName: "Raul Victor",
+  userName: "",
   hideBalance: false,
-  transactions: [
-    { id: "t1", kind: "receita", amount: 1000000, category: "Salário", description: "Salário do mês", date: new Date().toISOString() },
-    { id: "t2", kind: "despesa", amount: 646500, category: "Alimentação", description: "Mercado e restaurantes", date: new Date().toISOString() },
-    { id: "t3", kind: "despesa", amount: 500, category: "Impostos", description: "Taxa", date: new Date().toISOString() },
-    { id: "t4", kind: "despesa", amount: 50, category: "Lazer", description: "Cinema", date: new Date().toISOString() },
-  ],
-  cards: [
-    { id: "c1", name: "Nubank", brand: "Mastercard", limit: 5000, closingDay: 28, dueDay: 5, color: "#8A2BE2" },
-  ],
-  goals: [
-    { id: "g1", title: "Viagem", emoji: "✈️", target: 8000, saved: 2400, deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 180).toISOString() },
-    { id: "g2", title: "Reserva de emergência", emoji: "🛟", target: 30000, saved: 12500, deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString() },
-  ],
-  installmentPurchases: [
-    { id: "p1", name: "Notebook", total: 4800, installments: 12, paid: 3, cardId: "c1", category: "Eletrônicos", date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString() },
-    { id: "p2", name: "Geladeira", total: 3000, installments: 10, paid: 2, cardId: "c1", category: "Casa", date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() },
-  ],
-  assets: [
-    { id: "a1", type: "conta", name: "Conta corrente", value: 3500 },
-    { id: "a2", type: "investimento", name: "Tesouro Selic", value: 12000 },
-  ],
+  transactions: [],
+  cards: [],
+  goals: [],
+  installmentPurchases: [],
+  assets: [],
   debts: [],
-  monthlyIncome: 5000,
+  monthlyIncome: 0,
   installmentAlertPct: 30,
   onboardingDone: false,
   feedback: [],
@@ -131,6 +115,7 @@ const DEFAULT_STATE: FinanceState = {
   },
   dismissedNotifs: [],
 };
+
 
 let state: FinanceState = DEFAULT_STATE;
 let initialized = false;
