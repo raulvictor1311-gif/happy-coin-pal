@@ -72,7 +72,12 @@ export function isOnline() {
 
 export function useOnlineStatus() {
   const [online, setOnline] = useState(currentOnline);
-  useEffect(() => subscribeNetwork(setOnline), []);
+  useEffect(() => {
+    const unsub = subscribeNetwork(setOnline);
+    return () => {
+      unsub();
+    };
+  }, []);
   return online;
 }
 
