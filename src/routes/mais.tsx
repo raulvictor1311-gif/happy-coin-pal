@@ -111,6 +111,17 @@ function Mais() {
         </section>
 
         <button
+          onClick={exportCsv}
+          className="w-full rounded-3xl bg-card border border-border p-4 flex items-center gap-3 text-foreground hover:border-primary transition-colors"
+        >
+          <Download className="h-5 w-5 text-primary" />
+          <span className="font-bold">Exportar transações (CSV)</span>
+          <span className="ml-auto text-xs text-muted-foreground">
+            {state.transactions.length}
+          </span>
+        </button>
+
+        <button
           onClick={() => signOut()}
           className="w-full rounded-3xl bg-card border border-border p-4 flex items-center gap-3 text-destructive hover:border-destructive transition-colors"
         >
