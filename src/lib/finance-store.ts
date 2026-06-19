@@ -163,8 +163,10 @@ export function useFinance() {
 }
 
 export const financeActions = {
-  addTransaction(tx: Omit<Transaction, "id">) {
-    setState((s) => ({ ...s, transactions: [{ ...tx, id: crypto.randomUUID() }, ...s.transactions] }));
+  addTransaction(tx: Omit<Transaction, "id">): string {
+    const id = crypto.randomUUID();
+    setState((s) => ({ ...s, transactions: [{ ...tx, id }, ...s.transactions] }));
+    return id;
   },
   removeTransaction(id: string) {
     setState((s) => ({ ...s, transactions: s.transactions.filter((t) => t.id !== id) }));

@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
-import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid } from "lucide-react";
+import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, WifiOff } from "lucide-react";
 import { signOut } from "@/hooks/use-auth";
+import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import type { DashboardPrefs } from "@/lib/finance-store";
 
 export const Route = createFileRoute("/mais")({

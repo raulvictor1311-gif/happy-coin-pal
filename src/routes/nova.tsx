@@ -22,13 +22,18 @@ function Nova() {
   function submit() {
     const value = Number(amount);
     if (!value || value <= 0) return;
-    financeActions.addTransaction({
+    const id = financeActions.addTransaction({
       kind,
       amount: value,
       category,
       description: description || category,
       date: new Date(date).toISOString(),
     });
+    // Always enqueue — flushes immediately when online, waits otherwise.
+    enqueueTx(id);
+    if (!isOnline()) {
+      // Visual hint handled by the global offline banner.
+    }
     navigate({ to: "/" });
   }
 
