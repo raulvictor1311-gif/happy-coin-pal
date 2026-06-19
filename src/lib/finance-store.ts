@@ -91,7 +91,7 @@ export interface FinanceState {
   dismissedNotifs: string[];
 }
 
-const STORAGE_KEY = "finlux:v1";
+const STORAGE_KEY = "finlux:v2";
 
 const DEFAULT_STATE: FinanceState = {
   userName: "",
