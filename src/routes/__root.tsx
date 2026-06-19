@@ -95,8 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Finlux — Controle Financeiro Pessoal" },
       { name: "twitter:description", content: "Controle de receitas, despesas, cartões e metas em um app simples e bonito." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d1d9d9dd-2616-45cc-a5e9-60c466b0b32f" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d1d9d9dd-2616-45cc-a5e9-60c466b0b32f" },
+      { property: "og:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/aefebdb6-56d9-4835-98d9-e8b8223de366/finlux-cover.png" },
+      { name: "twitter:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/aefebdb6-56d9-4835-98d9-e8b8223de366/finlux-cover.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
