@@ -22,9 +22,16 @@ function Mais() {
     { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
     { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
     { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
+    { to: "/offline", icon: WifiOff, title: "Status & offline", desc: "Reconectar, atualizar cache e fila" },
     { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
     { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
   ] as const;
+
+  function exportCsv() {
+    const csv = transactionsToCsv(state.transactions);
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(`finlux-transacoes-${date}.csv`, csv);
+  }
 
   const dashSections: { key: keyof DashboardPrefs; label: string }[] = [
     { key: "showHealth", label: "Saúde financeira" },
