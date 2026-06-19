@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, financeActions, type TxKind } from "@/lib/finance-store";
+import { enqueueTx } from "@/lib/sync-queue";
+import { isOnline } from "@/lib/network-status";
 
 export const Route = createFileRoute("/nova")({
   head: () => ({ meta: [{ title: "Nova transação — Finlux" }] }),
