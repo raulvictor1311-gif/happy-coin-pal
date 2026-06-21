@@ -1,7 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, Receipt, CreditCard, Plus, MoreHorizontal } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { PlusMenu } from "@/components/plus-menu";
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
@@ -14,13 +15,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const [plusOpen, setPlusOpen] = useState(false);
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
   }, [loading, session, navigate]);
   if (!loading && !session) return null;
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md min-h-screen pb-32">
+      <div className="mx-auto w-full max-w-md min-h-screen pb-32 animate-in fade-in duration-300">
         {children}
       </div>
       <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[min(28rem,calc(100%-1.5rem))] z-40">
@@ -28,18 +30,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           {tabs.slice(0, 2).map((t) => (
             <TabLink key={t.to} {...t} active={pathname === t.to} />
           ))}
-          <Link
-            to="/nova"
+          <button
+            type="button"
+            onClick={() => setPlusOpen(true)}
             aria-label="Adicionar transação"
             className="flex h-14 w-14 -mt-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_-4px_color-mix(in_oklab,var(--color-primary)_60%,transparent)] active:scale-95 transition-transform"
           >
             <Plus className="h-7 w-7" strokeWidth={2.5} />
-          </Link>
+          </button>
           {tabs.slice(2).map((t) => (
             <TabLink key={t.to} {...t} active={pathname === t.to} />
           ))}
         </div>
       </nav>
+      <PlusMenu open={plusOpen} onClose={() => setPlusOpen(false)} />
     </div>
   );
 }
