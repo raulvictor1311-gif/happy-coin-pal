@@ -54,26 +54,40 @@ function Dashboard() {
   return (
     <AppShell>
       {/* Greeting */}
-      <header className="flex items-start justify-between px-6 pt-10 relative">
-        <div>
+      <header className="flex items-start justify-between px-6 pt-10 relative animate-in fade-in slide-in-from-top-2 duration-500">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             {now ? greetingFor(now) : "Olá"},
           </p>
-          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground">
+          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate">
             {displayName}
           </h1>
-          {streak > 0 && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
-              <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
-              {streak} {streak === 1 ? "dia" : "dias"} seguidos
-            </span>
-          )}
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {now && (
+              <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
+                {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+              </span>
+            )}
+            {streak > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
+                <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
+                {streak} {streak === 1 ? "dia" : "dias"}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="relative">
+        <div className="relative flex items-center gap-1.5 shrink-0">
+          <Link
+            to="/mais"
+            aria-label="Ajustes"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
+          >
+            <Settings className="h-5 w-5" />
+          </Link>
           <button
             aria-label="Notificações"
             onClick={() => setNotifOpen((v) => !v)}
-            className="relative mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
           >
             <Bell className="h-5 w-5" />
             {notifs.length > 0 && (
