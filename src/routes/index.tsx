@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy } from "lucide-react";
+import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, Landmark, ArrowRight, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import {
@@ -54,26 +54,40 @@ function Dashboard() {
   return (
     <AppShell>
       {/* Greeting */}
-      <header className="flex items-start justify-between px-6 pt-10 relative">
-        <div>
+      <header className="flex items-start justify-between px-6 pt-10 relative animate-in fade-in slide-in-from-top-2 duration-500">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             {now ? greetingFor(now) : "Olá"},
           </p>
-          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground">
+          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate">
             {displayName}
           </h1>
-          {streak > 0 && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
-              <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
-              {streak} {streak === 1 ? "dia" : "dias"} seguidos
-            </span>
-          )}
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {now && (
+              <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
+                {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+              </span>
+            )}
+            {streak > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
+                <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
+                {streak} {streak === 1 ? "dia" : "dias"}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="relative">
+        <div className="relative flex items-center gap-1.5 shrink-0">
+          <Link
+            to="/mais"
+            aria-label="Ajustes"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
+          >
+            <Settings className="h-5 w-5" />
+          </Link>
           <button
             aria-label="Notificações"
             onClick={() => setNotifOpen((v) => !v)}
-            className="relative mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
           >
             <Bell className="h-5 w-5" />
             {notifs.length > 0 && (
@@ -175,8 +189,8 @@ function Dashboard() {
       </section>
 
       {/* Balance card */}
-      <section className="px-6 mt-6">
-        <div className="rounded-3xl bg-card p-5 border border-border">
+      <section className="px-6 mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="rounded-3xl bg-gradient-to-br from-card to-card-elevated p-5 border border-border shadow-[0_8px_30px_-12px_rgba(0,0,0,0.5)]">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Saldo total</span>
             <button
@@ -194,14 +208,38 @@ function Dashboard() {
             {summary.savings >= 0 ? "+" : ""}
             {hidden ? "R$ ••••" : formatBRL(summary.savings)} este mês
           </p>
+        </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2.5">
-            <MiniStat label="Receitas" value={summary.income} tone="success" hidden={hidden} />
-            <MiniStat label="Despesas" value={-summary.expense} tone="danger" hidden={hidden} />
-            <MiniStat label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
-          </div>
+        {/* 6 financial cards */}
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <FinCard icon={ArrowDownLeft} label="Receitas" value={summary.income} tone="success" hidden={hidden} />
+          <FinCard icon={ArrowUpRight} label="Despesas" value={summary.expense} tone="danger" hidden={hidden} />
+          <FinCard icon={TrendingUp} label="Recebido" value={summary.income} tone="success" hidden={hidden} />
+          <FinCard icon={TrendingDown} label="Pago" value={summary.expense} tone="danger" hidden={hidden} />
+          <FinCard icon={PiggyBank} label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
+          <FinCard icon={Wallet} label="Saldo" value={summary.balance} tone="accent" hidden={hidden} />
         </div>
       </section>
+
+      {/* Open Finance */}
+      <section className="px-6 mt-5 animate-in fade-in slide-in-from-bottom-2 duration-700">
+        <Link
+          to="/mais"
+          className="flex items-center gap-4 rounded-3xl bg-card border border-border p-5 hover:border-primary transition-colors group"
+        >
+          <span className="h-12 w-12 rounded-2xl flex items-center justify-center bg-primary/15 text-primary shrink-0">
+            <Landmark className="h-5 w-5" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Conectar contas</p>
+            <p className="text-xs text-muted-foreground truncate">
+              Open Finance · agregue bancos e cartões
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        </Link>
+      </section>
+
 
       {/* Health */}
       {prefs.showHealth && (
@@ -384,6 +422,46 @@ function MiniStat({
     </div>
   );
 }
+
+function FinCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  hidden,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  tone: "success" | "danger" | "accent";
+  hidden: boolean;
+}) {
+  const color =
+    tone === "success"
+      ? "var(--color-success)"
+      : tone === "danger"
+      ? "var(--color-destructive)"
+      : "var(--color-primary)";
+  return (
+    <div className="rounded-2xl bg-card border border-border p-3.5 transition-transform hover:-translate-y-0.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          {label}
+        </span>
+        <span
+          className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `color-mix(in oklab, ${color} 18%, transparent)`, color }}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+      </div>
+      <p className="mt-2 text-base font-bold tabular-nums leading-tight" style={{ color }}>
+        {hidden ? "R$ •••" : formatCompactBRL(Math.abs(value))}
+      </p>
+    </div>
+  );
+}
+
 
 function HealthRing({ score, tone }: { score: number; tone: "ok" | "warn" | "bad" }) {
   const color =
