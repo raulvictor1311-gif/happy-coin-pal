@@ -33,10 +33,6 @@ const FAQ: { q: string; a: string }[] = [
     q: "Como esqueço de pagar uma parcela?",
     a: 'Configure em "Mais" o alerta de parcelas. Você recebe uma notificação quando as parcelas passarem da % escolhida da sua renda.',
   },
-  {
-    q: "Posso usar offline?",
-    a: "Sim, o app funciona offline. Suas alterações ficam salvas localmente e sincronizam quando a conexão volta.",
-  },
 ];
 
 function Ajuda() {

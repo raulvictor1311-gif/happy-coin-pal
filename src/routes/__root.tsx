@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerPwa } from "../lib/pwa-register";
-import { OfflineBanner } from "../components/offline-banner";
 
 function NotFoundComponent() {
   return (
@@ -95,8 +94,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Finlux — Controle Financeiro Pessoal" },
       { name: "twitter:description", content: "Controle de receitas, despesas, cartões e metas em um app simples e bonito." },
-      { property: "og:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/aefebdb6-56d9-4835-98d9-e8b8223de366/finlux-cover.png" },
-      { name: "twitter:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/aefebdb6-56d9-4835-98d9-e8b8223de366/finlux-cover.png" },
+      { property: "og:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/96573864-e742-41fd-9608-30a932177c94/finlux-cover-v2.png" },
+      { name: "twitter:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/96573864-e742-41fd-9608-30a932177c94/finlux-cover-v2.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -134,7 +133,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <OfflineBanner />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>

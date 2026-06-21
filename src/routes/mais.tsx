@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
-import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, WifiOff } from "lucide-react";
+import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download } from "lucide-react";
 import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import type { DashboardPrefs } from "@/lib/finance-store";
@@ -22,7 +22,7 @@ function Mais() {
     { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
     { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
     { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
-    { to: "/offline", icon: WifiOff, title: "Status & offline", desc: "Reconectar, atualizar cache e fila" },
+    
     { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
     { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
   ] as const;
