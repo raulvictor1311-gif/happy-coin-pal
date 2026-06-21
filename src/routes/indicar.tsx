@@ -29,10 +29,10 @@ function Indicar() {
           <div className="mx-auto h-16 w-16 rounded-2xl bg-card-elevated flex items-center justify-center mb-3">
             <Gift className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-lg font-bold text-foreground">Convide um amigo, ganhe R$ 10</h2>
+          <h2 className="text-lg font-bold text-foreground">Convide um amigo, ganhe uma conquista</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Para cada amigo que se cadastrar com seu código e registrar a primeira transação,
-            vocês dois ganham um bônus.
+            vocês dois ganham um bônus exclusivo.
           </p>
           <div className="mt-5 flex items-center justify-between gap-2 rounded-2xl bg-card-elevated px-4 py-3">
             <span className="font-mono text-base font-bold text-foreground tracking-wider">
@@ -54,7 +54,7 @@ function Indicar() {
           <ol className="space-y-2 text-sm text-foreground">
             <li>1. Compartilhe seu código com amigos.</li>
             <li>2. O amigo se cadastra usando o código.</li>
-            <li>3. Quando ele registrar a primeira transação, vocês recebem R$ 10 cada.</li>
+            <li>3. Quando ele registrar a primeira transação, vocês dois desbloqueiam um bônus exclusivo.</li>
           </ol>
         </div>
       </div>
