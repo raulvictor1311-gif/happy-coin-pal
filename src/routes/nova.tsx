@@ -3,14 +3,23 @@ import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, financeActions, type TxKind } from "@/lib/finance-store";
 
+type NovaSearch = { kind?: "receita" | "despesa" | "transferencia" };
+
 export const Route = createFileRoute("/nova")({
   head: () => ({ meta: [{ title: "Nova transação — Finlux" }] }),
+  validateSearch: (s: Record<string, unknown>): NovaSearch => {
+    const k = s.kind;
+    if (k === "receita" || k === "despesa" || k === "transferencia") return { kind: k };
+    return {};
+  },
   component: Nova,
 });
 
 function Nova() {
   const navigate = useNavigate();
-  const [kind, setKind] = useState<TxKind>("despesa");
+  const search = Route.useSearch();
+  const initialKind: TxKind = search.kind === "receita" ? "receita" : "despesa";
+  const [kind, setKind] = useState<TxKind>(initialKind);
   const cats = kind === "receita" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(cats[0]);
