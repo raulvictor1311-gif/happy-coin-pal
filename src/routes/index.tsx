@@ -189,8 +189,8 @@ function Dashboard() {
       </section>
 
       {/* Balance card */}
-      <section className="px-6 mt-6">
-        <div className="rounded-3xl bg-card p-5 border border-border">
+      <section className="px-6 mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="rounded-3xl bg-gradient-to-br from-card to-card-elevated p-5 border border-border shadow-[0_8px_30px_-12px_rgba(0,0,0,0.5)]">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Saldo total</span>
             <button
@@ -208,14 +208,38 @@ function Dashboard() {
             {summary.savings >= 0 ? "+" : ""}
             {hidden ? "R$ ••••" : formatBRL(summary.savings)} este mês
           </p>
+        </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2.5">
-            <MiniStat label="Receitas" value={summary.income} tone="success" hidden={hidden} />
-            <MiniStat label="Despesas" value={-summary.expense} tone="danger" hidden={hidden} />
-            <MiniStat label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
-          </div>
+        {/* 6 financial cards */}
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <FinCard icon={ArrowDownLeft} label="Receitas" value={summary.income} tone="success" hidden={hidden} />
+          <FinCard icon={ArrowUpRight} label="Despesas" value={summary.expense} tone="danger" hidden={hidden} />
+          <FinCard icon={TrendingUp} label="Recebido" value={summary.income} tone="success" hidden={hidden} />
+          <FinCard icon={TrendingDown} label="Pago" value={summary.expense} tone="danger" hidden={hidden} />
+          <FinCard icon={PiggyBank} label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
+          <FinCard icon={Wallet} label="Saldo" value={summary.balance} tone="accent" hidden={hidden} />
         </div>
       </section>
+
+      {/* Open Finance */}
+      <section className="px-6 mt-5 animate-in fade-in slide-in-from-bottom-2 duration-700">
+        <Link
+          to="/mais"
+          className="flex items-center gap-4 rounded-3xl bg-card border border-border p-5 hover:border-primary transition-colors group"
+        >
+          <span className="h-12 w-12 rounded-2xl flex items-center justify-center bg-primary/15 text-primary shrink-0">
+            <Landmark className="h-5 w-5" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Conectar contas</p>
+            <p className="text-xs text-muted-foreground truncate">
+              Open Finance · agregue bancos e cartões
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        </Link>
+      </section>
+
 
       {/* Health */}
       {prefs.showHealth && (
