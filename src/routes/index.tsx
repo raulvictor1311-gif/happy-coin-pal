@@ -423,6 +423,46 @@ function MiniStat({
   );
 }
 
+function FinCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  hidden,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  tone: "success" | "danger" | "accent";
+  hidden: boolean;
+}) {
+  const color =
+    tone === "success"
+      ? "var(--color-success)"
+      : tone === "danger"
+      ? "var(--color-destructive)"
+      : "var(--color-primary)";
+  return (
+    <div className="rounded-2xl bg-card border border-border p-3.5 transition-transform hover:-translate-y-0.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          {label}
+        </span>
+        <span
+          className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `color-mix(in oklab, ${color} 18%, transparent)` }}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+      </div>
+      <p className="mt-2 text-base font-bold tabular-nums leading-tight" style={{ color }}>
+        {hidden ? "R$ •••" : formatCompactBRL(Math.abs(value))}
+      </p>
+    </div>
+  );
+}
+
+
 function HealthRing({ score, tone }: { score: number; tone: "ok" | "warn" | "bad" }) {
   const color =
     tone === "ok" ? "var(--color-success)" : tone === "warn" ? "var(--color-warning)" : "var(--color-destructive)";
