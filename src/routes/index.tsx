@@ -450,7 +450,7 @@ function FinCard({
         </span>
         <span
           className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: `color-mix(in oklab, ${color} 18%, transparent)` }}
+          style={{ backgroundColor: `color-mix(in oklab, ${color} 18%, transparent)`, color }}
         >
           <Icon className="h-3.5 w-3.5" />
         </span>
