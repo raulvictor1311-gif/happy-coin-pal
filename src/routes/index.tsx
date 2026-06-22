@@ -221,24 +221,6 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Open Finance */}
-      <section className="px-6 mt-5 animate-in fade-in slide-in-from-bottom-2 duration-700">
-        <Link
-          to="/mais"
-          className="flex items-center gap-4 rounded-3xl bg-card border border-border p-5 hover:border-primary transition-colors group"
-        >
-          <span className="h-12 w-12 rounded-2xl flex items-center justify-center bg-primary/15 text-primary shrink-0">
-            <Landmark className="h-5 w-5" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground">Conectar contas</p>
-            <p className="text-xs text-muted-foreground truncate">
-              Open Finance · agregue bancos e cartões
-            </p>
-          </div>
-          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-        </Link>
-      </section>
 
 
       {/* Health */}
