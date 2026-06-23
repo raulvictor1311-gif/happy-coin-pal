@@ -231,10 +231,10 @@ function Nova() {
                 <input
                   type="number"
                   min={2}
-                  max={48}
+                  inputMode="numeric"
                   value={installments}
-                  onChange={(e) => setInstallments(Math.max(2, Math.min(48, Number(e.target.value) || 2)))}
-                  className="ml-auto w-20 bg-card-elevated rounded-lg px-3 py-1.5 text-foreground outline-none text-center font-bold tabular-nums"
+                  onChange={(e) => setInstallments(Math.max(2, Number(e.target.value) || 2))}
+                  className="ml-auto w-24 bg-card-elevated rounded-lg px-3 py-1.5 text-foreground outline-none text-center font-bold tabular-nums"
                 />
                 <span className="text-xs text-muted-foreground tabular-nums">
                   ≈ R$ {amount ? (Number(amount) / installments).toFixed(2) : "0,00"}
