@@ -15,6 +15,7 @@ function Mais() {
   const state = useFinance();
 
   const items = [
+    { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
     { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
     { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
     { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
