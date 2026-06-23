@@ -51,6 +51,7 @@ function audioFormatFromMime(mime: string): "webm" | "m4a" | "mp3" | "wav" | "og
 }
 
 function Assessor() {
+  const { session, loading: authLoading } = useAuth();
   const [text, setText] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
