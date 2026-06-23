@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from "lucide-react";
+import { X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 
 interface PlusMenuProps {
@@ -18,6 +18,14 @@ export function PlusMenu({ open, onClose }: PlusMenuProps) {
   if (!open) return null;
 
   const items = [
+    {
+      to: "/assessor",
+      search: undefined,
+      label: "Meu Assessor (IA)",
+      desc: "Foto da nota, áudio ou texto",
+      icon: Sparkles,
+      color: "var(--color-primary)",
+    },
     {
       to: "/nova",
       search: { kind: "receita" as const },

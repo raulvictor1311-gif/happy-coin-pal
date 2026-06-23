@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
-import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles } from "lucide-react";
+import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles, Mic } from "lucide-react";
 import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import type { DashboardPrefs } from "@/lib/finance-store";
@@ -15,6 +15,7 @@ function Mais() {
   const state = useFinance();
 
   const items = [
+    { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
     { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
     { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
     { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },

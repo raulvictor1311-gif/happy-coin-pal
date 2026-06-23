@@ -23,8 +23,10 @@ import { Route as ConquistasRouteImport } from './routes/conquistas'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
+import { Route as AssessorRouteImport } from './routes/assessor'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiExtractTxRouteImport } from './routes/api/extract-tx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const RelatorioRoute = RelatorioRouteImport.update({
@@ -97,6 +99,11 @@ const AssistenteRoute = AssistenteRouteImport.update({
   path: '/assistente',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssessorRoute = AssessorRouteImport.update({
+  id: '/assessor',
+  path: '/assessor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AjudaRoute = AjudaRouteImport.update({
   id: '/ajuda',
   path: '/ajuda',
@@ -105,6 +112,11 @@ const AjudaRoute = AjudaRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExtractTxRoute = ApiExtractTxRouteImport.update({
+  id: '/api/extract-tx',
+  path: '/api/extract-tx',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -116,6 +128,7 @@ const ApiChatRoute = ApiChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assessor': typeof AssessorRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
@@ -131,10 +144,12 @@ export interface FileRoutesByFullPath {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assessor': typeof AssessorRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
@@ -150,11 +165,13 @@ export interface FileRoutesByTo {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assessor': typeof AssessorRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
@@ -170,12 +187,14 @@ export interface FileRoutesById {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/ajuda'
+    | '/assessor'
     | '/assistente'
     | '/auth'
     | '/cartoes'
@@ -191,10 +210,12 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/ajuda'
+    | '/assessor'
     | '/assistente'
     | '/auth'
     | '/cartoes'
@@ -210,10 +231,12 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   id:
     | '__root__'
     | '/'
     | '/ajuda'
+    | '/assessor'
     | '/assistente'
     | '/auth'
     | '/cartoes'
@@ -229,11 +252,13 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjudaRoute: typeof AjudaRoute
+  AssessorRoute: typeof AssessorRoute
   AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CartoesRoute: typeof CartoesRoute
@@ -249,6 +274,7 @@ export interface RootRouteChildren {
   PatrimonioRoute: typeof PatrimonioRoute
   RelatorioRoute: typeof RelatorioRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiExtractTxRoute: typeof ApiExtractTxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistenteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessor': {
+      id: '/assessor'
+      path: '/assessor'
+      fullPath: '/assessor'
+      preLoaderRoute: typeof AssessorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ajuda': {
       id: '/ajuda'
       path: '/ajuda'
@@ -363,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/extract-tx': {
+      id: '/api/extract-tx'
+      path: '/api/extract-tx'
+      fullPath: '/api/extract-tx'
+      preLoaderRoute: typeof ApiExtractTxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -378,6 +418,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjudaRoute: AjudaRoute,
+  AssessorRoute: AssessorRoute,
   AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CartoesRoute: CartoesRoute,
@@ -393,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   PatrimonioRoute: PatrimonioRoute,
   RelatorioRoute: RelatorioRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiExtractTxRoute: ApiExtractTxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
