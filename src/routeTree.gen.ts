@@ -22,6 +22,7 @@ import { Route as DesafiosRouteImport } from './routes/desafios'
 import { Route as ConquistasRouteImport } from './routes/conquistas'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -91,6 +92,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistenteRoute = AssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AjudaRoute = AjudaRouteImport.update({
   id: '/ajuda',
   path: '/ajuda',
@@ -110,6 +116,7 @@ const ApiChatRoute = ApiChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/ajuda'
+    | '/assistente'
     | '/auth'
     | '/cartoes'
     | '/conquistas'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/ajuda'
+    | '/assistente'
     | '/auth'
     | '/cartoes'
     | '/conquistas'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/ajuda'
+    | '/assistente'
     | '/auth'
     | '/cartoes'
     | '/conquistas'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjudaRoute: typeof AjudaRoute
+  AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CartoesRoute: typeof CartoesRoute
   ConquistasRoute: typeof ConquistasRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistente': {
+      id: '/assistente'
+      path: '/assistente'
+      fullPath: '/assistente'
+      preLoaderRoute: typeof AssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ajuda': {
       id: '/ajuda'
       path: '/ajuda'
@@ -358,6 +378,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjudaRoute: AjudaRoute,
+  AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CartoesRoute: CartoesRoute,
   ConquistasRoute: ConquistasRoute,
