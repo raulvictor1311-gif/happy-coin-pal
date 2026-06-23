@@ -216,9 +216,13 @@ export async function setCloudUser(userId: string | null) {
   if (typeof window === "undefined") return;
 
   if (!userId) {
-    // Logout: limpa transações em memória e marca dono como anônimo
-    localStorage.setItem(TX_OWNER_KEY, "anon");
-    setState((s) => ({ ...s, transactions: [] }));
+    // Logout: só limpa se antes havia um usuário logado de verdade neste
+    // aparelho. Uso anônimo (nunca logado) mantém os dados locais.
+    const prevOwner = localStorage.getItem(TX_OWNER_KEY);
+    if (prevOwner && prevOwner !== "anon") {
+      localStorage.setItem(TX_OWNER_KEY, "anon");
+      setState((s) => ({ ...s, transactions: [] }));
+    }
     return;
   }
 
