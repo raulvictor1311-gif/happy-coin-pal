@@ -19,6 +19,14 @@ export function PlusMenu({ open, onClose }: PlusMenuProps) {
 
   const items = [
     {
+      to: "/assessor",
+      search: undefined,
+      label: "Meu Assessor (IA)",
+      desc: "Foto da nota, áudio ou texto",
+      icon: Sparkles,
+      color: "var(--color-primary)",
+    },
+    {
       to: "/nova",
       search: { kind: "receita" as const },
       label: "Receita",
