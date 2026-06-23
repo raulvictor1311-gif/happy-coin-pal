@@ -43,23 +43,24 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallback: "/",
-        navigateFallbackDenylist: [/^\/api\//, /^\/~oauth/],
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,webp,woff,woff2}"],
+        // SSR app: never precache or serve a cached HTML shell. A stale shell
+        // points at old hashed JS chunks that 404 after redeploy, which crashes
+        // the app ("Esta página não carregou"). Navigations must always hit the
+        // network so the served HTML matches the deployed chunks.
+        navigateFallback: null,
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        // Only precache static immutable assets — no HTML.
+        globPatterns: ["**/*.{svg,png,ico,webp,woff,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "html-cache",
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
-            },
-          },
-          {
+            // Hashed JS/CSS are immutable per build; revalidate in the
+            // background so a new deploy is picked up without serving a
+            // mismatched chunk first.
             urlPattern: ({ url, sameOrigin }) =>
               sameOrigin && /\.(?:js|css|woff2?)$/.test(url.pathname),
-            handler: "CacheFirst",
+            handler: "StaleWhileRevalidate",
             options: {
               cacheName: "asset-cache",
               expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
@@ -76,6 +77,7 @@ export default defineConfig({
           },
         ],
       },
+
     }),
   ],
 });
