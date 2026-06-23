@@ -25,6 +25,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiExtractTxRouteImport } from './routes/api/extract-tx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const RelatorioRoute = RelatorioRouteImport.update({
@@ -107,6 +108,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExtractTxRoute = ApiExtractTxRouteImport.update({
+  id: '/api/extract-tx',
+  path: '/api/extract-tx',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/patrimonio': typeof PatrimonioRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-tx': typeof ApiExtractTxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/patrimonio'
     | '/relatorio'
     | '/api/chat'
+    | '/api/extract-tx'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   PatrimonioRoute: typeof PatrimonioRoute
   RelatorioRoute: typeof RelatorioRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiExtractTxRoute: typeof ApiExtractTxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/extract-tx': {
+      id: '/api/extract-tx'
+      path: '/api/extract-tx'
+      fullPath: '/api/extract-tx'
+      preLoaderRoute: typeof ApiExtractTxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -393,17 +413,8 @@ const rootRouteChildren: RootRouteChildren = {
   PatrimonioRoute: PatrimonioRoute,
   RelatorioRoute: RelatorioRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiExtractTxRoute: ApiExtractTxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
