@@ -12,7 +12,7 @@ import { TrendingUp, TrendingDown, PieChart as PieIcon, BarChart3, LineChart as 
 
 export const Route = createFileRoute("/relatorio")({
   head: () => ({ meta: [{ title: "Relatório — Finlux" }] }),
-  component: Relatorio;
+  component: Relatorio,
 });
 
 type ChartTab = "pizza" | "barra" | "linha";
