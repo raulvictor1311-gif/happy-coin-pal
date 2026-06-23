@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useRef, useState } from "react";
-import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon } from "lucide-react";
+import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock } from "lucide-react";
 import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/assessor")({
@@ -50,6 +51,7 @@ function audioFormatFromMime(mime: string): "webm" | "m4a" | "mp3" | "wav" | "og
 }
 
 function Assessor() {
+  const { session, loading: authLoading } = useAuth();
   const [text, setText] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -168,7 +170,35 @@ function Assessor() {
     clearAll();
   }
 
+  if (!authLoading && !session) {
+    return (
+      <AppShell>
+        <PageHeader subtitle="Registro inteligente" title="Meu Assessor" />
+        <div className="px-6">
+          <div className="rounded-3xl bg-card border border-border p-6 text-center space-y-4">
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold text-foreground">Entre para usar o Assessor</h2>
+              <p className="text-sm text-muted-foreground">
+                As transações registradas pelo Assessor ficam salvas na sua conta na nuvem — assim você acessa de qualquer aparelho e, em breve, pelo WhatsApp.
+              </p>
+            </div>
+            <Link
+              to="/auth"
+              className="inline-block w-full rounded-2xl bg-primary text-primary-foreground font-bold py-3 active:scale-[0.98] transition-transform"
+            >
+              Entrar ou criar conta
+            </Link>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
+
     <AppShell>
       <PageHeader subtitle="Registro inteligente" title="Meu Assessor" />
       <div className="px-6 space-y-4">

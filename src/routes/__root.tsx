@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerPwa } from "../lib/pwa-register";
 import { Toaster } from "@/components/ui/sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { setCloudUser } from "@/lib/finance-store";
 
 function NotFoundComponent() {
   return (
@@ -125,6 +127,15 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function CloudSync() {
+  const { session, loading } = useAuth();
+  useEffect(() => {
+    if (loading) return;
+    setCloudUser(session?.user?.id ?? null);
+  }, [session?.user?.id, loading]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -134,6 +145,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <CloudSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster />

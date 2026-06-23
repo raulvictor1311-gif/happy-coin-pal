@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type TxKind = "receita" | "despesa";
 
@@ -162,14 +163,115 @@ export function useFinance() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
+// ===== Sincronização com a nuvem (transações) =====
+
+const TX_OWNER_KEY = "finlux:tx-owner";
+let currentUserId: string | null = null;
+
+interface TxRow {
+  id: string;
+  kind: string;
+  amount: number | string;
+  category: string;
+  description: string;
+  date: string;
+  payment_method: string | null;
+  card_id: string | null;
+  installments: number | null;
+}
+
+function rowToTx(r: TxRow): Transaction {
+  return {
+    id: r.id,
+    kind: r.kind === "receita" ? "receita" : "despesa",
+    amount: Number(r.amount) || 0,
+    category: r.category,
+    description: r.description,
+    date: r.date,
+    paymentMethod: r.payment_method ?? undefined,
+    cardId: r.card_id ?? undefined,
+    installments: r.installments ?? undefined,
+  };
+}
+
+function txToRow(t: Transaction, userId: string) {
+  return {
+    id: t.id,
+    user_id: userId,
+    kind: t.kind,
+    amount: t.amount,
+    category: t.category,
+    description: t.description,
+    date: new Date(t.date).toISOString(),
+    payment_method: t.paymentMethod ?? null,
+    card_id: t.cardId ?? null,
+    installments: t.installments ?? null,
+  };
+}
+
+/** Chamado quando o estado de login muda. Sincroniza transações com a nuvem. */
+export async function setCloudUser(userId: string | null) {
+  load();
+  currentUserId = userId;
+  if (typeof window === "undefined") return;
+
+  if (!userId) {
+    // Logout: só limpa se antes havia um usuário logado de verdade neste
+    // aparelho. Uso anônimo (nunca logado) mantém os dados locais.
+    const prevOwner = localStorage.getItem(TX_OWNER_KEY);
+    if (prevOwner && prevOwner !== "anon") {
+      localStorage.setItem(TX_OWNER_KEY, "anon");
+      setState((s) => ({ ...s, transactions: [] }));
+    }
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("id, kind, amount, category, description, date, payment_method, card_id, installments")
+      .eq("user_id", userId);
+    if (error) throw error;
+
+    const cloud = (data ?? []).map((r) => rowToTx(r as TxRow));
+    const cloudIds = new Set(cloud.map((t) => t.id));
+
+    // Importa transações locais (de uso anônimo) que ainda não estão na nuvem
+    const prevOwner = localStorage.getItem(TX_OWNER_KEY);
+    let localOnly: Transaction[] = [];
+    if (prevOwner === null || prevOwner === "anon") {
+      localOnly = state.transactions.filter((t) => !cloudIds.has(t.id));
+      if (localOnly.length) {
+        await supabase.from("transactions").insert(localOnly.map((t) => txToRow(t, userId)));
+      }
+    }
+
+    const merged = [...localOnly, ...cloud].sort(
+      (a, b) => +new Date(b.date) - +new Date(a.date),
+    );
+    setState((s) => ({ ...s, transactions: merged }));
+    localStorage.setItem(TX_OWNER_KEY, userId);
+  } catch {
+    // Mantém o cache local em caso de falha de rede
+  }
+}
+
+
 export const financeActions = {
   addTransaction(tx: Omit<Transaction, "id">): string {
     const id = crypto.randomUUID();
-    setState((s) => ({ ...s, transactions: [{ ...tx, id }, ...s.transactions] }));
+    const full: Transaction = { ...tx, id };
+    setState((s) => ({ ...s, transactions: [full, ...s.transactions] }));
+    if (currentUserId) {
+      void supabase.from("transactions").insert(txToRow(full, currentUserId));
+    }
     return id;
   },
   removeTransaction(id: string) {
     setState((s) => ({ ...s, transactions: s.transactions.filter((t) => t.id !== id) }));
+    if (currentUserId) {
+      void supabase.from("transactions").delete().eq("id", id);
+    }
   },
   addCard(card: Omit<CreditCard, "id">) {
     setState((s) => ({ ...s, cards: [...s.cards, { ...card, id: crypto.randomUUID() }] }));
