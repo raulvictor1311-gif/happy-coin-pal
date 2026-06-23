@@ -313,7 +313,8 @@ function Assessor() {
             })}
             <button
               onClick={confirm}
-              className="w-full rounded-2xl bg-success text-success-foreground font-bold py-3 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              style={{ backgroundColor: "var(--color-success)" }}
+              className="w-full rounded-2xl text-white font-bold py-3 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Check className="h-4 w-4" /> Confirmar e registrar
             </button>
