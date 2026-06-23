@@ -256,11 +256,18 @@ export async function setCloudUser(userId: string | null) {
 export const financeActions = {
   addTransaction(tx: Omit<Transaction, "id">): string {
     const id = crypto.randomUUID();
-    setState((s) => ({ ...s, transactions: [{ ...tx, id }, ...s.transactions] }));
+    const full: Transaction = { ...tx, id };
+    setState((s) => ({ ...s, transactions: [full, ...s.transactions] }));
+    if (currentUserId) {
+      void supabase.from("transactions").insert(txToRow(full, currentUserId));
+    }
     return id;
   },
   removeTransaction(id: string) {
     setState((s) => ({ ...s, transactions: s.transactions.filter((t) => t.id !== id) }));
+    if (currentUserId) {
+      void supabase.from("transactions").delete().eq("id", id);
+    }
   },
   addCard(card: Omit<CreditCard, "id">) {
     setState((s) => ({ ...s, cards: [...s.cards, { ...card, id: crypto.randomUUID() }] }));
