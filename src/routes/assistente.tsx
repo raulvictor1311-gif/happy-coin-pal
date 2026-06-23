@@ -29,7 +29,7 @@ import {
   installmentsByMonth,
   financialHealth,
 } from "@/lib/finance-store";
-import { brl } from "@/lib/format";
+import { formatBRL as brl } from "@/lib/format";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
@@ -136,21 +136,18 @@ function Assistente() {
 
   return (
     <AppShell>
-      <PageHeader
-        subtitle="Inteligência financeira"
-        title="Assistente IA"
-        right={
-          messages.length > 0 ? (
-            <button
-              type="button"
-              onClick={clearConversation}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
-            >
-              Limpar
-            </button>
-          ) : null
-        }
-      />
+      <PageHeader subtitle="Inteligência financeira" title="Assistente IA" />
+      {messages.length > 0 ? (
+        <div className="px-6 -mt-4 mb-2 flex justify-end">
+          <button
+            type="button"
+            onClick={clearConversation}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Limpar conversa
+          </button>
+        </div>
+      ) : null}
 
       <div className="px-6 flex flex-col gap-4 h-[calc(100dvh-220px)] min-h-[420px]">
         <Conversation className="flex-1 rounded-3xl bg-card border border-border overflow-hidden">
@@ -183,14 +180,7 @@ function Assistente() {
                     .join("");
                   return (
                     <Message key={m.id} from={m.role === "user" ? "user" : "assistant"}>
-                      <MessageContent
-                        variant={m.role === "user" ? "contained" : "flat"}
-                        className={
-                          m.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : undefined
-                        }
-                      >
+                      <MessageContent>
                         {m.role === "assistant" ? (
                           <MessageResponse>{text}</MessageResponse>
                         ) : (
@@ -202,7 +192,7 @@ function Assistente() {
                 })}
                 {status === "submitted" ? (
                   <Message from="assistant">
-                    <MessageContent variant="flat">
+                    <MessageContent>
                       <Shimmer>Pensando...</Shimmer>
                     </MessageContent>
                   </Message>
