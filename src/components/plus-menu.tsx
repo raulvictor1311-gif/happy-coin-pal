@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from "lucide-react";
+import { X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 
 interface PlusMenuProps {
