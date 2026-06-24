@@ -206,6 +206,10 @@ function Assessor() {
           Mande uma foto da nota, grave um áudio ou escreva o que comprou. Eu cataloguei para você.
         </p>
 
+        <WhatsappConnect />
+
+
+
         <div className="rounded-3xl bg-card border border-border p-4 space-y-3">
           <textarea
             value={text}
