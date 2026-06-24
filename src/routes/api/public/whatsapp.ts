@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { extractTransactions, type ExtractInput } from "@/lib/extract.server";
-import { normalizePhone } from "@/lib/whatsapp.functions";
+import { normalizePhone, phoneCandidates } from "@/lib/whatsapp.functions";
 
 function twiml(message: string): Response {
   const xml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(
@@ -74,8 +74,8 @@ export const Route = createFileRoute("/api/public/whatsapp")({
 
         const { data: link } = await supabaseAdmin
           .from("whatsapp_links")
-          .select("user_id, verified, verification_code")
-          .eq("phone", phone)
+          .select("user_id, verified, verification_code, phone")
+          .in("phone", phoneCandidates(phone))
           .maybeSingle();
 
         if (!link) {
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             await supabaseAdmin
               .from("whatsapp_links")
               .update({ verified: true, verification_code: null })
-              .eq("phone", phone);
+              .eq("phone", link.phone);
             return twiml(
               "✅ Número confirmado! Agora é só mandar uma mensagem, foto da nota ou áudio que eu registro seu gasto automaticamente.",
             );

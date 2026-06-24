@@ -6,6 +6,38 @@ export function normalizePhone(raw: string): string {
   return (raw || "").replace(/\D/g, "");
 }
 
+/**
+ * Gera as variações plausíveis de um número para casar registros salvos de
+ * formas diferentes (com/sem DDI 55 e com/sem o 9º dígito de celular).
+ * Ex.: "5519984216068" -> ["5519984216068", "19984216068", "1984216068", ...]
+ */
+export function phoneCandidates(raw: string): string[] {
+  const phone = normalizePhone(raw);
+  const set = new Set<string>();
+  if (!phone) return [];
+  set.add(phone);
+
+  // Forma com e sem o DDI 55 (Brasil).
+  const local = phone.startsWith("55") ? phone.slice(2) : phone;
+  set.add(local);
+  set.add("55" + local);
+
+  // Variação do 9º dígito do celular (DDD de 2 dígitos + número).
+  if (local.length === 11) {
+    // remove o 9 logo após o DDD
+    const without9 = local.slice(0, 2) + local.slice(3);
+    set.add(without9);
+    set.add("55" + without9);
+  } else if (local.length === 10) {
+    // adiciona o 9 logo após o DDD
+    const with9 = local.slice(0, 2) + "9" + local.slice(2);
+    set.add(with9);
+    set.add("55" + with9);
+  }
+
+  return [...set];
+}
+
 export type WhatsappLink = {
   phone: string;
   verified: boolean;
