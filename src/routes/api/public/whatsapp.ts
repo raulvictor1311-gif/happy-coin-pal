@@ -45,7 +45,8 @@ async function fetchTwilioMedia(
   return { buffer: await res.arrayBuffer(), contentType: res.headers.get("content-type") || "" };
 }
 
-function audioFormat(mime: string): ExtractInput["audio"] extends infer A ? any : never {
+type AudioFormat = "wav" | "mp3" | "webm" | "m4a" | "ogg" | "aac" | "flac";
+function audioFormat(mime: string): AudioFormat {
   if (mime.includes("ogg")) return "ogg";
   if (mime.includes("webm")) return "webm";
   if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return "m4a";
