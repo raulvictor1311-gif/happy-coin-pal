@@ -5,6 +5,7 @@ import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock 
 import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
+import { WhatsappConnect } from "@/components/whatsapp-connect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/assessor")({
@@ -205,6 +206,10 @@ function Assessor() {
         <p className="text-sm text-muted-foreground -mt-2">
           Mande uma foto da nota, grave um áudio ou escreva o que comprou. Eu cataloguei para você.
         </p>
+
+        <WhatsappConnect />
+
+
 
         <div className="rounded-3xl bg-card border border-border p-4 space-y-3">
           <textarea

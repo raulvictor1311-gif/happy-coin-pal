@@ -28,6 +28,7 @@ import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiExtractTxRouteImport } from './routes/api/extract-tx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiPublicWhatsappRouteImport } from './routes/api/public/whatsapp'
 
 const RelatorioRoute = RelatorioRouteImport.update({
   id: '/relatorio',
@@ -124,6 +125,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWhatsappRoute = ApiPublicWhatsappRouteImport.update({
+  id: '/api/public/whatsapp',
+  path: '/api/public/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
+  '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
+  '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
+  '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
+    | '/api/public/whatsapp'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
+    | '/api/public/whatsapp'
   id:
     | '__root__'
     | '/'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
+    | '/api/public/whatsapp'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   RelatorioRoute: typeof RelatorioRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiExtractTxRoute: typeof ApiExtractTxRoute
+  ApiPublicWhatsappRoute: typeof ApiPublicWhatsappRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/whatsapp': {
+      id: '/api/public/whatsapp'
+      path: '/api/public/whatsapp'
+      fullPath: '/api/public/whatsapp'
+      preLoaderRoute: typeof ApiPublicWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   RelatorioRoute: RelatorioRoute,
   ApiChatRoute: ApiChatRoute,
   ApiExtractTxRoute: ApiExtractTxRoute,
+  ApiPublicWhatsappRoute: ApiPublicWhatsappRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
