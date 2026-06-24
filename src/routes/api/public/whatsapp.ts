@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         const { data: link } = await supabaseAdmin
           .from("whatsapp_links")
           .select("user_id, verified, verification_code")
-          .eq("phone", phone)
+          .in("phone", phoneCandidates(phone))
           .maybeSingle();
 
         if (!link) {
