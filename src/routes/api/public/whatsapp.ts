@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
 
         const { data: link } = await supabaseAdmin
           .from("whatsapp_links")
-          .select("user_id, verified, verification_code")
+          .select("user_id, verified, verification_code, phone")
           .in("phone", phoneCandidates(phone))
           .maybeSingle();
 
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             await supabaseAdmin
               .from("whatsapp_links")
               .update({ verified: true, verification_code: null })
-              .eq("phone", phone);
+              .eq("phone", link.phone);
             return twiml(
               "✅ Número confirmado! Agora é só mandar uma mensagem, foto da nota ou áudio que eu registro seu gasto automaticamente.",
             );
