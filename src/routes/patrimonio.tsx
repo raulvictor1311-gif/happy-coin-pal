@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import {
   useFinance,
@@ -10,7 +10,7 @@ import {
   type AssetType,
 } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/patrimonio")({
   head: () => ({ meta: [{ title: "Patrimônio — Finlux" }] }),
@@ -57,6 +57,10 @@ function Patrimonio() {
             </div>
           </div>
         </div>
+
+        <InvestmentSimulator />
+
+
 
         {groups.map((g) => (
           <section key={g.type}>
@@ -185,6 +189,127 @@ function AddDebt({ onClose }: { onClose: () => void }) {
     </Sheet>
   );
 }
+
+// ===== Simulador de rentabilidade =====
+
+const CDI_ANNUAL = 0.105; // 10,5% a.a.
+const POUPANCA_MONTHLY = 0.005; // 0,5% a.m.
+
+const INVEST_TYPES = ["CDI", "CDB", "LCI", "LCA", "Poupança", "Outros"] as const;
+type InvestType = (typeof INVEST_TYPES)[number];
+
+/** Retorna as taxas anual e mensal (em fração) para o tipo escolhido. */
+function investRates(type: InvestType): { annual: number; monthly: number; note: string } {
+  switch (type) {
+    case "CDI":
+    case "CDB":
+      return { annual: CDI_ANNUAL, monthly: Math.pow(1 + CDI_ANNUAL, 1 / 12) - 1, note: "10,5% a.a. (CDI)" };
+    case "LCI":
+    case "LCA": {
+      const annual = CDI_ANNUAL * 0.85; // 85% do CDI, isento de IR
+      return { annual, monthly: Math.pow(1 + annual, 1 / 12) - 1, note: "85% do CDI · isento de IR" };
+    }
+    case "Poupança": {
+      const annual = Math.pow(1 + POUPANCA_MONTHLY, 12) - 1;
+      return { annual, monthly: POUPANCA_MONTHLY, note: "0,5% a.m." };
+    }
+    default:
+      return { annual: CDI_ANNUAL, monthly: Math.pow(1 + CDI_ANNUAL, 1 / 12) - 1, note: "estimativa baseada no CDI" };
+  }
+}
+
+function InvestmentSimulator() {
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState<InvestType>("CDI");
+
+  const result = useMemo(() => {
+    const value = Number(amount.replace(",", ".")) || 0;
+    const { annual, monthly, note } = investRates(type);
+    return {
+      value,
+      annualPct: annual * 100,
+      monthlyPct: monthly * 100,
+      monthlyYield: value * monthly,
+      annualYield: value * annual,
+      note,
+    };
+  }, [amount, type]);
+
+  return (
+    <section className="rounded-3xl bg-card border border-border p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-primary" />
+        <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+          Simulador de investimentos
+        </h2>
+      </div>
+
+      <label className="block">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+          Valor investido (R$)
+        </span>
+        <input
+          type="number"
+          inputMode="decimal"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Ex.: 1000"
+          className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+          Tipo de investimento
+        </span>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value as InvestType)}
+          className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+        >
+          {INVEST_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-card-elevated p-4">
+          <p className="text-[11px] uppercase text-muted-foreground">Rendimento mensal</p>
+          <p className="mt-1 text-lg font-bold tabular-nums" style={{ color: "var(--color-success)" }}>
+            {formatBRL(result.monthlyYield)}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {result.monthlyPct.toFixed(2)}% a.m.
+          </p>
+        </div>
+        <div className="rounded-2xl bg-card-elevated p-4">
+          <p className="text-[11px] uppercase text-muted-foreground">Projeção anual</p>
+          <p className="mt-1 text-lg font-bold tabular-nums" style={{ color: "var(--color-success)" }}>
+            {formatBRL(result.annualYield)}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {result.annualPct.toFixed(2)}% a.a.
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl bg-card-elevated p-4 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">Total estimado em 12 meses</p>
+        <p className="text-sm font-bold tabular-nums text-foreground">
+          {formatBRL(result.value + result.annualYield)}
+        </p>
+      </div>
+
+      <p className="text-[11px] text-muted-foreground text-center">
+        Taxa considerada: {result.note}. Valores estimados, sem garantia de rentabilidade futura.
+      </p>
+    </section>
+  );
+}
+
 
 function Sheet({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) {
   return (

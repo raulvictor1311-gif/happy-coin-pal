@@ -11,6 +11,7 @@ import {
 import { formatBRL } from "@/lib/format";
 import { Trash2, Search, SlidersHorizontal, X, ArrowUpDown, Check } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/extrato")({
   head: () => ({ meta: [{ title: "Extrato — Finlux" }] }),
@@ -268,7 +269,11 @@ function Extrato() {
                         {formatBRL(t.amount)}
                       </span>
                       <button
-                        onClick={() => financeActions.removeTransaction(t.id)}
+                        onClick={() =>
+                          financeActions.removeTransaction(t.id).catch(() =>
+                            toast.error("Não foi possível excluir agora. Tente novamente."),
+                          )
+                        }
                         aria-label="Remover"
                         className="text-muted-foreground hover:text-[var(--color-destructive)] ml-1 transition-colors"
                       >
