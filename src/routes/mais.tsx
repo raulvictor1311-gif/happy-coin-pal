@@ -15,6 +15,23 @@ export const Route = createFileRoute("/mais")({
 
 function Mais() {
   const state = useFinance();
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  async function handleReset() {
+    setResetting(true);
+    try {
+      await financeActions.resetAllData();
+      setConfirmReset(false);
+      toast.success("Todos os dados foram apagados.");
+    } catch {
+      toast.error("Não foi possível apagar os dados. Tente novamente.");
+    } finally {
+      setResetting(false);
+    }
+  }
+
+
 
   const items = [
     { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
