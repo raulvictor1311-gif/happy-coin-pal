@@ -58,6 +58,10 @@ function Patrimonio() {
           </div>
         </div>
 
+        <InvestmentSimulator />
+
+
+
         {groups.map((g) => (
           <section key={g.type}>
             <div className="flex items-center justify-between mb-2">
