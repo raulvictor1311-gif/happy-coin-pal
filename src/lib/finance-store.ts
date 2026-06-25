@@ -267,11 +267,35 @@ export const financeActions = {
     }
     return id;
   },
-  removeTransaction(id: string) {
-    setState((s) => ({ ...s, transactions: s.transactions.filter((t) => t.id !== id) }));
-    if (currentUserId) {
-      void supabase.from("transactions").delete().eq("id", id);
+  async removeTransaction(id: string) {
+    // Garante a exclusão no banco ANTES de atualizar a UI, para não "ressuscitar"
+    // a transação no próximo carregamento (F5).
+    const uid = await resolveUserId();
+    if (uid) {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", uid);
+      if (error) throw error;
     }
+    setState((s) => ({ ...s, transactions: s.transactions.filter((t) => t.id !== id) }));
+  },
+  /** Apaga TODOS os dados financeiros do usuário (banco + estado + localStorage). */
+  async resetAllData() {
+    const uid = await resolveUserId();
+    if (uid) {
+      const { error } = await supabase.from("transactions").delete().eq("user_id", uid);
+      if (error) throw error;
+    }
+    setState((s) => ({
+      ...s,
+      transactions: [],
+      goals: [],
+      installmentPurchases: [],
+      assets: [],
+      debts: [],
+    }));
   },
   addCard(card: Omit<CreditCard, "id">) {
     setState((s) => ({ ...s, cards: [...s.cards, { ...card, id: crypto.randomUUID() }] }));
