@@ -168,6 +168,21 @@ export function useFinance() {
 const TX_OWNER_KEY = "finlux:tx-owner";
 let currentUserId: string | null = null;
 
+/** Resolve o id do usuário logado (usa o cache, com fallback no Supabase Auth). */
+async function resolveUserId(): Promise<string | null> {
+  if (currentUserId) return currentUserId;
+  if (typeof window === "undefined") return null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    currentUserId = data.user?.id ?? null;
+  } catch {
+    /* offline: segue só com o estado local */
+  }
+  return currentUserId;
+}
+
+
+
 interface TxRow {
   id: string;
   kind: string;
