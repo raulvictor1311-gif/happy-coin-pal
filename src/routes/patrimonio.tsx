@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import {
   useFinance,
@@ -10,7 +10,7 @@ import {
   type AssetType,
 } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/patrimonio")({
   head: () => ({ meta: [{ title: "Patrimônio — Finlux" }] }),
