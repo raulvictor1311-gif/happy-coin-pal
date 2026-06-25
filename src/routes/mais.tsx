@@ -143,6 +143,15 @@ function Mais() {
         </button>
 
         <button
+          onClick={() => setConfirmReset(true)}
+          className="w-full rounded-3xl bg-card border border-border p-4 flex items-center gap-3 text-destructive hover:border-destructive transition-colors"
+        >
+          <Trash2 className="h-5 w-5" />
+          <span className="font-bold">Apagar dados</span>
+          <span className="ml-auto text-xs text-muted-foreground">Reset completo</span>
+        </button>
+
+        <button
           onClick={() => signOut()}
           className="w-full rounded-3xl bg-card border border-border p-4 flex items-center gap-3 text-destructive hover:border-destructive transition-colors"
         >
@@ -150,6 +159,43 @@ function Mais() {
           <span className="font-bold">Sair</span>
         </button>
       </div>
+
+      {confirmReset && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-in fade-in duration-200"
+          onClick={() => !resetting && setConfirmReset(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15 text-destructive">
+                <AlertTriangle className="h-7 w-7" />
+              </span>
+              <h2 className="mt-4 text-lg font-bold text-foreground">
+                Tem certeza? Após confirmação todos os dados serão deletados.
+              </h2>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setConfirmReset(false)}
+                disabled={resetting}
+                className="py-3 rounded-2xl text-sm font-bold bg-card-elevated text-foreground border border-border disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleReset}
+                disabled={resetting}
+                className="py-3 rounded-2xl text-sm font-bold bg-destructive text-destructive-foreground disabled:opacity-50"
+              >
+                {resetting ? "Apagando…" : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
