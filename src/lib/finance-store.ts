@@ -130,7 +130,7 @@ function load() {
   initialized = true;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    if (raw) state = { ...DEFAULT_STATE, ...JSON.parse(raw), cloudLoading: false };
   } catch {}
 }
 
