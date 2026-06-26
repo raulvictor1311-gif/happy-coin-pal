@@ -1,13 +1,69 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle, Loader2, Check, Copy, Smartphone, Trash2 } from "lucide-react";
+import { MessageCircle, Loader2, Check, Copy, Smartphone, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
   getWhatsappLink,
   registerWhatsapp,
   removeWhatsapp,
 } from "@/lib/whatsapp.functions";
+import {
+  ADVISOR_CONFIGURED,
+  advisorDisplayNumber,
+  advisorWhatsappLink,
+} from "@/lib/advisor";
+
+/** Seção "Enviar código para o Assessor" — exibe o número e abre o WhatsApp. */
+export function AdvisorContact({ code }: { code?: string }) {
+  if (!ADVISOR_CONFIGURED) {
+    // Estado de erro: contato não configurado.
+    if (typeof console !== "undefined") {
+      console.error("VITE_ADVISOR_WHATSAPP não configurado: contato do assessor indisponível.");
+    }
+    return (
+      <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3 flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+        <p className="text-xs font-semibold text-destructive">
+          Contato do assessor indisponível no momento.
+        </p>
+      </div>
+    );
+  }
+
+  const message = code
+    ? `Olá! Quero vincular meu WhatsApp ao Finlux. Meu código é ${code}.`
+    : "Olá! Quero registrar meus gastos com o Finlux.";
+
+  return (
+    <div className="rounded-2xl bg-card-elevated p-3 space-y-3">
+      <div>
+        <p className="text-sm font-bold text-foreground">Enviar código para o Assessor</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Envie o código recebido para o número abaixo via WhatsApp para concluir a vinculação
+          com seu assessor.
+        </p>
+      </div>
+      <div className="rounded-xl bg-card border border-border px-4 py-3 text-center">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          Número do Assessor
+        </p>
+        <p className="text-lg font-bold text-foreground tabular-nums mt-0.5">
+          {advisorDisplayNumber()}
+        </p>
+      </div>
+      <a
+        href={advisorWhatsappLink(message)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full rounded-2xl bg-[#25D366] text-white font-bold py-3 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+      >
+        <MessageCircle className="h-4 w-4" /> Conversar no WhatsApp
+      </a>
+    </div>
+  );
+}
+
 
 function formatPhone(digits: string): string {
   // 5511999999999 -> +55 11 99999-9999 (melhor esforço)
