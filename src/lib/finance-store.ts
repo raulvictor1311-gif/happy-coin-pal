@@ -166,10 +166,18 @@ export function useFinance() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-// ===== Sincronização com a nuvem (transações) =====
+// ===== Sincronização com a nuvem =====
 
-const TX_OWNER_KEY = "finlux:tx-owner";
+const OWNER_KEY = "finlux:owner";
 let currentUserId: string | null = null;
+
+type TableName =
+  | "transactions"
+  | "goals"
+  | "cards"
+  | "assets"
+  | "debts"
+  | "installment_purchases";
 
 /** Resolve o id do usuário logado (usa o cache, com fallback no Supabase Auth). */
 async function resolveUserId(): Promise<string | null> {
@@ -184,21 +192,51 @@ async function resolveUserId(): Promise<string | null> {
   return currentUserId;
 }
 
-
-
-interface TxRow {
-  id: string;
-  kind: string;
-  amount: number | string;
-  category: string;
-  description: string;
-  date: string;
-  payment_method: string | null;
-  card_id: string | null;
-  installments: number | null;
+function notifyError(msg: string) {
+  if (typeof window !== "undefined") toast.error(msg);
 }
 
-function rowToTx(r: TxRow): Transaction {
+/** Insere uma linha na nuvem (best-effort). Em caso de falha, o item permanece
+ * no estado local e será reconciliado no próximo carregamento. */
+async function cloudInsert(table: TableName, row: Record<string, unknown>) {
+  if (!currentUserId) return;
+  try {
+    const { error } = await (supabase.from(table) as any).insert(row);
+    if (error) throw error;
+  } catch {
+    notifyError("Não foi possível salvar na nuvem. Verifique sua conexão.");
+  }
+}
+
+async function cloudUpdate(table: TableName, id: string, patch: Record<string, unknown>) {
+  if (!currentUserId) return;
+  try {
+    const { error } = await (supabase.from(table) as any)
+      .update(patch)
+      .eq("id", id)
+      .eq("user_id", currentUserId);
+    if (error) throw error;
+  } catch {
+    notifyError("Não foi possível salvar a alteração na nuvem.");
+  }
+}
+
+async function cloudDelete(table: TableName, id: string) {
+  if (!currentUserId) return;
+  try {
+    const { error } = await (supabase.from(table) as any)
+      .delete()
+      .eq("id", id)
+      .eq("user_id", currentUserId);
+    if (error) throw error;
+  } catch {
+    notifyError("Não foi possível remover na nuvem.");
+  }
+}
+
+// ----- Mapeadores linha <-> objeto -----
+
+function rowToTx(r: any): Transaction {
   return {
     id: r.id,
     kind: r.kind === "receita" ? "receita" : "despesa",
@@ -211,7 +249,6 @@ function rowToTx(r: TxRow): Transaction {
     installments: r.installments ?? undefined,
   };
 }
-
 function txToRow(t: Transaction, userId: string) {
   return {
     id: t.id,
@@ -227,50 +264,192 @@ function txToRow(t: Transaction, userId: string) {
   };
 }
 
-/** Chamado quando o estado de login muda. Sincroniza transações com a nuvem. */
+function rowToGoal(r: any): Goal {
+  return {
+    id: r.id,
+    title: r.title,
+    target: Number(r.target) || 0,
+    saved: Number(r.saved) || 0,
+    deadline: r.deadline ?? "",
+    emoji: r.emoji || "🎯",
+  };
+}
+function goalToRow(g: Goal, userId: string) {
+  return {
+    id: g.id,
+    user_id: userId,
+    title: g.title,
+    target: g.target,
+    saved: g.saved,
+    deadline: g.deadline ? new Date(g.deadline).toISOString() : null,
+    emoji: g.emoji,
+  };
+}
+
+function rowToCard(r: any): CreditCard {
+  return {
+    id: r.id,
+    name: r.name,
+    brand: r.brand,
+    limit: Number(r.limit) || 0,
+    closingDay: r.closing_day ?? 1,
+    dueDay: r.due_day ?? 1,
+    color: r.color || "",
+  };
+}
+function cardToRow(c: CreditCard, userId: string) {
+  return {
+    id: c.id,
+    user_id: userId,
+    name: c.name,
+    brand: c.brand,
+    limit: c.limit,
+    closing_day: c.closingDay,
+    due_day: c.dueDay,
+    color: c.color,
+  };
+}
+
+function rowToAsset(r: any): Asset {
+  return { id: r.id, type: r.type, name: r.name, value: Number(r.value) || 0 };
+}
+function assetToRow(a: Asset, userId: string) {
+  return { id: a.id, user_id: userId, type: a.type, name: a.name, value: a.value };
+}
+
+function rowToDebt(r: any): Debt {
+  return { id: r.id, name: r.name, value: Number(r.value) || 0 };
+}
+function debtToRow(d: Debt, userId: string) {
+  return { id: d.id, user_id: userId, name: d.name, value: d.value };
+}
+
+function rowToInstallment(r: any): InstallmentPurchase {
+  return {
+    id: r.id,
+    name: r.name,
+    total: Number(r.total) || 0,
+    installments: r.installments ?? 1,
+    paid: r.paid ?? 0,
+    cardId: r.card_id ?? "",
+    category: r.category,
+    date: r.date,
+  };
+}
+function installmentToRow(p: InstallmentPurchase, userId: string) {
+  return {
+    id: p.id,
+    user_id: userId,
+    name: p.name,
+    total: p.total,
+    installments: p.installments,
+    paid: p.paid,
+    card_id: p.cardId || null,
+    category: p.category,
+    date: new Date(p.date).toISOString(),
+  };
+}
+
+/** Busca uma tabela na nuvem e reconcilia com itens locais ainda não enviados. */
+async function pullAndReconcile<T extends { id: string }>(
+  table: TableName,
+  select: string,
+  uid: string,
+  rowToItem: (r: any) => T,
+  itemToRow: (t: T, uid: string) => Record<string, unknown>,
+  local: T[],
+  importLocal: boolean,
+): Promise<T[]> {
+  const { data, error } = await supabase.from(table).select(select).eq("user_id", uid);
+  if (error) throw error;
+  const cloud = (data ?? []).map(rowToItem);
+  const cloudIds = new Set(cloud.map((c) => c.id));
+  let localOnly: T[] = [];
+  if (importLocal) {
+    localOnly = local.filter((l) => !cloudIds.has(l.id));
+    if (localOnly.length) {
+      await (supabase.from(table) as any).insert(localOnly.map((l) => itemToRow(l, uid)));
+    }
+  }
+  return [...localOnly, ...cloud];
+}
+
+/** Chamado quando o estado de login muda. Sincroniza TODOS os dados com a nuvem. */
 export async function setCloudUser(userId: string | null) {
   load();
   currentUserId = userId;
   if (typeof window === "undefined") return;
 
   if (!userId) {
-    // Logout: só limpa se antes havia um usuário logado de verdade neste
-    // aparelho. Uso anônimo (nunca logado) mantém os dados locais.
-    const prevOwner = localStorage.getItem(TX_OWNER_KEY);
+    // Logout: limpa dados sensíveis se antes havia um usuário real neste aparelho.
+    // Uso anônimo (nunca logado) mantém os dados locais.
+    const prevOwner = localStorage.getItem(OWNER_KEY);
     if (prevOwner && prevOwner !== "anon") {
-      localStorage.setItem(TX_OWNER_KEY, "anon");
-      setState((s) => ({ ...s, transactions: [] }));
+      localStorage.setItem(OWNER_KEY, "anon");
+      setState((s) => ({
+        ...s,
+        transactions: [],
+        goals: [],
+        cards: [],
+        assets: [],
+        debts: [],
+        installmentPurchases: [],
+      }));
     }
     return;
   }
 
+  // Importa dados locais somente quando eram anônimos ou do mesmo usuário.
+  // Nunca envia dados de OUTRO usuário (evita vazamento entre contas).
+  const prevOwner = localStorage.getItem(OWNER_KEY);
+  const importLocal = prevOwner === null || prevOwner === "anon" || prevOwner === userId;
+
+  setState((s) => ({ ...s, cloudLoading: true }));
   try {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select("id, kind, amount, category, description, date, payment_method, card_id, installments")
-      .eq("user_id", userId);
-    if (error) throw error;
+    const snap = state;
+    const [transactions, goals, cards, assets, debts, installmentPurchases] = await Promise.all([
+      pullAndReconcile<Transaction>(
+        "transactions",
+        "id, kind, amount, category, description, date, payment_method, card_id, installments",
+        userId, rowToTx, txToRow, snap.transactions, importLocal,
+      ),
+      pullAndReconcile<Goal>(
+        "goals", "id, title, target, saved, deadline, emoji",
+        userId, rowToGoal, goalToRow, snap.goals, importLocal,
+      ),
+      pullAndReconcile<CreditCard>(
+        "cards", "id, name, brand, limit, closing_day, due_day, color",
+        userId, rowToCard, cardToRow, snap.cards, importLocal,
+      ),
+      pullAndReconcile<Asset>(
+        "assets", "id, type, name, value",
+        userId, rowToAsset, assetToRow, snap.assets, importLocal,
+      ),
+      pullAndReconcile<Debt>(
+        "debts", "id, name, value",
+        userId, rowToDebt, debtToRow, snap.debts, importLocal,
+      ),
+      pullAndReconcile<InstallmentPurchase>(
+        "installment_purchases", "id, name, total, installments, paid, card_id, category, date",
+        userId, rowToInstallment, installmentToRow, snap.installmentPurchases, importLocal,
+      ),
+    ]);
 
-    const cloud = (data ?? []).map((r) => rowToTx(r as TxRow));
-    const cloudIds = new Set(cloud.map((t) => t.id));
-
-    // Importa transações locais (de uso anônimo) que ainda não estão na nuvem
-    const prevOwner = localStorage.getItem(TX_OWNER_KEY);
-    let localOnly: Transaction[] = [];
-    if (prevOwner === null || prevOwner === "anon") {
-      localOnly = state.transactions.filter((t) => !cloudIds.has(t.id));
-      if (localOnly.length) {
-        await supabase.from("transactions").insert(localOnly.map((t) => txToRow(t, userId)));
-      }
-    }
-
-    const merged = [...localOnly, ...cloud].sort(
-      (a, b) => +new Date(b.date) - +new Date(a.date),
-    );
-    setState((s) => ({ ...s, transactions: merged }));
-    localStorage.setItem(TX_OWNER_KEY, userId);
+    transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    setState((s) => ({
+      ...s,
+      transactions,
+      goals,
+      cards,
+      assets,
+      debts,
+      installmentPurchases,
+      cloudLoading: false,
+    }));
+    localStorage.setItem(OWNER_KEY, userId);
   } catch {
     // Mantém o cache local em caso de falha de rede
+    setState((s) => ({ ...s, cloudLoading: false }));
   }
 }
 
@@ -280,14 +459,10 @@ export const financeActions = {
     const id = crypto.randomUUID();
     const full: Transaction = { ...tx, id };
     setState((s) => ({ ...s, transactions: [full, ...s.transactions] }));
-    if (currentUserId) {
-      void supabase.from("transactions").insert(txToRow(full, currentUserId));
-    }
+    if (currentUserId) void cloudInsert("transactions", txToRow(full, currentUserId));
     return id;
   },
   async removeTransaction(id: string) {
-    // Garante a exclusão no banco ANTES de atualizar a UI, para não "ressuscitar"
-    // a transação no próximo carregamento (F5).
     const uid = await resolveUserId();
     if (uid) {
       const { error } = await supabase
@@ -303,35 +478,53 @@ export const financeActions = {
   async resetAllData() {
     const uid = await resolveUserId();
     if (uid) {
-      const { error } = await supabase.from("transactions").delete().eq("user_id", uid);
-      if (error) throw error;
+      const tables: TableName[] = [
+        "transactions", "goals", "cards", "assets", "debts", "installment_purchases",
+      ];
+      for (const table of tables) {
+        const { error } = await supabase.from(table).delete().eq("user_id", uid);
+        if (error) throw error;
+      }
     }
     setState((s) => ({
       ...s,
       transactions: [],
       goals: [],
+      cards: [],
       installmentPurchases: [],
       assets: [],
       debts: [],
     }));
   },
   addCard(card: Omit<CreditCard, "id">) {
-    setState((s) => ({ ...s, cards: [...s.cards, { ...card, id: crypto.randomUUID() }] }));
+    const full: CreditCard = { ...card, id: crypto.randomUUID() };
+    setState((s) => ({ ...s, cards: [...s.cards, full] }));
+    if (currentUserId) void cloudInsert("cards", cardToRow(full, currentUserId));
   },
   removeCard(id: string) {
     setState((s) => ({ ...s, cards: s.cards.filter((c) => c.id !== id) }));
+    void cloudDelete("cards", id);
   },
   addGoal(goal: Omit<Goal, "id">) {
-    setState((s) => ({ ...s, goals: [...s.goals, { ...goal, id: crypto.randomUUID() }] }));
+    const full: Goal = { ...goal, id: crypto.randomUUID() };
+    setState((s) => ({ ...s, goals: [...s.goals, full] }));
+    if (currentUserId) void cloudInsert("goals", goalToRow(full, currentUserId));
   },
   contributeGoal(id: string, amount: number) {
+    let next: Goal | undefined;
     setState((s) => ({
       ...s,
-      goals: s.goals.map((g) => (g.id === id ? { ...g, saved: g.saved + amount } : g)),
+      goals: s.goals.map((g) => {
+        if (g.id !== id) return g;
+        next = { ...g, saved: g.saved + amount };
+        return next;
+      }),
     }));
+    if (next) void cloudUpdate("goals", id, { saved: next.saved });
   },
   removeGoal(id: string) {
     setState((s) => ({ ...s, goals: s.goals.filter((g) => g.id !== id) }));
+    void cloudDelete("goals", id);
   },
   toggleHideBalance() {
     setState((s) => ({ ...s, hideBalance: !s.hideBalance }));
@@ -340,44 +533,55 @@ export const financeActions = {
     setState((s) => ({ ...s, userName: name }));
   },
   addInstallment(p: Omit<InstallmentPurchase, "id" | "paid"> & { paid?: number }) {
-    setState((s) => ({
-      ...s,
-      installmentPurchases: [
-        { ...p, paid: p.paid ?? 0, id: crypto.randomUUID() },
-        ...s.installmentPurchases,
-      ],
-    }));
+    const full: InstallmentPurchase = { ...p, paid: p.paid ?? 0, id: crypto.randomUUID() };
+    setState((s) => ({ ...s, installmentPurchases: [full, ...s.installmentPurchases] }));
+    if (currentUserId) void cloudInsert("installment_purchases", installmentToRow(full, currentUserId));
   },
   payInstallment(id: string, qty = 1) {
+    let next: InstallmentPurchase | undefined;
     setState((s) => ({
       ...s,
-      installmentPurchases: s.installmentPurchases.map((p) =>
-        p.id === id ? { ...p, paid: Math.min(p.installments, p.paid + qty) } : p,
-      ),
+      installmentPurchases: s.installmentPurchases.map((p) => {
+        if (p.id !== id) return p;
+        next = { ...p, paid: Math.min(p.installments, p.paid + qty) };
+        return next;
+      }),
     }));
+    if (next) void cloudUpdate("installment_purchases", id, { paid: next.paid });
   },
   payOffInstallment(id: string) {
+    let next: InstallmentPurchase | undefined;
     setState((s) => ({
       ...s,
-      installmentPurchases: s.installmentPurchases.map((p) =>
-        p.id === id ? { ...p, paid: p.installments } : p,
-      ),
+      installmentPurchases: s.installmentPurchases.map((p) => {
+        if (p.id !== id) return p;
+        next = { ...p, paid: p.installments };
+        return next;
+      }),
     }));
+    if (next) void cloudUpdate("installment_purchases", id, { paid: next.paid });
   },
   removeInstallment(id: string) {
     setState((s) => ({ ...s, installmentPurchases: s.installmentPurchases.filter((p) => p.id !== id) }));
+    void cloudDelete("installment_purchases", id);
   },
   addAsset(a: Omit<Asset, "id">) {
-    setState((s) => ({ ...s, assets: [...s.assets, { ...a, id: crypto.randomUUID() }] }));
+    const full: Asset = { ...a, id: crypto.randomUUID() };
+    setState((s) => ({ ...s, assets: [...s.assets, full] }));
+    if (currentUserId) void cloudInsert("assets", assetToRow(full, currentUserId));
   },
   removeAsset(id: string) {
     setState((s) => ({ ...s, assets: s.assets.filter((a) => a.id !== id) }));
+    void cloudDelete("assets", id);
   },
   addDebt(d: Omit<Debt, "id">) {
-    setState((s) => ({ ...s, debts: [...s.debts, { ...d, id: crypto.randomUUID() }] }));
+    const full: Debt = { ...d, id: crypto.randomUUID() };
+    setState((s) => ({ ...s, debts: [...s.debts, full] }));
+    if (currentUserId) void cloudInsert("debts", debtToRow(full, currentUserId));
   },
   removeDebt(id: string) {
     setState((s) => ({ ...s, debts: s.debts.filter((d) => d.id !== id) }));
+    void cloudDelete("debts", id);
   },
   setMonthlyIncome(v: number) {
     setState((s) => ({ ...s, monthlyIncome: v }));
@@ -413,6 +617,7 @@ export const financeActions = {
     setState((s) => ({ ...s, dismissedNotifs: [] }));
   },
 };
+
 
 // Derivations
 export interface MonthlySummary {
