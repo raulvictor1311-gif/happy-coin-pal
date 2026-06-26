@@ -5,7 +5,7 @@ import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock 
 import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
-import { WhatsappConnect } from "@/components/whatsapp-connect";
+import { WhatsappConnect, AdvisorContact } from "@/components/whatsapp-connect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/assessor")({
@@ -158,7 +158,16 @@ function Assessor() {
   }
 
   function confirm() {
-    extracted.forEach((t) => {
+    // Validação: não registrar transações com valor inválido (Etapa 2).
+    const valid = extracted.filter((t) => Number(t.amount) > 0);
+    if (valid.length === 0) {
+      toast.error("Nenhuma transação válida: o valor deve ser maior que zero.");
+      return;
+    }
+    if (valid.length < extracted.length) {
+      toast.error(`${extracted.length - valid.length} item(ns) ignorado(s) por valor inválido.`);
+    }
+    valid.forEach((t) => {
       financeActions.addTransaction({
         kind: t.kind,
         amount: t.amount,
@@ -167,7 +176,7 @@ function Assessor() {
         date: new Date(t.date).toISOString(),
       });
     });
-    toast.success(`${extracted.length} transação(ões) registrada(s)!`);
+    toast.success(`${valid.length} transação(ões) registrada(s)!`);
     clearAll();
   }
 
@@ -208,6 +217,8 @@ function Assessor() {
         </p>
 
         <WhatsappConnect />
+
+        <AdvisorContact />
 
 
 

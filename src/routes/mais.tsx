@@ -33,20 +33,40 @@ function Mais() {
 
 
 
-  const items = [
-    { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
-    { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
-    { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
-    { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
-    { to: "/patrimonio", icon: Wallet, title: "Patrimônio", desc: "Bens, dívidas e patrimônio líquido" },
-    { to: "/relatorio", icon: FileText, title: "Relatório mensal", desc: "Receitas, despesas e insights" },
-    { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
-    { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
-    { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
-    
-    { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
-    { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
+  const groups = [
+    {
+      label: "Inteligência Financeira",
+      items: [
+        { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
+        { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
+        { to: "/relatorio", icon: FileText, title: "Relatório mensal", desc: "Receitas, despesas e insights" },
+      ],
+    },
+    {
+      label: "Planejamento",
+      items: [
+        { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
+        { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
+        { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
+      ],
+    },
+    {
+      label: "Patrimônio",
+      items: [
+        { to: "/patrimonio", icon: Wallet, title: "Patrimônio e investimentos", desc: "Bens, dívidas e simulador" },
+        { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
+      ],
+    },
+    {
+      label: "Outros",
+      items: [
+        { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
+        { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
+        { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
+      ],
+    },
   ] as const;
+
 
   function exportCsv() {
     const csv = transactionsToCsv(state.transactions);
@@ -65,22 +85,34 @@ function Mais() {
     <AppShell>
       <PageHeader subtitle="Tudo do app" title="Mais" />
       <div className="px-6 space-y-3">
-        {items.map((i) => (
-          <Link
-            key={i.to}
-            to={i.to}
-            className="flex items-center gap-4 rounded-3xl bg-card border border-border p-4 hover:border-primary transition-colors"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card-elevated text-primary">
-              <i.icon className="h-5 w-5" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-foreground">{i.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{i.desc}</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </Link>
+        {groups.map((group) => (
+          <div key={group.label} className="space-y-3">
+            <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+              {group.label}
+            </h2>
+            {group.items.map((i) => (
+              <Link
+                key={i.to}
+                to={i.to}
+                className="flex items-center gap-4 rounded-3xl bg-card border border-border p-4 hover:border-primary transition-colors"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card-elevated text-primary">
+                  <i.icon className="h-5 w-5" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground">{i.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{i.desc}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
         ))}
+
+        <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+          Configurações
+        </h2>
+
 
         <section className="rounded-3xl bg-card border border-border p-5 space-y-4">
           <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">

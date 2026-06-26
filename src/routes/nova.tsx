@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Calendar, Repeat, Layers, Circle } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import {
   EXPENSE_CATEGORIES,
@@ -58,12 +59,31 @@ function Nova() {
   }
 
   function submit() {
-    const value = Number(amount);
-    if (!value || value <= 0) return;
-    const base = new Date(date);
+    // ===== Validação financeira (Etapa 2) =====
+    const raw = amount.trim();
+    const value = Number(raw);
+    if (!raw || Number.isNaN(value) || value <= 0) {
+      if (kind === "receita") {
+        toast.error("Receitas devem possuir valores positivos.");
+      } else if (kind === "despesa") {
+        toast.error("Despesas devem possuir valores positivos.");
+      } else {
+        toast.error("Informe um valor maior que zero.");
+      }
+      return;
+    }
+    if (!date) {
+      toast.error("Selecione a data da transação.");
+      return;
+    }
 
     if (kind === "transferencia") {
+      if (!destination.trim() && !description.trim()) {
+        toast.error("Informe o destino da transferência.");
+        return;
+      }
       const desc = description || `Transferência${destination ? ` → ${destination}` : ""}`;
+      const base = new Date(date);
       financeActions.addTransaction({
         kind: "despesa",
         amount: value,
@@ -80,11 +100,28 @@ function Nova() {
           date: base.toISOString(),
         });
       }
+      toast.success("Transferência registrada com sucesso.");
       navigate({ to: "/" });
       return;
     }
 
+    // receita/despesa: categoria e descrição obrigatórias
+    if (!category) {
+      toast.error("Selecione uma categoria.");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Adicione uma descrição para a transação.");
+      return;
+    }
+
+    const base = new Date(date);
+
     if (mode === "parcelada") {
+      if (!installments || installments < 2) {
+        toast.error("Parcelamento precisa de pelo menos 2 parcelas.");
+        return;
+      }
       const each = value / installments;
       for (let i = 0; i < installments; i++) {
         const d = new Date(base);
@@ -93,11 +130,12 @@ function Nova() {
           kind,
           amount: each,
           category,
-          description: `${description || category} (${i + 1}/${installments})`,
+          description: `${description} (${i + 1}/${installments})`,
           date: d.toISOString(),
           installments,
         });
       }
+      toast.success(`Compra parcelada em ${installments}x registrada.`);
     } else if (mode === "recorrente") {
       const count = frequency === "semanal" ? 12 : frequency === "mensal" ? 12 : 3;
       for (let i = 0; i < count; i++) {
@@ -109,18 +147,20 @@ function Nova() {
           kind,
           amount: value,
           category,
-          description: description || category,
+          description,
           date: d.toISOString(),
         });
       }
+      toast.success(`${kind === "receita" ? "Receita" : "Despesa"} recorrente criada (${count}x).`);
     } else {
       financeActions.addTransaction({
         kind,
         amount: value,
         category,
-        description: description || category,
+        description,
         date: base.toISOString(),
       });
+      toast.success(kind === "receita" ? "Receita adicionada com sucesso." : "Despesa adicionada com sucesso.");
     }
     navigate({ to: "/" });
   }
