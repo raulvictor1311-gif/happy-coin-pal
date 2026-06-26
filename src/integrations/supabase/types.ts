@@ -14,6 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
+      assets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      cards: {
+        Row: {
+          brand: string
+          closing_day: number
+          color: string
+          created_at: string
+          due_day: number
+          id: string
+          limit: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string
+          closing_day?: number
+          color?: string
+          created_at?: string
+          due_day?: number
+          id?: string
+          limit?: number
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          closing_day?: number
+          color?: string
+          created_at?: string
+          due_day?: number
+          id?: string
+          limit?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          emoji: string
+          id: string
+          saved: number
+          target: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          emoji?: string
+          id?: string
+          saved?: number
+          target?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          emoji?: string
+          id?: string
+          saved?: number
+          target?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      installment_purchases: {
+        Row: {
+          card_id: string | null
+          category: string
+          created_at: string
+          date: string
+          id: string
+          installments: number
+          name: string
+          paid: number
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id?: string | null
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          installments?: number
+          name?: string
+          paid?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string | null
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          installments?: number
+          name?: string
+          paid?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
