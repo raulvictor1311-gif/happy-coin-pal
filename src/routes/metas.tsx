@@ -17,12 +17,10 @@ const EMOJI_OPTIONS = ["🎯", "✈️", "🏠", "🚗", "💍", "🎓", "🛟",
 function Metas() {
   const state = useFinance();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // Estado de carregamento real, vindo da sincronização com a nuvem.
+  const loading = state.cloudLoading;
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 380);
-    return () => clearTimeout(t);
-  }, []);
+
 
   const stats = useMemo(() => {
     const totalTarget = state.goals.reduce((a, g) => a + g.target, 0);
