@@ -103,7 +103,10 @@ function Metas() {
                     </div>
                   </div>
                   <button
-                    onClick={() => financeActions.removeGoal(g.id)}
+                    onClick={() => {
+                      financeActions.removeGoal(g.id);
+                      toast.success("Meta removida.");
+                    }}
                     aria-label="Remover meta"
                     className="text-muted-foreground hover:text-destructive transition-colors p-1"
                   >
