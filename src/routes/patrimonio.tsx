@@ -11,6 +11,7 @@ import {
 } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
 import { Plus, Trash2, TrendingUp } from "lucide-react";
+import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip } from "recharts";
 
 export const Route = createFileRoute("/patrimonio")({
   head: () => ({ meta: [{ title: "Patrimônio — Finlux" }] }),
