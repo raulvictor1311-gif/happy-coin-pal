@@ -363,7 +363,7 @@ function InvestmentSimulator() {
               <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" interval="preserveStartEnd" />
               <Tooltip
                 formatter={(v: number) => formatBRL(v)}
-                labelFormatter={(l) => `Mês ${l}`}
+                labelFormatter={(l: string) => `Mês ${l}`}
                 contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }}
               />
               <Area type="monotone" dataKey="total" stroke="var(--color-primary)" strokeWidth={2} fill="url(#growth)" />
