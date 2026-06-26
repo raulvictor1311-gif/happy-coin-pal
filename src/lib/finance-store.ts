@@ -117,6 +117,7 @@ const DEFAULT_STATE: FinanceState = {
     showRecents: true,
   },
   dismissedNotifs: [],
+  cloudLoading: false,
 };
 
 
