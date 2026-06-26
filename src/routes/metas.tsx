@@ -138,7 +138,14 @@ function Metas() {
                   className="mt-4 w-full rounded-2xl bg-card-elevated hover:bg-muted transition-colors py-2.5 text-sm font-semibold text-foreground"
                   onClick={() => {
                     const v = prompt("Adicionar valor (R$):");
-                    if (v) financeActions.contributeGoal(g.id, Number(v));
+                    if (v === null) return;
+                    const n = Number(v.replace(",", "."));
+                    if (Number.isNaN(n) || n <= 0) {
+                      toast.error("Informe um valor maior que zero.");
+                      return;
+                    }
+                    financeActions.contributeGoal(g.id, n);
+                    toast.success(`Aporte de ${formatBRL(n)} registrado.`);
                   }}
                 >
                   + Aportar
