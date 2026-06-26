@@ -250,14 +250,28 @@ function AddGoal({ onClose }: { onClose: () => void }) {
           className="w-full rounded-2xl bg-primary text-primary-foreground py-3.5 font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
           disabled={!title || !target}
           onClick={() => {
-            if (!title || !target) return;
+            if (!title.trim()) {
+              toast.error("Dê um nome para a meta.");
+              return;
+            }
+            const targetValue = Number(target);
+            if (!target || Number.isNaN(targetValue) || targetValue <= 0) {
+              toast.error("O valor alvo deve ser maior que zero.");
+              return;
+            }
+            const savedValue = Number(saved) || 0;
+            if (savedValue < 0) {
+              toast.error("O valor já guardado não pode ser negativo.");
+              return;
+            }
             financeActions.addGoal({
-              title,
+              title: title.trim(),
               emoji,
-              target: Number(target),
-              saved: Number(saved) || 0,
+              target: targetValue,
+              saved: savedValue,
               deadline: new Date(deadline).toISOString(),
             });
+            toast.success("Meta criada com sucesso.");
             onClose();
           }}
         >
