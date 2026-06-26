@@ -33,20 +33,40 @@ function Mais() {
 
 
 
-  const items = [
-    { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
-    { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
-    { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
-    { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
-    { to: "/patrimonio", icon: Wallet, title: "Patrimônio", desc: "Bens, dívidas e patrimônio líquido" },
-    { to: "/relatorio", icon: FileText, title: "Relatório mensal", desc: "Receitas, despesas e insights" },
-    { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
-    { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
-    { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
-    
-    { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
-    { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
+  const groups = [
+    {
+      label: "Inteligência Financeira",
+      items: [
+        { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
+        { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
+        { to: "/relatorio", icon: FileText, title: "Relatório mensal", desc: "Receitas, despesas e insights" },
+      ],
+    },
+    {
+      label: "Planejamento",
+      items: [
+        { to: "/metas", icon: Target, title: "Metas", desc: "Acompanhe seus objetivos" },
+        { to: "/desafios", icon: Flag, title: "Desafios", desc: "Missões mensais para hábitos" },
+        { to: "/conquistas", icon: Trophy, title: "Conquistas", desc: "Sua sequência e medalhas" },
+      ],
+    },
+    {
+      label: "Patrimônio",
+      items: [
+        { to: "/patrimonio", icon: Wallet, title: "Patrimônio e investimentos", desc: "Bens, dívidas e simulador" },
+        { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
+      ],
+    },
+    {
+      label: "Outros",
+      items: [
+        { to: "/indicar", icon: Gift, title: "Indicar amigos", desc: "Ganhe bônus por cada amigo" },
+        { to: "/feedback", icon: MessageSquare, title: "Avaliar o Finlux", desc: "Conte como podemos melhorar" },
+        { to: "/ajuda", icon: HelpCircle, title: "Ajuda e FAQ", desc: "Tire dúvidas rapidamente" },
+      ],
+    },
   ] as const;
+
 
   function exportCsv() {
     const csv = transactionsToCsv(state.transactions);
