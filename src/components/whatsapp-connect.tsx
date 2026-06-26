@@ -177,6 +177,7 @@ export function WhatsappConnect() {
               <Copy className="h-4 w-4" />
             </button>
           )}
+          <AdvisorContact code={link.verification_code ?? undefined} />
           <div className="flex gap-2">
             <button
               onClick={() => refetch()}
