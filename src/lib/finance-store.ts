@@ -91,6 +91,7 @@ export interface FinanceState {
   referralCode: string;
   dashboardPrefs: DashboardPrefs;
   dismissedNotifs: string[];
+  cloudLoading: boolean;
 }
 
 const STORAGE_KEY = "finlux:v2";
