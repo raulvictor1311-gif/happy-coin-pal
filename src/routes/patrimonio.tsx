@@ -218,22 +218,57 @@ function investRates(type: InvestType): { annual: number; monthly: number; note:
   }
 }
 
+const TERMS = [
+  { label: "1 mês", months: 1 },
+  { label: "3 meses", months: 3 },
+  { label: "6 meses", months: 6 },
+  { label: "1 ano", months: 12 },
+  { label: "5 anos", months: 60 },
+] as const;
+
 function InvestmentSimulator() {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<InvestType>("CDI");
+  const [customRate, setCustomRate] = useState("12"); // % a.a. para "Outros"
+  const [months, setMonths] = useState<number>(12);
+
+  // Taxa mensal efetiva conforme o tipo (ou taxa personalizada em "Outros").
+  const monthlyRate = useMemo(() => {
+    if (type === "Outros") {
+      const annual = (Number(customRate.replace(",", ".")) || 0) / 100;
+      return Math.pow(1 + annual, 1 / 12) - 1;
+    }
+    return investRates(type).monthly;
+  }, [type, customRate]);
+
+  const annualRate = Math.pow(1 + monthlyRate, 12) - 1;
 
   const result = useMemo(() => {
     const value = Number(amount.replace(",", ".")) || 0;
-    const { annual, monthly, note } = investRates(type);
+    const finalValue = value * Math.pow(1 + monthlyRate, months);
+    const series = Array.from({ length: months + 1 }, (_, m) => ({
+      m,
+      label: m === 0 ? "Hoje" : `${m}m`,
+      total: Math.round(value * Math.pow(1 + monthlyRate, m)),
+    }));
     return {
       value,
-      annualPct: annual * 100,
-      monthlyPct: monthly * 100,
-      monthlyYield: value * monthly,
-      annualYield: value * annual,
-      note,
+      finalValue,
+      accumulated: finalValue - value,
+      monthlyYield: value * monthlyRate,
+      annualYield: value * annualRate,
+      series,
     };
-  }, [amount, type]);
+  }, [amount, monthlyRate, annualRate, months]);
+
+  // Comparação entre todos os tipos para o mesmo valor e prazo.
+  const comparison = useMemo(() => {
+    return INVEST_TYPES.filter((t) => t !== "Outros").map((t) => {
+      const mr = investRates(t).monthly;
+      const fv = result.value * Math.pow(1 + mr, months);
+      return { type: t, gain: fv - result.value, final: fv };
+    }).sort((a, b) => b.final - a.final);
+  }, [result.value, months]);
 
   return (
     <section className="rounded-3xl bg-card border border-border p-5 space-y-4">
@@ -246,7 +281,7 @@ function InvestmentSimulator() {
 
       <label className="block">
         <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-          Valor investido (R$)
+          Valor inicial investido (R$)
         </span>
         <input
           type="number"
@@ -258,22 +293,83 @@ function InvestmentSimulator() {
         />
       </label>
 
-      <label className="block">
-        <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-          Tipo de investimento
-        </span>
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as InvestType)}
-          className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
-        >
-          {INVEST_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+            Tipo
+          </span>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as InvestType)}
+            className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+          >
+            {INVEST_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+            Prazo
+          </span>
+          <select
+            value={months}
+            onChange={(e) => setMonths(Number(e.target.value))}
+            className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+          >
+            {TERMS.map((t) => (
+              <option key={t.months} value={t.months}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {type === "Outros" && (
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+            Taxa anual (%)
+          </span>
+          <input
+            type="number"
+            inputMode="decimal"
+            value={customRate}
+            onChange={(e) => setCustomRate(e.target.value)}
+            placeholder="Ex.: 12"
+            className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+          />
+        </label>
+      )}
+
+      {/* Gráfico de crescimento do patrimônio */}
+      {result.value > 0 && (
+        <div className="rounded-2xl bg-card-elevated p-3">
+          <p className="text-[11px] uppercase text-muted-foreground mb-2">
+            Crescimento estimado
+          </p>
+          <ResponsiveContainer width="100%" height={140}>
+            <AreaChart data={result.series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+              <defs>
+                <linearGradient id="growth" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" interval="preserveStartEnd" />
+              <Tooltip
+                formatter={(v: number) => formatBRL(v)}
+                labelFormatter={(l) => `Mês ${l}`}
+                contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }}
+              />
+              <Area type="monotone" dataKey="total" stroke="var(--color-primary)" strokeWidth={2} fill="url(#growth)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-card-elevated p-4">
@@ -282,29 +378,59 @@ function InvestmentSimulator() {
             {formatBRL(result.monthlyYield)}
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {result.monthlyPct.toFixed(2)}% a.m.
+            {(monthlyRate * 100).toFixed(2)}% a.m.
           </p>
         </div>
         <div className="rounded-2xl bg-card-elevated p-4">
-          <p className="text-[11px] uppercase text-muted-foreground">Projeção anual</p>
+          <p className="text-[11px] uppercase text-muted-foreground">Rendimento anual</p>
           <p className="mt-1 text-lg font-bold tabular-nums" style={{ color: "var(--color-success)" }}>
             {formatBRL(result.annualYield)}
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {result.annualPct.toFixed(2)}% a.a.
+            {(annualRate * 100).toFixed(2)}% a.a.
           </p>
+        </div>
+        <div className="rounded-2xl bg-card-elevated p-4">
+          <p className="text-[11px] uppercase text-muted-foreground">Juros acumulados</p>
+          <p className="mt-1 text-lg font-bold tabular-nums" style={{ color: "var(--color-success)" }}>
+            {formatBRL(result.accumulated)}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">em {months} meses</p>
+        </div>
+        <div className="rounded-2xl bg-primary/10 p-4">
+          <p className="text-[11px] uppercase text-muted-foreground">Valor final</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-primary">
+            {formatBRL(result.finalValue)}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">capital + juros</p>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-card-elevated p-4 flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">Total estimado em 12 meses</p>
-        <p className="text-sm font-bold tabular-nums text-foreground">
-          {formatBRL(result.value + result.annualYield)}
-        </p>
-      </div>
+      {/* Comparação entre investimentos */}
+      {result.value > 0 && (
+        <div className="rounded-2xl bg-card-elevated p-4 space-y-2">
+          <p className="text-[11px] uppercase text-muted-foreground">
+            Comparação no prazo selecionado
+          </p>
+          {comparison.map((c, i) => (
+            <div key={c.type} className="flex items-center justify-between text-sm">
+              <span className="text-foreground font-medium">
+                {i === 0 && "🏆 "}{c.type}
+              </span>
+              <span className="tabular-nums text-muted-foreground">
+                {formatBRL(c.final)}{" "}
+                <span style={{ color: "var(--color-success)" }}>(+{formatBRL(c.gain)})</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <p className="text-[11px] text-muted-foreground text-center">
-        Taxa considerada: {result.note}. Valores estimados, sem garantia de rentabilidade futura.
+        {type === "Outros"
+          ? "Taxa personalizada informada por você."
+          : `Taxa considerada: ${investRates(type).note}.`}{" "}
+        Valores estimados, sem garantia de rentabilidade futura.
       </p>
     </section>
   );
