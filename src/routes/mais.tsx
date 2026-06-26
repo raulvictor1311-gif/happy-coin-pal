@@ -85,22 +85,34 @@ function Mais() {
     <AppShell>
       <PageHeader subtitle="Tudo do app" title="Mais" />
       <div className="px-6 space-y-3">
-        {items.map((i) => (
-          <Link
-            key={i.to}
-            to={i.to}
-            className="flex items-center gap-4 rounded-3xl bg-card border border-border p-4 hover:border-primary transition-colors"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card-elevated text-primary">
-              <i.icon className="h-5 w-5" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-foreground">{i.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{i.desc}</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </Link>
+        {groups.map((group) => (
+          <div key={group.label} className="space-y-3">
+            <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+              {group.label}
+            </h2>
+            {group.items.map((i) => (
+              <Link
+                key={i.to}
+                to={i.to}
+                className="flex items-center gap-4 rounded-3xl bg-card border border-border p-4 hover:border-primary transition-colors"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card-elevated text-primary">
+                  <i.icon className="h-5 w-5" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground">{i.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{i.desc}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
         ))}
+
+        <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+          Configurações
+        </h2>
+
 
         <section className="rounded-3xl bg-card border border-border p-5 space-y-4">
           <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
