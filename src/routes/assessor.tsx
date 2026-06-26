@@ -209,6 +209,8 @@ function Assessor() {
 
         <WhatsappConnect />
 
+        <AdvisorContact />
+
 
 
         <div className="rounded-3xl bg-card border border-border p-4 space-y-3">
