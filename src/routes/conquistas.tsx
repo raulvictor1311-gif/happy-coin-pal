@@ -14,11 +14,29 @@ function Conquistas() {
   const achievements = getAchievements(state);
   const streak = getStreak(state);
   const unlocked = achievements.filter((a) => a.unlocked).length;
+  const level = getLevel(state);
+  const xpPct = Math.min(100, (level.xp / level.nextXp) * 100);
 
   return (
     <AppShell>
       <PageHeader subtitle="Gamificação" title="Conquistas" />
       <div className="px-6 space-y-4">
+        <div className="rounded-3xl bg-gradient-to-br from-card to-card-elevated border border-border p-5">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-card-elevated flex items-center justify-center text-[var(--color-warning)]">
+              <Trophy className="h-7 w-7" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Nível {level.level}</p>
+              <p className="text-2xl font-bold text-foreground">{level.title}</p>
+            </div>
+            <p className="text-xs text-muted-foreground tabular-nums">{level.xp}/{level.nextXp} XP</p>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-primary transition-all" style={{ width: `${xpPct}%` }} />
+          </div>
+        </div>
+
         <div className="rounded-3xl bg-card border border-border p-5 flex items-center gap-4">
           <div className="h-14 w-14 rounded-2xl bg-card-elevated flex items-center justify-center">
             <Flame className="h-7 w-7 text-[var(--color-warning)]" />
@@ -29,6 +47,7 @@ function Conquistas() {
             <p className="text-xs text-muted-foreground">Registre algo hoje para manter a chama acesa.</p>
           </div>
         </div>
+
 
         <div className="rounded-3xl bg-card border border-border p-5">
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-1">
