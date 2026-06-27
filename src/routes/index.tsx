@@ -221,6 +221,11 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* Evolução mensal */}
+      <EvolutionSection state={state} hidden={hidden} />
+
+
+
 
 
       {/* Health */}
