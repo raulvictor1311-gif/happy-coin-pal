@@ -1067,6 +1067,12 @@ export function getChallenges(s: FinanceState): Challenge[] {
   const lazerSpend = summary.byCategory.find((c) => c.category === "Lazer")?.total ?? 0;
   const lazerLimit = Math.max(50, s.monthlyIncome * 0.1);
   const lazerUsed = Math.min(100, (lazerSpend / lazerLimit) * 100);
+  const now = new Date();
+  const monthTxCount = s.transactions.filter((t) => {
+    const d = new Date(t.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
 
   return [
     {
