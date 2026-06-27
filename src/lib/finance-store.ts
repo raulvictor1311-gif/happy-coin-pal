@@ -1105,8 +1105,29 @@ export function getChallenges(s: FinanceState): Challenge[] {
       current: formatCompactBRLLocal(lazerSpend),
       done: lazerSpend > 0 && lazerSpend <= lazerLimit,
     },
+    {
+      id: "log-15",
+      title: "Diário em dia",
+      description: "Registre 15 movimentações neste mês.",
+      emoji: "✍️",
+      progress: Math.min(100, (monthTxCount / 15) * 100),
+      target: "15",
+      current: `${monthTxCount}`,
+      done: monthTxCount >= 15,
+    },
+    {
+      id: "positive-month",
+      title: "Mês no azul",
+      description: "Termine o mês com saldo positivo.",
+      emoji: "📈",
+      progress: summary.savings > 0 ? 100 : 0,
+      target: "Saldo +",
+      current: formatCompactBRLLocal(summary.savings),
+      done: summary.savings > 0,
+    },
   ];
 }
+
 
 function formatCompactBRLLocal(v: number): string {
   if (v >= 1000) return `R$ ${(v / 1000).toFixed(1).replace(".", ",")}k`;
