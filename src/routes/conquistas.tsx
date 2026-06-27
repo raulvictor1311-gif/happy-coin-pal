@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { useFinance, getAchievements, getStreak } from "@/lib/finance-store";
-import { Flame } from "lucide-react";
+import { useFinance, getAchievements, getStreak, getLevel } from "@/lib/finance-store";
+import { Flame, Trophy } from "lucide-react";
+
 
 export const Route = createFileRoute("/conquistas")({
   head: () => ({ meta: [{ title: "Conquistas — Finlux" }] }),
