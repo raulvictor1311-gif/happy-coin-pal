@@ -669,6 +669,39 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   return { income, expense, savings: income - expense, balance, byCategory };
 }
 
+export interface MonthPoint {
+  key: string; // "2026-05"
+  label: string; // "mai"
+  income: number;
+  expense: number;
+  savings: number;
+}
+
+/** Evolução de receitas, despesas e saldo nos últimos `count` meses (mais antigo → atual). */
+export function getMonthlyHistory(s: FinanceState, count = 6, ref = new Date()): MonthPoint[] {
+  const points: MonthPoint[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    const month = s.transactions.filter((t) => {
+      const td = new Date(t.date);
+      return td.getMonth() === m && td.getFullYear() === y;
+    });
+    const income = month.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
+    const expense = month.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
+    points.push({
+      key: `${y}-${String(m + 1).padStart(2, "0")}`,
+      label: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+      income,
+      expense,
+      savings: income - expense,
+    });
+  }
+  return points;
+}
+
+
 export function financialHealth(s: MonthlySummary): { score: number; label: string; tone: "ok" | "warn" | "bad" } {
   if (s.income === 0) return { score: 0, label: "Sem dados", tone: "warn" };
   const ratio = (s.income - s.expense) / s.income;
