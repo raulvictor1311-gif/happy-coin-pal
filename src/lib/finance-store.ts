@@ -987,8 +987,41 @@ export function getAchievements(s: FinanceState): Achievement[] {
       unlocked: nw.net >= 10000,
       progress: Math.min(100, (nw.net / 10000) * 100),
     },
+    {
+      id: "tx-50",
+      title: "Registrador dedicado",
+      description: "Registre 50 movimentações no total.",
+      emoji: "📒",
+      unlocked: txCount >= 50,
+      progress: Math.min(100, (txCount / 50) * 100),
+    },
+    {
+      id: "saver-40",
+      title: "Poupador de elite",
+      description: "Economize 40% ou mais da renda no mês.",
+      emoji: "💎",
+      unlocked: savingsRate >= 40,
+      progress: Math.min(100, (savingsRate / 40) * 100),
+    },
+    {
+      id: "goals-3",
+      title: "Triplo de metas",
+      description: "Conclua 3 metas financeiras.",
+      emoji: "🏅",
+      unlocked: goalsDone >= 3,
+      progress: Math.min(100, (goalsDone / 3) * 100),
+    },
+    {
+      id: "patrimony-100k",
+      title: "Seis dígitos",
+      description: "Atinja R$ 100.000 de patrimônio líquido.",
+      emoji: "👑",
+      unlocked: nw.net >= 100000,
+      progress: Math.min(100, (nw.net / 100000) * 100),
+    },
   ];
 }
+
 
 /** Dicas inteligentes baseadas em comportamento. */
 export function getSmartTips(s: FinanceState): string[] {
