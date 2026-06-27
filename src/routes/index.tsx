@@ -13,6 +13,8 @@ import {
   getSmartTips,
   getNotifications,
   getLevel,
+  getMonthlyHistory,
+  type FinanceState,
 } from "@/lib/finance-store";
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
