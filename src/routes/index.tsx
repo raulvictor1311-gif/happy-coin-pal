@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp } from "lucide-react";
+import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3 } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid } from "recharts";
+
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import {
@@ -11,6 +13,8 @@ import {
   getSmartTips,
   getNotifications,
   getLevel,
+  getMonthlyHistory,
+  type FinanceState,
 } from "@/lib/finance-store";
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
@@ -221,6 +225,11 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* Evolução mensal */}
+      <EvolutionSection state={state} hidden={hidden} />
+
+
+
 
 
       {/* Health */}
@@ -375,6 +384,47 @@ function Dashboard() {
     </AppShell>
   );
 }
+
+function EvolutionSection({ state, hidden }: { state: FinanceState; hidden: boolean }) {
+  const data = getMonthlyHistory(state, 6);
+  const hasData = data.some((d) => d.income > 0 || d.expense > 0);
+  if (!hasData) return null;
+  return (
+    <section className="px-6 mt-5">
+      <div className="rounded-3xl bg-card border border-border p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart3 className="h-4 w-4 text-[var(--color-primary)]" />
+          <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+            Evolução · 6 meses
+          </h2>
+        </div>
+        <ResponsiveContainer width="100%" height={170}>
+          <BarChart data={data} margin={{ top: 4, right: 4, left: 4, bottom: 0 }} barGap={2}>
+            <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} />
+            <Tooltip
+              cursor={{ fill: "color-mix(in oklab, var(--color-muted) 40%, transparent)" }}
+              formatter={(v: number, name) => [hidden ? "•••" : formatBRL(v), name === "income" ? "Receitas" : "Despesas"]}
+              contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }}
+            />
+            <Bar dataKey="income" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="expense" fill="var(--color-destructive)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="mt-2 flex items-center justify-center gap-5 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full" style={{ background: "var(--color-success)" }} /> Receitas
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full" style={{ background: "var(--color-destructive)" }} /> Despesas
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
 
 function MiniStat({
   label,

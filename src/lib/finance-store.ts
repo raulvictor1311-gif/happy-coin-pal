@@ -669,6 +669,39 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   return { income, expense, savings: income - expense, balance, byCategory };
 }
 
+export interface MonthPoint {
+  key: string; // "2026-05"
+  label: string; // "mai"
+  income: number;
+  expense: number;
+  savings: number;
+}
+
+/** Evolução de receitas, despesas e saldo nos últimos `count` meses (mais antigo → atual). */
+export function getMonthlyHistory(s: FinanceState, count = 6, ref = new Date()): MonthPoint[] {
+  const points: MonthPoint[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    const month = s.transactions.filter((t) => {
+      const td = new Date(t.date);
+      return td.getMonth() === m && td.getFullYear() === y;
+    });
+    const income = month.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
+    const expense = month.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
+    points.push({
+      key: `${y}-${String(m + 1).padStart(2, "0")}`,
+      label: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+      income,
+      expense,
+      savings: income - expense,
+    });
+  }
+  return points;
+}
+
+
 export function financialHealth(s: MonthlySummary): { score: number; label: string; tone: "ok" | "warn" | "bad" } {
   if (s.income === 0) return { score: 0, label: "Sem dados", tone: "warn" };
   const ratio = (s.income - s.expense) / s.income;
@@ -954,8 +987,41 @@ export function getAchievements(s: FinanceState): Achievement[] {
       unlocked: nw.net >= 10000,
       progress: Math.min(100, (nw.net / 10000) * 100),
     },
+    {
+      id: "tx-50",
+      title: "Registrador dedicado",
+      description: "Registre 50 movimentações no total.",
+      emoji: "📒",
+      unlocked: txCount >= 50,
+      progress: Math.min(100, (txCount / 50) * 100),
+    },
+    {
+      id: "saver-40",
+      title: "Poupador de elite",
+      description: "Economize 40% ou mais da renda no mês.",
+      emoji: "💎",
+      unlocked: savingsRate >= 40,
+      progress: Math.min(100, (savingsRate / 40) * 100),
+    },
+    {
+      id: "goals-3",
+      title: "Triplo de metas",
+      description: "Conclua 3 metas financeiras.",
+      emoji: "🏅",
+      unlocked: goalsDone >= 3,
+      progress: Math.min(100, (goalsDone / 3) * 100),
+    },
+    {
+      id: "patrimony-100k",
+      title: "Seis dígitos",
+      description: "Atinja R$ 100.000 de patrimônio líquido.",
+      emoji: "👑",
+      unlocked: nw.net >= 100000,
+      progress: Math.min(100, (nw.net / 100000) * 100),
+    },
   ];
 }
+
 
 /** Dicas inteligentes baseadas em comportamento. */
 export function getSmartTips(s: FinanceState): string[] {
@@ -1001,6 +1067,12 @@ export function getChallenges(s: FinanceState): Challenge[] {
   const lazerSpend = summary.byCategory.find((c) => c.category === "Lazer")?.total ?? 0;
   const lazerLimit = Math.max(50, s.monthlyIncome * 0.1);
   const lazerUsed = Math.min(100, (lazerSpend / lazerLimit) * 100);
+  const now = new Date();
+  const monthTxCount = s.transactions.filter((t) => {
+    const d = new Date(t.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
 
   return [
     {
@@ -1033,8 +1105,29 @@ export function getChallenges(s: FinanceState): Challenge[] {
       current: formatCompactBRLLocal(lazerSpend),
       done: lazerSpend > 0 && lazerSpend <= lazerLimit,
     },
+    {
+      id: "log-15",
+      title: "Diário em dia",
+      description: "Registre 15 movimentações neste mês.",
+      emoji: "✍️",
+      progress: Math.min(100, (monthTxCount / 15) * 100),
+      target: "15",
+      current: `${monthTxCount}`,
+      done: monthTxCount >= 15,
+    },
+    {
+      id: "positive-month",
+      title: "Mês no azul",
+      description: "Termine o mês com saldo positivo.",
+      emoji: "📈",
+      progress: summary.savings > 0 ? 100 : 0,
+      target: "Saldo +",
+      current: formatCompactBRLLocal(summary.savings),
+      done: summary.savings > 0,
+    },
   ];
 }
+
 
 function formatCompactBRLLocal(v: number): string {
   if (v >= 1000) return `R$ ${(v / 1000).toFixed(1).replace(".", ",")}k`;
