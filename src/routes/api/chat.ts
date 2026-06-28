@@ -5,6 +5,18 @@ import {
   getLovableAiGatewayRunId,
   withLovableAiGatewayRunIdHeader,
 } from "@/lib/ai-gateway.server";
+import { verifyRequestUser } from "@/lib/api-auth.server";
+
+/** Limits the user-provided financial context injected into the system prompt
+ *  to reduce prompt-injection risk and runaway token usage. */
+function sanitizeContext(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw
+    .slice(0, 4000)
+    .replace(/```/g, "")
+    .replace(/\u0000/g, "")
+    .trim();
+}
 
 const SYSTEM_PROMPT = `Você é o assistente financeiro inteligente do Finlux, um aplicativo de finanças pessoais em português brasileiro.
 
