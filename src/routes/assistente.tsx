@@ -78,9 +78,14 @@ function Assistente() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: { ...body, messages, context },
-        }),
+        prepareSendMessagesRequest: async ({ messages, body }) => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          return {
+            body: { ...body, messages, context },
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          };
+        },
       }),
     [context],
   );
