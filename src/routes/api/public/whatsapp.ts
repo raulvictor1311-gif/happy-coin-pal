@@ -98,6 +98,22 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         if (!apiKey) return twiml("Serviço temporariamente indisponível. Tente mais tarde.");
 
         const form = await request.formData();
+
+        // Verify the request genuinely came from Twilio before trusting any
+        // field (especially "From"), preventing forged transaction injection.
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const signature = request.headers.get("x-twilio-signature") ?? "";
+        const params: Record<string, string> = {};
+        for (const [k, v] of form.entries()) {
+          if (typeof v === "string") params[k] = v;
+        }
+        if (
+          !authToken ||
+          !validateTwilioSignature(authToken, signature, getWebhookUrl(request), params)
+        ) {
+          return new Response("Forbidden", { status: 403 });
+        }
+
         const from = String(form.get("From") || "");
         const body = String(form.get("Body") || "").trim();
         const numMedia = parseInt(String(form.get("NumMedia") || "0"), 10) || 0;
