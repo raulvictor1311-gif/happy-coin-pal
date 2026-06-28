@@ -44,11 +44,14 @@ export type WhatsappLink = {
   verification_code: string | null;
 };
 
-/** Retorna o vínculo de WhatsApp do usuário atual (ou null). */
+/** Retorna o vínculo de WhatsApp do usuário atual (ou null).
+ *  A coluna verification_code não é exposta via Data API ao cliente; por isso
+ *  lemos esse vínculo pelo service role, sempre restrito ao próprio usuário. */
 export const getWhatsappLink = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<WhatsappLink | null> => {
-    const { data, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("whatsapp_links")
       .select("phone, verified, verification_code")
       .eq("user_id", context.userId)
