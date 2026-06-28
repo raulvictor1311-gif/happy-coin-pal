@@ -124,9 +124,14 @@ function Assessor() {
           format: audioFormatFromMime(audioBlob.type),
         };
       }
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch("/api/extract-tx", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       const j = await res.json();
