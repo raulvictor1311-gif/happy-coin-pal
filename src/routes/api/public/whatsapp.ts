@@ -1,6 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "crypto";
 import { extractTransactions, type ExtractInput } from "@/lib/extract.server";
 import { normalizePhone, phoneCandidates } from "@/lib/whatsapp.functions";
+
+/** Reconstructs the public URL Twilio used to sign the request. */
+function getWebhookUrl(request: Request): string {
+  const override = process.env.TWILIO_WEBHOOK_URL;
+  if (override) return override;
+  const url = new URL(request.url);
+  const proto = request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host;
+  return `${proto}://${host}${url.pathname}`;
+}
+
+/**
+ * Validates Twilio's X-Twilio-Signature (HMAC-SHA1 over the request URL +
+ * the alphabetically sorted POST params) using a constant-time comparison.
+ */
+function validateTwilioSignature(
+  authToken: string,
+  signature: string,
+  url: string,
+  params: Record<string, string>,
+): boolean {
+  const data =
+    url +
+    Object.keys(params)
+      .sort()
+      .reduce((acc, key) => acc + key + params[key], "");
+  const expected = createHmac("sha1", authToken)
+    .update(Buffer.from(data, "utf-8"))
+    .digest("base64");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature || "");
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
 
 function twiml(message: string): Response {
   const xml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(
