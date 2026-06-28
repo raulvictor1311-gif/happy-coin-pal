@@ -30,6 +30,7 @@ import {
   financialHealth,
 } from "@/lib/finance-store";
 import { formatBRL as brl } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
