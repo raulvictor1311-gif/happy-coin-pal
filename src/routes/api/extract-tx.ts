@@ -1,10 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { extractTransactions, type ExtractInput } from "@/lib/extract.server";
+import { verifyRequestUser } from "@/lib/api-auth.server";
 
 export const Route = createFileRoute("/api/extract-tx")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const userId = await verifyRequestUser(request);
+        if (!userId) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { "content-type": "application/json" },
+          });
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key)
           return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
