@@ -30,6 +30,7 @@ import {
   financialHealth,
 } from "@/lib/finance-store";
 import { formatBRL as brl } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
@@ -78,9 +79,16 @@ function Assistente() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: { ...body, messages, context },
-        }),
+        prepareSendMessagesRequest: async ({ messages, body }) => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          const headers: Record<string, string> = {};
+          if (token) headers.Authorization = `Bearer ${token}`;
+          return {
+            body: { ...body, messages, context },
+            headers,
+          };
+        },
       }),
     [context],
   );

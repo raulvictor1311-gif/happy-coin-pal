@@ -5,6 +5,7 @@ import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock 
 import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { WhatsappConnect, AdvisorContact } from "@/components/whatsapp-connect";
 import { toast } from "sonner";
 
@@ -124,9 +125,14 @@ function Assessor() {
           format: audioFormatFromMime(audioBlob.type),
         };
       }
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch("/api/extract-tx", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       const j = await res.json();
