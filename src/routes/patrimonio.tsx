@@ -245,7 +245,8 @@ function InvestmentSimulator() {
   const annualRate = Math.pow(1 + monthlyRate, 12) - 1;
 
   const result = useMemo(() => {
-    const value = Number(amount.replace(",", ".")) || 0;
+    const parsed = Number(amount.replace(",", "."));
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
     const finalValue = value * Math.pow(1 + monthlyRate, months);
     const series = Array.from({ length: months + 1 }, (_, m) => ({
       m,
