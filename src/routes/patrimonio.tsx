@@ -373,11 +373,19 @@ function InvestmentSimulator() {
           <input
             type="number"
             inputMode="decimal"
+            min={0}
+            step="any"
             value={customRate}
             onChange={(e) => setCustomRate(e.target.value)}
             placeholder="Ex.: 12"
-            className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+            aria-invalid={!!rateError}
+            className={`${baseInput} ${rateError ? "ring-2 ring-destructive border border-destructive" : "ring-primary"}`}
           />
+          {rateError && (
+            <p className="mt-1 text-xs text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
+              {rateError}
+            </p>
+          )}
         </label>
       )}
 
