@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const state = useFinance();
-  const { profile, user } = useAuth();
+  const { profile, user, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
