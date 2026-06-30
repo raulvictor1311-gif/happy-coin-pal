@@ -245,7 +245,8 @@ function InvestmentSimulator() {
   const annualRate = Math.pow(1 + monthlyRate, 12) - 1;
 
   const result = useMemo(() => {
-    const value = Number(amount.replace(",", ".")) || 0;
+    const parsed = Number(amount.replace(",", "."));
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
     const finalValue = value * Math.pow(1 + monthlyRate, months);
     const series = Array.from({ length: months + 1 }, (_, m) => ({
       m,
@@ -271,6 +272,32 @@ function InvestmentSimulator() {
     }).sort((a, b) => b.final - a.final);
   }, [result.value, months]);
 
+  // Validação em tempo real
+  const amountNum = Number(amount.replace(",", "."));
+  const amountError =
+    amount.trim() === ""
+      ? null
+      : !Number.isFinite(amountNum) || Number.isNaN(amountNum)
+      ? "Digite um número válido."
+      : amountNum <= 0
+      ? "O valor deve ser maior que zero."
+      : null;
+
+  const rateNum = Number(customRate.replace(",", "."));
+  const rateError =
+    type !== "Outros"
+      ? null
+      : customRate.trim() === ""
+      ? "Informe a taxa anual."
+      : !Number.isFinite(rateNum) || Number.isNaN(rateNum)
+      ? "Digite um número válido."
+      : rateNum <= 0
+      ? "A taxa deve ser maior que zero."
+      : null;
+
+  const baseInput =
+    "mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 transition-colors";
+
   return (
     <section className="rounded-3xl bg-card border border-border p-5 space-y-4">
       <div className="flex items-center gap-2">
@@ -287,12 +314,21 @@ function InvestmentSimulator() {
         <input
           type="number"
           inputMode="decimal"
+          min={0}
+          step="any"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Ex.: 1000"
-          className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+          aria-invalid={!!amountError}
+          className={`${baseInput} ${amountError ? "ring-2 ring-destructive border border-destructive" : "ring-primary"}`}
         />
+        {amountError && (
+          <p className="mt-1 text-xs text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
+            {amountError}
+          </p>
+        )}
       </label>
+
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
@@ -338,11 +374,19 @@ function InvestmentSimulator() {
           <input
             type="number"
             inputMode="decimal"
+            min={0}
+            step="any"
             value={customRate}
             onChange={(e) => setCustomRate(e.target.value)}
             placeholder="Ex.: 12"
-            className="mt-1.5 w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+            aria-invalid={!!rateError}
+            className={`${baseInput} ${rateError ? "ring-2 ring-destructive border border-destructive" : "ring-primary"}`}
           />
+          {rateError && (
+            <p className="mt-1 text-xs text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
+              {rateError}
+            </p>
+          )}
         </label>
       )}
 

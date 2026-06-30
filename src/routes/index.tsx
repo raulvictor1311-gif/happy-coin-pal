@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const state = useFinance();
-  const { profile, user } = useAuth();
+  const { profile, user, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -54,31 +54,41 @@ function Dashboard() {
   const level = getLevel(state);
   const [notifOpen, setNotifOpen] = useState(false);
   const prefs = state.dashboardPrefs;
+  const userReady = now !== null && !loading;
+  const hasFinanceData = state.transactions.length > 0;
 
   return (
     <AppShell>
       {/* Greeting */}
       <header className="flex items-start justify-between px-6 pt-10 relative animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            {now ? greetingFor(now) : "Olá"},
-          </p>
-          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate">
-            {displayName}
-          </h1>
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {now && (
-              <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
-                {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-              </span>
-            )}
-            {streak > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
-                <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
-                {streak} {streak === 1 ? "dia" : "dias"}
-              </span>
-            )}
-          </div>
+          {userReady ? (
+            <>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                {greetingFor(now)},
+              </p>
+              <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate animate-in fade-in duration-300">
+                {displayName}
+              </h1>
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
+                  {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                </span>
+                {streak > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
+                    <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
+                    {streak} {streak === 1 ? "dia" : "dias"}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="animate-pulse">
+              <div className="h-3 w-24 rounded-full bg-card-elevated" />
+              <div className="mt-2 h-8 w-40 rounded-lg bg-card-elevated" />
+              <div className="mt-3 h-6 w-28 rounded-full bg-card-elevated" />
+            </div>
+          )}
         </div>
         <div className="relative flex items-center gap-1.5 shrink-0">
           <Link
@@ -235,34 +245,54 @@ function Dashboard() {
       {/* Health */}
       {prefs.showHealth && (
       <section className="px-6 mt-5">
-        <div className="rounded-3xl bg-card p-5 border border-border flex items-center gap-4">
-          <HealthRing score={health.score} tone={health.tone} />
-          <div className="flex-1">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground leading-tight">
-              Saúde<br/>financeira
-            </p>
-            <p
-              className="mt-1 text-lg font-bold"
-              style={{
-                color:
-                  health.tone === "ok"
-                    ? "var(--color-success)"
-                    : health.tone === "warn"
-                    ? "var(--color-warning)"
-                    : "var(--color-destructive)",
-              }}
-            >
-              {health.label}
+        {hasFinanceData ? (
+          <div className="rounded-3xl bg-card p-5 border border-border flex items-center gap-4">
+            <HealthRing score={health.score} tone={health.tone} />
+            <div className="flex-1">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground leading-tight">
+                Saúde<br/>financeira
+              </p>
+              <p
+                className="mt-1 text-lg font-bold"
+                style={{
+                  color:
+                    health.tone === "ok"
+                      ? "var(--color-success)"
+                      : health.tone === "warn"
+                      ? "var(--color-warning)"
+                      : "var(--color-destructive)",
+                }}
+              >
+                {health.label}
+              </p>
+            </div>
+            <p className="text-right text-sm text-muted-foreground max-w-[7.5rem] leading-snug">
+              {health.tone === "ok"
+                ? "Você está economizando bem!"
+                : health.tone === "warn"
+                ? "Reduza um pouco os gastos."
+                : "Atenção, gastos altos."}
             </p>
           </div>
-          <p className="text-right text-sm text-muted-foreground max-w-[7.5rem] leading-snug">
-            {health.tone === "ok"
-              ? "Você está economizando bem!"
-              : health.tone === "warn"
-              ? "Reduza um pouco os gastos."
-              : "Atenção, gastos altos."}
-          </p>
-        </div>
+        ) : (
+          <div className="rounded-3xl bg-card p-5 border border-border flex flex-col items-center text-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card-elevated text-primary">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-foreground">Sua análise começa aqui</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Adicione sua primeira receita ou despesa para começarmos sua análise financeira.
+              </p>
+            </div>
+            <Link
+              to="/nova"
+              className="mt-1 inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground active:scale-[0.98] transition-transform"
+            >
+              Adicionar primeira transação
+            </Link>
+          </div>
+        )}
       </section>
       )}
 
