@@ -62,25 +62,33 @@ function Dashboard() {
       {/* Greeting */}
       <header className="flex items-start justify-between px-6 pt-10 relative animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            {now ? greetingFor(now) : "Olá"},
-          </p>
-          <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate">
-            {displayName}
-          </h1>
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {now && (
-              <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
-                {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-              </span>
-            )}
-            {streak > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
-                <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
-                {streak} {streak === 1 ? "dia" : "dias"}
-              </span>
-            )}
-          </div>
+          {userReady ? (
+            <>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                {greetingFor(now)},
+              </p>
+              <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground truncate animate-in fade-in duration-300">
+                {displayName}
+              </h1>
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground capitalize">
+                  {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                </span>
+                {streak > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
+                    <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
+                    {streak} {streak === 1 ? "dia" : "dias"}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="animate-pulse">
+              <div className="h-3 w-24 rounded-full bg-card-elevated" />
+              <div className="mt-2 h-8 w-40 rounded-lg bg-card-elevated" />
+              <div className="mt-3 h-6 w-28 rounded-full bg-card-elevated" />
+            </div>
+          )}
         </div>
         <div className="relative flex items-center gap-1.5 shrink-0">
           <Link
