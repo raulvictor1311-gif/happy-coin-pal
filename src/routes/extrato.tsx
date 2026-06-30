@@ -9,7 +9,7 @@ import {
   INCOME_CATEGORIES,
 } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
-import { Trash2, Search, SlidersHorizontal, X, ArrowUpDown, Check } from "lucide-react";
+import { Trash2, Search, SlidersHorizontal, X, ArrowUpDown, Check, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
