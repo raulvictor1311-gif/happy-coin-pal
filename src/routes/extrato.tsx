@@ -37,6 +37,19 @@ function Extrato() {
   const [category, setCategory] = useState<string>("todas");
   const [sort, setSort] = useState<Sort>("recentes");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleRemove(id: string) {
+    setDeletingId(id);
+    try {
+      await financeActions.removeTransaction(id);
+      toast.success("Transação excluída.");
+    } catch {
+      toast.error("Não foi possível excluir agora. Tente novamente.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const allCategories = useMemo(
     () => Array.from(new Set([...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES, "Transferência"])),
