@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3 } from "lucide-react";
+import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid } from "recharts";
 
 import { useEffect, useState } from "react";
@@ -78,6 +78,12 @@ function Dashboard() {
                   <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-xs font-bold text-foreground">
                     <Flame className="h-3.5 w-3.5 text-[var(--color-warning)]" />
                     {streak} {streak === 1 ? "dia" : "dias"}
+                  </span>
+                )}
+                {state.cloudLoading && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-primary">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Sincronizando
                   </span>
                 )}
               </div>

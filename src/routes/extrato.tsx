@@ -9,7 +9,7 @@ import {
   INCOME_CATEGORIES,
 } from "@/lib/finance-store";
 import { formatBRL } from "@/lib/format";
-import { Trash2, Search, SlidersHorizontal, X, ArrowUpDown, Check } from "lucide-react";
+import { Trash2, Search, SlidersHorizontal, X, ArrowUpDown, Check, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -37,6 +37,19 @@ function Extrato() {
   const [category, setCategory] = useState<string>("todas");
   const [sort, setSort] = useState<Sort>("recentes");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleRemove(id: string) {
+    setDeletingId(id);
+    try {
+      await financeActions.removeTransaction(id);
+      toast.success("Transação excluída.");
+    } catch {
+      toast.error("Não foi possível excluir agora. Tente novamente.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const allCategories = useMemo(
     () => Array.from(new Set([...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES, "Transferência"])),
@@ -269,15 +282,16 @@ function Extrato() {
                         {formatBRL(t.amount)}
                       </span>
                       <button
-                        onClick={() =>
-                          financeActions.removeTransaction(t.id).catch(() =>
-                            toast.error("Não foi possível excluir agora. Tente novamente."),
-                          )
-                        }
+                        onClick={() => handleRemove(t.id)}
+                        disabled={deletingId === t.id}
                         aria-label="Remover"
-                        className="text-muted-foreground hover:text-[var(--color-destructive)] ml-1 transition-colors"
+                        className="text-muted-foreground hover:text-[var(--color-destructive)] ml-1 transition-colors disabled:opacity-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {deletingId === t.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   );
