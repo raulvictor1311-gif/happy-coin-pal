@@ -80,6 +80,12 @@ function Dashboard() {
                     {streak} {streak === 1 ? "dia" : "dias"}
                   </span>
                 )}
+                {state.cloudLoading && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card-elevated px-2.5 py-1 text-[11px] font-semibold text-primary">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Sincronizando
+                  </span>
+                )}
               </div>
             </>
           ) : (
