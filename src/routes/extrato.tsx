@@ -282,15 +282,16 @@ function Extrato() {
                         {formatBRL(t.amount)}
                       </span>
                       <button
-                        onClick={() =>
-                          financeActions.removeTransaction(t.id).catch(() =>
-                            toast.error("Não foi possível excluir agora. Tente novamente."),
-                          )
-                        }
+                        onClick={() => handleRemove(t.id)}
+                        disabled={deletingId === t.id}
                         aria-label="Remover"
-                        className="text-muted-foreground hover:text-[var(--color-destructive)] ml-1 transition-colors"
+                        className="text-muted-foreground hover:text-[var(--color-destructive)] ml-1 transition-colors disabled:opacity-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {deletingId === t.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   );
