@@ -54,6 +54,8 @@ function Dashboard() {
   const level = getLevel(state);
   const [notifOpen, setNotifOpen] = useState(false);
   const prefs = state.dashboardPrefs;
+  const userReady = now !== null && !loading;
+  const hasFinanceData = state.transactions.length > 0;
 
   return (
     <AppShell>
