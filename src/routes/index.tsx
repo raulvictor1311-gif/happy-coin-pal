@@ -245,34 +245,54 @@ function Dashboard() {
       {/* Health */}
       {prefs.showHealth && (
       <section className="px-6 mt-5">
-        <div className="rounded-3xl bg-card p-5 border border-border flex items-center gap-4">
-          <HealthRing score={health.score} tone={health.tone} />
-          <div className="flex-1">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground leading-tight">
-              Saúde<br/>financeira
-            </p>
-            <p
-              className="mt-1 text-lg font-bold"
-              style={{
-                color:
-                  health.tone === "ok"
-                    ? "var(--color-success)"
-                    : health.tone === "warn"
-                    ? "var(--color-warning)"
-                    : "var(--color-destructive)",
-              }}
-            >
-              {health.label}
+        {hasFinanceData ? (
+          <div className="rounded-3xl bg-card p-5 border border-border flex items-center gap-4">
+            <HealthRing score={health.score} tone={health.tone} />
+            <div className="flex-1">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground leading-tight">
+                Saúde<br/>financeira
+              </p>
+              <p
+                className="mt-1 text-lg font-bold"
+                style={{
+                  color:
+                    health.tone === "ok"
+                      ? "var(--color-success)"
+                      : health.tone === "warn"
+                      ? "var(--color-warning)"
+                      : "var(--color-destructive)",
+                }}
+              >
+                {health.label}
+              </p>
+            </div>
+            <p className="text-right text-sm text-muted-foreground max-w-[7.5rem] leading-snug">
+              {health.tone === "ok"
+                ? "Você está economizando bem!"
+                : health.tone === "warn"
+                ? "Reduza um pouco os gastos."
+                : "Atenção, gastos altos."}
             </p>
           </div>
-          <p className="text-right text-sm text-muted-foreground max-w-[7.5rem] leading-snug">
-            {health.tone === "ok"
-              ? "Você está economizando bem!"
-              : health.tone === "warn"
-              ? "Reduza um pouco os gastos."
-              : "Atenção, gastos altos."}
-          </p>
-        </div>
+        ) : (
+          <div className="rounded-3xl bg-card p-5 border border-border flex flex-col items-center text-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card-elevated text-primary">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-foreground">Sua análise começa aqui</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Adicione sua primeira receita ou despesa para começarmos sua análise financeira.
+              </p>
+            </div>
+            <Link
+              to="/nova"
+              className="mt-1 inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground active:scale-[0.98] transition-transform"
+            >
+              Adicionar primeira transação
+            </Link>
+          </div>
+        )}
       </section>
       )}
 
