@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import {
   useFinance,
@@ -134,6 +135,48 @@ function AddCard({ onClose }: { onClose: () => void }) {
   const [closingDay, setClosingDay] = useState("28");
   const [dueDay, setDueDay] = useState("5");
   const [color, setColor] = useState("#8A2BE2");
+  const [touched, setTouched] = useState(false);
+
+  const limitNum = Number(limit);
+  const closingNum = Number(closingDay);
+  const dueNum = Number(dueDay);
+
+  const nameError = !name.trim() ? "Informe o nome do cartão." : "";
+  const limitError =
+    !limit.trim() || Number.isNaN(limitNum) || limitNum <= 0
+      ? "Limite deve ser maior que zero."
+      : "";
+  const closingError =
+    !closingDay.trim() || Number.isNaN(closingNum) || closingNum < 1 || closingNum > 31
+      ? "Dia 1–31."
+      : "";
+  const dueError =
+    !dueDay.trim() || Number.isNaN(dueNum) || dueNum < 1 || dueNum > 31
+      ? "Dia 1–31."
+      : "";
+
+  const baseInput = "w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary";
+  const errCls = "border border-destructive";
+  const show = (err: string) => touched && err;
+
+  function save() {
+    setTouched(true);
+    if (nameError) return toast.error(nameError);
+    if (limitError) return toast.error(limitError);
+    if (closingError) return toast.error("Dia de fechamento inválido (1–31).");
+    if (dueError) return toast.error("Dia de vencimento inválido (1–31).");
+
+    financeActions.addCard({
+      name: name.trim(),
+      brand,
+      limit: limitNum,
+      closingDay: closingNum,
+      dueDay: dueNum,
+      color,
+    });
+    toast.success("Cartão adicionado com sucesso.");
+    onClose();
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-background/70 backdrop-blur-sm flex items-end" onClick={onClose}>
@@ -145,11 +188,13 @@ function AddCard({ onClose }: { onClose: () => void }) {
         <h2 className="text-xl font-bold">Novo cartão</h2>
         <Field label="Nome">
           <input
-            className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+            className={`${baseInput} ${show(nameError) ? errCls : ""}`}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            maxLength={40}
             placeholder="Nubank"
           />
+          {show(nameError) && <p className="text-xs text-destructive mt-1">{nameError}</p>}
         </Field>
         <Field label="Bandeira">
           <select
@@ -165,11 +210,14 @@ function AddCard({ onClose }: { onClose: () => void }) {
         <Field label="Limite (R$)">
           <input
             type="number"
-            className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
+            min={0}
+            inputMode="decimal"
+            className={`${baseInput} ${show(limitError) ? errCls : ""}`}
             value={limit}
             onChange={(e) => setLimit(e.target.value)}
             placeholder="5000"
           />
+          {show(limitError) && <p className="text-xs text-destructive mt-1">{limitError}</p>}
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Fechamento">
@@ -177,20 +225,22 @@ function AddCard({ onClose }: { onClose: () => void }) {
               type="number"
               min={1}
               max={31}
-              className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none"
+              className={`${baseInput} ${show(closingError) ? errCls : ""}`}
               value={closingDay}
               onChange={(e) => setClosingDay(e.target.value)}
             />
+            {show(closingError) && <p className="text-xs text-destructive mt-1">{closingError}</p>}
           </Field>
           <Field label="Vencimento">
             <input
               type="number"
               min={1}
               max={31}
-              className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none"
+              className={`${baseInput} ${show(dueError) ? errCls : ""}`}
               value={dueDay}
               onChange={(e) => setDueDay(e.target.value)}
             />
+            {show(dueError) && <p className="text-xs text-destructive mt-1">{dueError}</p>}
           </Field>
         </div>
         <Field label="Cor">
@@ -208,18 +258,7 @@ function AddCard({ onClose }: { onClose: () => void }) {
         </Field>
         <button
           className="w-full rounded-2xl bg-primary text-primary-foreground py-3.5 font-bold active:scale-[0.98] transition-transform"
-          onClick={() => {
-            if (!name || !limit) return;
-            financeActions.addCard({
-              name,
-              brand,
-              limit: Number(limit),
-              closingDay: Number(closingDay),
-              dueDay: Number(dueDay),
-              color,
-            });
-            onClose();
-          }}
+          onClick={save}
         >
           Salvar cartão
         </button>
