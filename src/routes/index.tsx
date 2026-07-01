@@ -18,6 +18,7 @@ import {
 } from "@/lib/finance-store";
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
+import { AiInsights } from "@/components/ai-insights";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -243,6 +244,11 @@ function Dashboard() {
 
       {/* Evolução mensal */}
       <EvolutionSection state={state} hidden={hidden} />
+
+      {/* AI insights */}
+      {prefs.showTips && <AiInsights state={state} />}
+
+
 
 
 
