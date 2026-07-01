@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -340,6 +340,58 @@ function Dashboard() {
             <p className="text-sm text-muted-foreground text-center py-4">
               Sem despesas neste mês.
             </p>
+          )}
+          {summary.byCategory.length > 0 && (
+            <div className="flex items-center gap-4">
+              <div className="relative h-32 w-32 shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={summary.byCategory.slice(0, 6)}
+                      dataKey="total"
+                      nameKey="category"
+                      innerRadius={40}
+                      outerRadius={62}
+                      paddingAngle={2}
+                      stroke="none"
+                    >
+                      {summary.byCategory.slice(0, 6).map((c) => (
+                        <Cell key={c.category} fill={c.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v: number, n) => [hidden ? "•••" : formatCompactBRL(v), n]}
+                      contentStyle={{
+                        background: "var(--color-card)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 12,
+                        fontSize: 12,
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    Total
+                  </span>
+                  <span className="text-sm font-bold text-foreground tabular-nums leading-tight">
+                    {hidden ? "•••" : formatCompactBRL(summary.expense)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1 min-w-0 space-y-1.5">
+                {summary.byCategory.slice(0, 6).map((c) => {
+                  const pct = summary.expense > 0 ? Math.round((c.total / summary.expense) * 100) : 0;
+                  return (
+                    <div key={c.category} className="flex items-center gap-2 text-xs">
+                      <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                      <span className="text-foreground truncate flex-1">{c.category}</span>
+                      <span className="text-muted-foreground font-semibold tabular-nums shrink-0">{pct}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
           {summary.byCategory.slice(0, 4).map((c) => {
             const pct = maxCat > 0 ? Math.round((c.total / maxCat) * 100) : 0;
