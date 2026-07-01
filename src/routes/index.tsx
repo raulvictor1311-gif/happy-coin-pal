@@ -245,6 +245,11 @@ function Dashboard() {
       {/* Evolução mensal */}
       <EvolutionSection state={state} hidden={hidden} />
 
+      {/* AI insights */}
+      {prefs.showTips && <AiInsights state={state} />}
+
+
+
 
 
 
