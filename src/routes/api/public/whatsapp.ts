@@ -197,10 +197,19 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         for (const [k, v] of form.entries()) {
           if (typeof v === "string") params[k] = v;
         }
-        if (
-          !authToken ||
-          !validateTwilioSignature(authToken, signature, getWebhookUrl(request), params)
-        ) {
+        if (!authToken) {
+          // Without the Auth Token we cannot validate Twilio's signature, so
+          // every request would silently 403. Log clearly so it's obvious the
+          // TWILIO_AUTH_TOKEN secret is missing from the deployment.
+          console.error(
+            "[whatsapp] TWILIO_AUTH_TOKEN não configurado — não é possível validar a assinatura da Twilio.",
+          );
+          return new Response("Webhook not configured", { status: 500 });
+        }
+        if (!isValidTwilioRequest(authToken, signature, request, params)) {
+          console.warn(
+            `[whatsapp] Assinatura inválida. hasSignature=${Boolean(signature)} url=${request.url}`,
+          );
           return new Response("Forbidden", { status: 403 });
         }
 
