@@ -151,6 +151,13 @@ export function WhatsappConnect() {
             <Smartphone className="h-4 w-4" />
             {formatPhone(link.phone)}
           </div>
+          <div className="rounded-xl bg-card border border-border p-3 space-y-1">
+            <p className="text-xs font-semibold text-foreground">Comandos no WhatsApp</p>
+            <p className="text-xs text-muted-foreground">
+              Envie <strong>saldo</strong>, <strong>resumo</strong> ou <strong>ajuda</strong> a
+              qualquer momento — ou mande texto, foto e áudio para registrar gastos.
+            </p>
+          </div>
           <button
             onClick={handleRemove}
             disabled={saving}
