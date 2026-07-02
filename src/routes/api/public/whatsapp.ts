@@ -3,38 +3,80 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { extractTransactions, type ExtractInput } from "@/lib/extract.server";
 import { normalizePhone, phoneCandidates } from "@/lib/whatsapp.functions";
 
-/** Reconstructs the public URL Twilio used to sign the request. */
-function getWebhookUrl(request: Request): string {
+/**
+ * Reconstructs the candidate public URLs Twilio may have used to sign the
+ * request. Behind proxies (Cloudflare/Lovable) the proto/host can differ from
+ * what Twilio has configured, so we validate the signature against a few
+ * plausible variants (http/https, forwarded vs. direct host, trailing slash).
+ */
+function getWebhookUrlCandidates(request: Request): string[] {
   const override = process.env.TWILIO_WEBHOOK_URL;
-  if (override) return override;
+  if (override) return [override, override.replace(/\/$/, ""), override.replace(/\/?$/, "/")];
+
   const url = new URL(request.url);
-  const proto = request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
-  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host;
-  return `${proto}://${host}${url.pathname}`;
+  const pathname = url.pathname;
+  const search = url.search; // preserve any query string Twilio signs over
+  const protos = new Set<string>();
+  const fwdProto = request.headers.get("x-forwarded-proto");
+  if (fwdProto) protos.add(fwdProto.split(",")[0].trim());
+  protos.add(url.protocol.replace(":", ""));
+  protos.add("https"); // Twilio always calls the public HTTPS endpoint
+
+  const hosts = new Set<string>();
+  const fwdHost = request.headers.get("x-forwarded-host");
+  if (fwdHost) hosts.add(fwdHost.split(",")[0].trim());
+  const host = request.headers.get("host");
+  if (host) hosts.add(host);
+  hosts.add(url.host);
+
+  const candidates = new Set<string>();
+  for (const proto of protos) {
+    for (const h of hosts) {
+      if (!h) continue;
+      candidates.add(`${proto}://${h}${pathname}${search}`);
+      candidates.add(`${proto}://${h}${pathname}`);
+    }
+  }
+  return [...candidates];
 }
 
 /**
- * Validates Twilio's X-Twilio-Signature (HMAC-SHA1 over the request URL +
- * the alphabetically sorted POST params) using a constant-time comparison.
+ * Computes Twilio's expected X-Twilio-Signature (HMAC-SHA1 over the URL +
+ * the alphabetically sorted POST params).
  */
-function validateTwilioSignature(
+function computeTwilioSignature(
   authToken: string,
-  signature: string,
   url: string,
   params: Record<string, string>,
-): boolean {
+): string {
   const data =
     url +
     Object.keys(params)
       .sort()
       .reduce((acc, key) => acc + key + params[key], "");
-  const expected = createHmac("sha1", authToken)
-    .update(Buffer.from(data, "utf-8"))
-    .digest("base64");
+  return createHmac("sha1", authToken).update(Buffer.from(data, "utf-8")).digest("base64");
+}
+
+/** Constant-time comparison of two base64 signatures. */
+function signaturesMatch(expected: string, signature: string): boolean {
   const a = Buffer.from(expected);
   const b = Buffer.from(signature || "");
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
+}
+
+/** Validates the request signature against every plausible webhook URL. */
+function isValidTwilioRequest(
+  authToken: string,
+  signature: string,
+  request: Request,
+  params: Record<string, string>,
+): boolean {
+  if (!signature) return false;
+  for (const url of getWebhookUrlCandidates(request)) {
+    if (signaturesMatch(computeTwilioSignature(authToken, url, params), signature)) return true;
+  }
+  return false;
 }
 
 function twiml(message: string): Response {
@@ -155,10 +197,19 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         for (const [k, v] of form.entries()) {
           if (typeof v === "string") params[k] = v;
         }
-        if (
-          !authToken ||
-          !validateTwilioSignature(authToken, signature, getWebhookUrl(request), params)
-        ) {
+        if (!authToken) {
+          // Without the Auth Token we cannot validate Twilio's signature, so
+          // every request would silently 403. Log clearly so it's obvious the
+          // TWILIO_AUTH_TOKEN secret is missing from the deployment.
+          console.error(
+            "[whatsapp] TWILIO_AUTH_TOKEN não configurado — não é possível validar a assinatura da Twilio.",
+          );
+          return new Response("Webhook not configured", { status: 500 });
+        }
+        if (!isValidTwilioRequest(authToken, signature, request, params)) {
+          console.warn(
+            `[whatsapp] Assinatura inválida. hasSignature=${Boolean(signature)} url=${request.url}`,
+          );
           return new Response("Forbidden", { status: 403 });
         }
 
