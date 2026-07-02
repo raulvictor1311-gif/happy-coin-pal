@@ -57,6 +57,54 @@ function brl(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const HELP_TEXT =
+  "🤖 *Finlux — Meu Assessor*\n\nMe mande o que você gastou e eu registro automaticamente:\n• ✍️ Texto: \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\nComandos rápidos:\n• *saldo* — seu saldo do mês\n• *resumo* — receitas, despesas e top categorias\n• *ajuda* — mostra esta mensagem";
+
+/** Detecta comandos de consulta (não são transações). */
+function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
+  const t = body
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  if (["ajuda", "help", "menu", "comandos", "?"].includes(t)) return "ajuda";
+  if (["saldo", "quanto tenho", "meu saldo"].includes(t)) return "saldo";
+  if (["resumo", "resumo do mes", "relatorio", "extrato"].includes(t)) return "resumo";
+  return null;
+}
+
+/** Gera o resumo financeiro do mês atual do usuário a partir das transações. */
+async function monthlySummary(
+  supabaseAdmin: any,
+  userId: string,
+): Promise<{ income: number; expense: number; balance: number; topCategories: [string, number][] }> {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+  const { data } = await supabaseAdmin
+    .from("transactions")
+    .select("kind, amount, category, date")
+    .eq("user_id", userId)
+    .gte("date", start)
+    .lt("date", end);
+
+  const rows: { kind: string; amount: number; category: string }[] = data ?? [];
+  let income = 0;
+  let expense = 0;
+  const byCat = new Map<string, number>();
+  for (const r of rows) {
+    const amt = Number(r.amount) || 0;
+    if (r.kind === "receita") {
+      income += amt;
+    } else {
+      expense += amt;
+      byCat.set(r.category, (byCat.get(r.category) || 0) + amt);
+    }
+  }
+  const topCategories = [...byCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return { income, expense, balance: income - expense, topCategories };
+}
+
 /** Baixa uma mídia do Twilio através do gateway de conectores da Lovable. */
 async function fetchTwilioMedia(
   mediaUrl: string,
@@ -151,36 +199,68 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           );
         }
 
-        // Número verificado: extrai a transação.
-        const input: ExtractInput = {};
-        if (body) input.text = body;
+        // Comandos de consulta (não são transações): saldo, resumo, ajuda.
+        if (numMedia === 0 && body) {
+          const cmd = detectCommand(body);
+          if (cmd === "ajuda") return twiml(HELP_TEXT);
+          if (cmd === "saldo") {
+            const s = await monthlySummary(supabaseAdmin, link.user_id);
+            const emoji = s.balance >= 0 ? "🟢" : "🔴";
+            return twiml(
+              `${emoji} *Saldo do mês:* ${brl(s.balance)}\n\nReceitas: ${brl(s.income)}\nDespesas: ${brl(s.expense)}`,
+            );
+          }
+          if (cmd === "resumo") {
+            const s = await monthlySummary(supabaseAdmin, link.user_id);
+            const cats = s.topCategories.length
+              ? s.topCategories.map((c) => `• ${c[0]}: ${brl(c[1])}`).join("\n")
+              : "Sem despesas registradas ainda.";
+            return twiml(
+              `📊 *Resumo do mês*\n\n🟢 Receitas: ${brl(s.income)}\n🔴 Despesas: ${brl(s.expense)}\n${
+                s.balance >= 0 ? "🟢" : "🔴"
+              } Saldo: ${brl(s.balance)}\n\n*Onde você mais gastou:*\n${cats}`,
+            );
+          }
+        }
 
-        if (numMedia > 0) {
-          const mediaUrl = String(form.get("MediaUrl0") || "");
-          const mediaType = String(form.get("MediaContentType0") || "");
+        // Número verificado: coleta texto + todas as mídias (foto/áudio) enviadas.
+        const inputs: ExtractInput[] = [];
+        if (body) inputs.push({ text: body });
+
+        let mediaFailed = false;
+        for (let i = 0; i < numMedia; i++) {
+          const mediaUrl = String(form.get(`MediaUrl${i}`) || "");
+          const mediaType = String(form.get(`MediaContentType${i}`) || "");
+          if (!mediaUrl) continue;
           const media = await fetchTwilioMedia(mediaUrl);
           if (!media) {
+            mediaFailed = true;
+            continue;
+          }
+          const b64 = Buffer.from(media.buffer).toString("base64");
+          const ct = media.contentType || mediaType;
+          if (ct.startsWith("image/")) {
+            inputs.push({ imageDataUrl: `data:${ct};base64,${b64}` });
+          } else if (ct.startsWith("audio/")) {
+            inputs.push({ audio: { base64: b64, format: audioFormat(ct) } });
+          }
+        }
+
+        if (inputs.length === 0) {
+          if (mediaFailed) {
             return twiml(
               "Recebi sua mídia, mas ainda não consegui baixá-la. Verifique a conexão do WhatsApp/Twilio ou descreva o gasto por texto. 🙏",
             );
           }
-          const b64 = Buffer.from(media.buffer).toString("base64");
-          if (media.contentType.startsWith("image/") || mediaType.startsWith("image/")) {
-            input.imageDataUrl = `data:${media.contentType || mediaType};base64,${b64}`;
-          } else if (media.contentType.startsWith("audio/") || mediaType.startsWith("audio/")) {
-            input.audio = { base64: b64, format: audioFormat(media.contentType || mediaType) };
-          }
-        }
-
-        if (!input.text && !input.imageDataUrl && !input.audio) {
           return twiml(
-            "Manda o que você gastou (texto, foto da nota ou áudio) que eu registro pra você. 😉",
+            "Manda o que você gastou (texto, foto da nota ou áudio) que eu registro pra você. Digite *ajuda* para ver os comandos. 😉",
           );
         }
 
-        let txs;
+        let txs: Awaited<ReturnType<typeof extractTransactions>> = [];
         try {
-          txs = await extractTransactions(input, apiKey);
+          const results = await Promise.all(inputs.map((inp) => extractTransactions(inp, apiKey)));
+          txs = results.flat();
         } catch {
           return twiml("Tive um problema ao analisar. Pode tentar de novo em instantes?");
         }
@@ -190,6 +270,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             "Não consegui entender a transação. Tente algo como: \"Gastei 35 reais no almoço\".",
           );
         }
+
 
         const rows = txs.map((t) => ({
           user_id: link.user_id,
