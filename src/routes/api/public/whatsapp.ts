@@ -57,6 +57,54 @@ function brl(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const HELP_TEXT =
+  "🤖 *Finlux — Meu Assessor*\n\nMe mande o que você gastou e eu registro automaticamente:\n• ✍️ Texto: \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\nComandos rápidos:\n• *saldo* — seu saldo do mês\n• *resumo* — receitas, despesas e top categorias\n• *ajuda* — mostra esta mensagem";
+
+/** Detecta comandos de consulta (não são transações). */
+function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
+  const t = body
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  if (["ajuda", "help", "menu", "comandos", "?"].includes(t)) return "ajuda";
+  if (["saldo", "quanto tenho", "meu saldo"].includes(t)) return "saldo";
+  if (["resumo", "resumo do mes", "relatorio", "extrato"].includes(t)) return "resumo";
+  return null;
+}
+
+/** Gera o resumo financeiro do mês atual do usuário a partir das transações. */
+async function monthlySummary(
+  supabaseAdmin: any,
+  userId: string,
+): Promise<{ income: number; expense: number; balance: number; topCategories: [string, number][] }> {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+  const { data } = await supabaseAdmin
+    .from("transactions")
+    .select("kind, amount, category, date")
+    .eq("user_id", userId)
+    .gte("date", start)
+    .lt("date", end);
+
+  const rows: { kind: string; amount: number; category: string }[] = data ?? [];
+  let income = 0;
+  let expense = 0;
+  const byCat = new Map<string, number>();
+  for (const r of rows) {
+    const amt = Number(r.amount) || 0;
+    if (r.kind === "receita") {
+      income += amt;
+    } else {
+      expense += amt;
+      byCat.set(r.category, (byCat.get(r.category) || 0) + amt);
+    }
+  }
+  const topCategories = [...byCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return { income, expense, balance: income - expense, topCategories };
+}
+
 /** Baixa uma mídia do Twilio através do gateway de conectores da Lovable. */
 async function fetchTwilioMedia(
   mediaUrl: string,
