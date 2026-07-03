@@ -22,16 +22,10 @@ import {
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
-import {
-  useFinance,
-  getMonthlySummary,
-  netWorth,
-  installmentsByMonth,
-  financialHealth,
-} from "@/lib/finance-store";
-import { formatBRL as brl } from "@/lib/format";
+import { useFinance } from "@/lib/finance-store";
+import { buildFinanceContext } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, TrendingUp, PiggyBank, AlertTriangle } from "lucide-react";
+import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
   head: () => ({ meta: [{ title: "Assistente IA — Finlux" }] }),
@@ -40,40 +34,18 @@ export const Route = createFileRoute("/assistente")({
 
 const SUGGESTIONS = [
   { icon: TrendingUp, label: "Analise meus gastos do mês" },
-  { icon: PiggyBank, label: "Quanto posso investir por mês?" },
   { icon: AlertTriangle, label: "Onde estou desperdiçando dinheiro?" },
   { icon: Sparkles, label: "Preveja meu saldo até o fim do mês" },
+  { icon: ShoppingCart, label: "Posso comprar um celular de R$ 4.000?" },
+  { icon: Target, label: "Quanto preciso investir para chegar a R$ 100 mil?" },
+  { icon: PiggyBank, label: "Quanto devo guardar por mês?" },
 ];
 
 function Assistente() {
   const state = useFinance();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const context = useMemo(() => {
-    const s = getMonthlySummary(state);
-    const nw = netWorth(state);
-    const health = financialHealth(s);
-    const inst = installmentsByMonth(state, 1)[0]?.total ?? 0;
-    const cats = s.byCategory
-      .slice(0, 6)
-      .map((c) => `- ${c.category}: ${brl(c.total)}`)
-      .join("\n");
-    return [
-      `Renda mensal informada: ${brl(state.monthlyIncome)}`,
-      `Receitas do mês: ${brl(s.income)}`,
-      `Despesas do mês: ${brl(s.expense)}`,
-      `Economia do mês: ${brl(s.savings)}`,
-      `Saldo geral: ${brl(s.balance)}`,
-      `Saúde financeira: ${health.label} (${health.score}/100)`,
-      `Parcelas do mês: ${brl(inst)}`,
-      `Patrimônio líquido: ${brl(nw.net)} (ativos ${brl(nw.assets)} / dívidas ${brl(nw.debts)})`,
-      `Total de transações registradas: ${state.transactions.length}`,
-      `Metas ativas: ${state.goals.length}`,
-      cats ? `Top categorias de despesa:\n${cats}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }, [state]);
+  const context = useMemo(() => buildFinanceContext(state), [state]);
 
   const transport = useMemo(
     () =>

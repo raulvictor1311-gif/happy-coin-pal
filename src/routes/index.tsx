@@ -19,6 +19,7 @@ import {
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { AiInsights } from "@/components/ai-insights";
+import { FinanceIntelligence } from "@/components/finance-intelligence";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -241,6 +242,9 @@ function Dashboard() {
           <FinCard icon={Wallet} label="Saldo" value={summary.balance} tone="accent" hidden={hidden} />
         </div>
       </section>
+
+      {/* Inteligência financeira (IA) */}
+      <FinanceIntelligence state={state} hidden={hidden} />
 
       {/* Evolução mensal */}
       <EvolutionSection state={state} hidden={hidden} />

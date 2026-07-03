@@ -1,43 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, RefreshCw, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  getMonthlySummary,
-  financialHealth,
-  installmentsByMonth,
-  netWorth,
-  type FinanceState,
-} from "@/lib/finance-store";
-import { formatBRL } from "@/lib/format";
+import { type FinanceState } from "@/lib/finance-store";
+import { buildFinanceContext } from "@/lib/finance-ai";
 
 type Tone = "positive" | "warning" | "neutral";
 type Insight = { title: string; detail: string; tone: Tone };
-
-function buildContext(state: FinanceState): string {
-  const s = getMonthlySummary(state);
-  const nw = netWorth(state);
-  const health = financialHealth(s);
-  const inst = installmentsByMonth(state, 1)[0]?.total ?? 0;
-  const cats = s.byCategory
-    .slice(0, 6)
-    .map((c) => `- ${c.category}: ${formatBRL(c.total)}`)
-    .join("\n");
-  return [
-    `Renda mensal informada: ${formatBRL(state.monthlyIncome)}`,
-    `Receitas do mês: ${formatBRL(s.income)}`,
-    `Despesas do mês: ${formatBRL(s.expense)}`,
-    `Economia do mês: ${formatBRL(s.savings)}`,
-    `Saldo geral: ${formatBRL(s.balance)}`,
-    `Saúde financeira: ${health.label} (${health.score}/100)`,
-    `Parcelas do mês: ${formatBRL(inst)}`,
-    `Patrimônio líquido: ${formatBRL(nw.net)} (ativos ${formatBRL(nw.assets)} / dívidas ${formatBRL(nw.debts)})`,
-    `Total de transações registradas: ${state.transactions.length}`,
-    `Metas ativas: ${state.goals.length}`,
-    cats ? `Top categorias de despesa:\n${cats}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
 
 const toneStyles: Record<Tone, { color: string; Icon: typeof Sparkles }> = {
   positive: { color: "var(--color-success)", Icon: TrendingUp },
@@ -46,7 +14,7 @@ const toneStyles: Record<Tone, { color: string; Icon: typeof Sparkles }> = {
 };
 
 export function AiInsights({ state }: { state: FinanceState }) {
-  const context = useMemo(() => buildContext(state), [state]);
+  const context = useMemo(() => buildFinanceContext(state), [state]);
   const hasData = state.transactions.length > 0;
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(false);
