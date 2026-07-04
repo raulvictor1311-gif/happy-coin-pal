@@ -365,7 +365,7 @@ function Assessor() {
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       value={t.category}
-                      onChange={(e) => updateTx(i, { category: e.target.value })}
+                      onChange={(e) => updateTx(i, { category: e.target.value, learned: false })}
                       className="bg-card rounded-lg px-3 py-2 text-sm"
                     >
                       {cats.includes(t.category) ? null : <option value={t.category}>{t.category}</option>}
@@ -378,7 +378,14 @@ function Assessor() {
                       className="bg-card rounded-lg px-3 py-2 text-sm"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">{formatBRL(t.amount)} • {t.category}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">{formatBRL(t.amount)} • {t.category}</p>
+                    {t.learned && (
+                      <span className="flex items-center gap-1 rounded-full bg-primary/12 text-primary px-2 py-0.5 text-[10px] font-semibold">
+                        <Wand2 className="h-3 w-3" /> aprendido do histórico
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
