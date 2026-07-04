@@ -143,17 +143,20 @@ function Assistente() {
                 description="Analiso seus gastos, sugiro economias, projeto saldo e respondo dúvidas financeiras."
               >
                 <div className="mt-4 grid gap-2 w-full">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s.label}
-                      type="button"
-                      onClick={() => sendMessage({ text: s.label })}
-                      className="flex items-center gap-3 rounded-2xl bg-card-elevated border border-border px-4 py-3 text-left text-sm text-foreground hover:border-primary transition-colors animate-in fade-in slide-in-from-bottom-1"
-                    >
-                      <s.icon className="h-4 w-4 text-primary shrink-0" />
-                      <span className="flex-1">{s.label}</span>
-                    </button>
-                  ))}
+                  {suggestions.map((label) => {
+                    const Icon = iconFor(label);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => sendMessage({ text: label })}
+                        className="flex items-center gap-3 rounded-2xl bg-card-elevated border border-border px-4 py-3 text-left text-sm text-foreground hover:border-primary transition-colors animate-in fade-in slide-in-from-bottom-1"
+                      >
+                        <Icon className="h-4 w-4 text-primary shrink-0" />
+                        <span className="flex-1">{label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </ConversationEmptyState>
             ) : (
