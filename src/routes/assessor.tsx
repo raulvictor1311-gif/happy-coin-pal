@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useRef, useState } from "react";
-import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock } from "lucide-react";
-import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
+import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock, Wand2 } from "lucide-react";
+import { financeActions, useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
+import { suggestCategoryFromHistory } from "@/lib/finance-ai";
 import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,8 @@ type ExtractedTx = {
   category: string;
   description: string;
   date: string;
+  /** true quando a categoria foi preenchida a partir do histórico do usuário. */
+  learned?: boolean;
 };
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -54,6 +57,7 @@ function audioFormatFromMime(mime: string): "webm" | "m4a" | "mp3" | "wav" | "og
 
 function Assessor() {
   const { session, loading: authLoading } = useAuth();
+  const state = useFinance();
   const [text, setText] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -137,13 +141,28 @@ function Assessor() {
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "Falha");
-      const txs: ExtractedTx[] = (j.transactions ?? []).map((t: any) => ({
-        kind: t.kind === "receita" ? "receita" : "despesa",
-        amount: Math.max(0, Number(t.amount) || 0),
-        category: String(t.category || "Outros"),
-        description: String(t.description || ""),
-        date: String(t.date || new Date().toISOString().slice(0, 10)),
-      }));
+      const txs: ExtractedTx[] = (j.transactions ?? []).map((t: any) => {
+        const kind: "receita" | "despesa" = t.kind === "receita" ? "receita" : "despesa";
+        let category = String(t.category || "Outros");
+        const description = String(t.description || "");
+        let learned = false;
+        // Aprendizado contínuo: quando a IA fica genérica, usa o histórico.
+        if (category === "Outros" || category === "Outras receitas" || !category) {
+          const guess = suggestCategoryFromHistory(state, description, kind);
+          if (guess && guess.support >= 1 && guess.category !== category) {
+            category = guess.category;
+            learned = true;
+          }
+        }
+        return {
+          kind,
+          amount: Math.max(0, Number(t.amount) || 0),
+          category,
+          description,
+          date: String(t.date || new Date().toISOString().slice(0, 10)),
+          learned,
+        };
+      });
       if (txs.length === 0) {
         toast.error("Não consegui entender. Tente descrever com mais detalhes.");
       } else {
@@ -346,7 +365,7 @@ function Assessor() {
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       value={t.category}
-                      onChange={(e) => updateTx(i, { category: e.target.value })}
+                      onChange={(e) => updateTx(i, { category: e.target.value, learned: false })}
                       className="bg-card rounded-lg px-3 py-2 text-sm"
                     >
                       {cats.includes(t.category) ? null : <option value={t.category}>{t.category}</option>}
@@ -359,7 +378,14 @@ function Assessor() {
                       className="bg-card rounded-lg px-3 py-2 text-sm"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">{formatBRL(t.amount)} • {t.category}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">{formatBRL(t.amount)} • {t.category}</p>
+                    {t.learned && (
+                      <span className="flex items-center gap-1 rounded-full bg-primary/12 text-primary px-2 py-0.5 text-[10px] font-semibold">
+                        <Wand2 className="h-3 w-3" /> aprendido do histórico
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

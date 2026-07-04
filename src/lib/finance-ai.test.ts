@@ -10,6 +10,7 @@ import {
   monthlyInvestmentForGoal,
   detectRecurring,
   frequentCategories,
+  suggestCategoryFromHistory,
   suggestedQuestions,
   buildFinanceContext,
 } from "./finance-ai";
@@ -192,6 +193,35 @@ describe("frequentCategories", () => {
     expect(frequentCategories(state)[0].category).toBe("Alimentação");
   });
 });
+
+describe("suggestCategoryFromHistory", () => {
+  it("sugere a categoria de descrição similar no histórico", () => {
+    const state = baseState({
+      transactions: [
+        tx({ kind: "despesa", amount: 200, date: thisMonth(1), category: "Transporte", description: "Gasolina posto Shell" }),
+        tx({ kind: "despesa", amount: 180, date: thisMonth(2), category: "Transporte", description: "Gasolina posto Ipiranga" }),
+      ],
+    });
+    const s = suggestCategoryFromHistory(state, "coloquei gasolina no carro", "despesa");
+    expect(s?.category).toBe("Transporte");
+    expect(s?.support).toBeGreaterThanOrEqual(1);
+  });
+  it("retorna null sem correspondência", () => {
+    const state = baseState({
+      transactions: [tx({ kind: "despesa", amount: 50, date: thisMonth(1), category: "Lazer", description: "Cinema" })],
+    });
+    expect(suggestCategoryFromHistory(state, "consulta médica", "despesa")).toBeNull();
+  });
+  it("respeita o tipo (receita vs despesa)", () => {
+    const state = baseState({
+      transactions: [tx({ kind: "receita", amount: 3000, date: thisMonth(1), category: "Salário", description: "Salário empresa" })],
+    });
+    expect(suggestCategoryFromHistory(state, "salário", "despesa")).toBeNull();
+    expect(suggestCategoryFromHistory(state, "salário", "receita")?.category).toBe("Salário");
+  });
+});
+
+
 
 describe("suggestedQuestions", () => {
   it("retorna sugestões de onboarding sem transações", () => {
