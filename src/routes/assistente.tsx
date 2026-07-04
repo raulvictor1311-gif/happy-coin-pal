@@ -23,7 +23,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useFinance } from "@/lib/finance-store";
-import { buildFinanceContext } from "@/lib/finance-ai";
+import { buildFinanceContext, suggestedQuestions } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
@@ -32,20 +32,24 @@ export const Route = createFileRoute("/assistente")({
   component: Assistente,
 });
 
-const SUGGESTIONS = [
-  { icon: TrendingUp, label: "Analise meus gastos do mês" },
-  { icon: AlertTriangle, label: "Onde estou desperdiçando dinheiro?" },
-  { icon: Sparkles, label: "Preveja meu saldo até o fim do mês" },
-  { icon: ShoppingCart, label: "Posso comprar um celular de R$ 4.000?" },
-  { icon: Target, label: "Quanto preciso investir para chegar a R$ 100 mil?" },
-  { icon: PiggyBank, label: "Quanto devo guardar por mês?" },
-];
+/** Escolhe um ícone coerente com o tema da sugestão. */
+function iconFor(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("desperdi") || l.includes("reduzir") || l.includes("negativo")) return AlertTriangle;
+  if (l.includes("investir") || l.includes("investimento") || l.includes("atingir")) return Target;
+  if (l.includes("guardar") || l.includes("reserva")) return PiggyBank;
+  if (l.includes("comprar") || l.includes("gastar")) return ShoppingCart;
+  if (l.includes("saldo") || l.includes("preveja") || l.includes("score")) return Sparkles;
+  return TrendingUp;
+}
 
 function Assistente() {
   const state = useFinance();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const context = useMemo(() => buildFinanceContext(state), [state]);
+  const suggestions = useMemo(() => suggestedQuestions(state, new Date(), 6), [state]);
+  const quickActions = useMemo(() => suggestedQuestions(state, new Date(), 3), [state]);
 
   const transport = useMemo(
     () =>
@@ -139,17 +143,20 @@ function Assistente() {
                 description="Analiso seus gastos, sugiro economias, projeto saldo e respondo dúvidas financeiras."
               >
                 <div className="mt-4 grid gap-2 w-full">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s.label}
-                      type="button"
-                      onClick={() => sendMessage({ text: s.label })}
-                      className="flex items-center gap-3 rounded-2xl bg-card-elevated border border-border px-4 py-3 text-left text-sm text-foreground hover:border-primary transition-colors animate-in fade-in slide-in-from-bottom-1"
-                    >
-                      <s.icon className="h-4 w-4 text-primary shrink-0" />
-                      <span className="flex-1">{s.label}</span>
-                    </button>
-                  ))}
+                  {suggestions.map((label) => {
+                    const Icon = iconFor(label);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => sendMessage({ text: label })}
+                        className="flex items-center gap-3 rounded-2xl bg-card-elevated border border-border px-4 py-3 text-left text-sm text-foreground hover:border-primary transition-colors animate-in fade-in slide-in-from-bottom-1"
+                      >
+                        <Icon className="h-4 w-4 text-primary shrink-0" />
+                        <span className="flex-1">{label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </ConversationEmptyState>
             ) : (
@@ -188,6 +195,27 @@ function Assistente() {
             {error.message || "Falha ao consultar o assistente."}
           </div>
         ) : null}
+
+        {messages.length > 0 && !isLoading ? (
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {quickActions.map((label) => {
+              const Icon = iconFor(label);
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => sendMessage({ text: label })}
+                  className="flex items-center gap-1.5 shrink-0 rounded-full bg-card-elevated border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary transition-colors"
+                >
+                  <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+
 
         <PromptInput onSubmit={handleSend} className="rounded-3xl">
           <PromptInputTextarea

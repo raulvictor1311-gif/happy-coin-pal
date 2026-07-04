@@ -438,6 +438,78 @@ export function frequentCategories(state: FinanceState, limit = 5): { category: 
 }
 
 // ---------------------------------------------------------------------------
+// Sugestões dinâmicas de perguntas para o chat (baseadas nos dados reais).
+// ---------------------------------------------------------------------------
+
+const DEFAULT_SUGGESTIONS = [
+  "Analise meus gastos do mês",
+  "Onde estou desperdiçando dinheiro?",
+  "Preveja meu saldo até o fim do mês",
+  "Quanto devo guardar por mês?",
+  "Como está meu Score financeiro?",
+  "Que investimento faz sentido para mim?",
+];
+
+/** Gera perguntas rápidas contextualizadas pelo estado do usuário. Sempre
+ *  retorna `limit` itens, completando com genéricas quando faltar contexto. */
+export function suggestedQuestions(state: FinanceState, ref = new Date(), limit = 4): string[] {
+  const out: string[] = [];
+
+  if (state.transactions.length === 0) {
+    return [
+      "Como o Finlux pode me ajudar?",
+      "Como registro meus gastos?",
+      "O que é o Score financeiro?",
+      "Como monto minha reserva de emergência?",
+    ].slice(0, limit);
+  }
+
+  const score = financialScore(state, ref);
+  const forecast = balanceForecast(state, ref);
+  const reserve = emergencyReserve(state, 6, ref);
+  const waste = detectWaste(state, ref);
+
+  // 1) Desperdício em destaque.
+  const topWaste = waste[0];
+  if (topWaste) {
+    out.push(`Como reduzir meus gastos com ${topWaste.category}?`);
+  }
+
+  // 2) Saldo projetado negativo — alerta prioritário.
+  if (forecast.projectedBalance < 0) {
+    out.push("Meu saldo vai ficar negativo? O que faço?");
+  } else if (forecast.daysRemaining > 0) {
+    out.push("Quanto posso gastar até o fim do mês?");
+  }
+
+  // 3) Reserva de emergência baixa.
+  if (reserve.pct < 60) {
+    out.push("Quanto preciso guardar para minha reserva de emergência?");
+  }
+
+  // 4) Score baixo/regular — pedir plano.
+  if (score.label === "Regular" || score.label === "Frágil") {
+    out.push("Como melhorar meu Score financeiro?");
+  } else if (score.label !== "Sem dados") {
+    out.push("Como está meu Score financeiro?");
+  }
+
+  // 5) Metas ativas — acompanhamento.
+  if (state.goals.length > 0) {
+    const g = state.goals[0];
+    out.push(`Quanto investir por mês para atingir "${g.title}"?`);
+  }
+
+  // Completa com genéricas sem duplicar.
+  for (const s of DEFAULT_SUGGESTIONS) {
+    if (out.length >= limit) break;
+    if (!out.includes(s)) out.push(s);
+  }
+
+  return out.slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
 // Contexto rico para a IA (chat + insights) — consolida tudo acima.
 // ---------------------------------------------------------------------------
 
