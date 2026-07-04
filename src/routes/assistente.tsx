@@ -32,20 +32,24 @@ export const Route = createFileRoute("/assistente")({
   component: Assistente,
 });
 
-const SUGGESTIONS = [
-  { icon: TrendingUp, label: "Analise meus gastos do mês" },
-  { icon: AlertTriangle, label: "Onde estou desperdiçando dinheiro?" },
-  { icon: Sparkles, label: "Preveja meu saldo até o fim do mês" },
-  { icon: ShoppingCart, label: "Posso comprar um celular de R$ 4.000?" },
-  { icon: Target, label: "Quanto preciso investir para chegar a R$ 100 mil?" },
-  { icon: PiggyBank, label: "Quanto devo guardar por mês?" },
-];
+/** Escolhe um ícone coerente com o tema da sugestão. */
+function iconFor(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("desperdi") || l.includes("reduzir") || l.includes("negativo")) return AlertTriangle;
+  if (l.includes("investir") || l.includes("investimento") || l.includes("atingir")) return Target;
+  if (l.includes("guardar") || l.includes("reserva")) return PiggyBank;
+  if (l.includes("comprar") || l.includes("gastar")) return ShoppingCart;
+  if (l.includes("saldo") || l.includes("preveja") || l.includes("score")) return Sparkles;
+  return TrendingUp;
+}
 
 function Assistente() {
   const state = useFinance();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const context = useMemo(() => buildFinanceContext(state), [state]);
+  const suggestions = useMemo(() => suggestedQuestions(state, new Date(), 6), [state]);
+  const quickActions = useMemo(() => suggestedQuestions(state, new Date(), 3), [state]);
 
   const transport = useMemo(
     () =>
