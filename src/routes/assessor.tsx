@@ -21,6 +21,8 @@ type ExtractedTx = {
   category: string;
   description: string;
   date: string;
+  /** true quando a categoria foi preenchida a partir do histórico do usuário. */
+  learned?: boolean;
 };
 
 function fileToDataUrl(file: File): Promise<string> {
