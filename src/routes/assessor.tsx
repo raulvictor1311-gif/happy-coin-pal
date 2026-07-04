@@ -141,13 +141,28 @@ function Assessor() {
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "Falha");
-      const txs: ExtractedTx[] = (j.transactions ?? []).map((t: any) => ({
-        kind: t.kind === "receita" ? "receita" : "despesa",
-        amount: Math.max(0, Number(t.amount) || 0),
-        category: String(t.category || "Outros"),
-        description: String(t.description || ""),
-        date: String(t.date || new Date().toISOString().slice(0, 10)),
-      }));
+      const txs: ExtractedTx[] = (j.transactions ?? []).map((t: any) => {
+        const kind: "receita" | "despesa" = t.kind === "receita" ? "receita" : "despesa";
+        let category = String(t.category || "Outros");
+        const description = String(t.description || "");
+        let learned = false;
+        // Aprendizado contínuo: quando a IA fica genérica, usa o histórico.
+        if (category === "Outros" || category === "Outras receitas" || !category) {
+          const guess = suggestCategoryFromHistory(state, description, kind);
+          if (guess && guess.support >= 1 && guess.category !== category) {
+            category = guess.category;
+            learned = true;
+          }
+        }
+        return {
+          kind,
+          amount: Math.max(0, Number(t.amount) || 0),
+          category,
+          description,
+          date: String(t.date || new Date().toISOString().slice(0, 10)),
+          learned,
+        };
+      });
       if (txs.length === 0) {
         toast.error("Não consegui entender. Tente descrever com mais detalhes.");
       } else {
