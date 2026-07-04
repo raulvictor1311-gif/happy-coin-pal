@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useRef, useState } from "react";
-import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock } from "lucide-react";
-import { financeActions, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
+import { Camera, Mic, Square, Sparkles, Trash2, Check, Loader2, ImageIcon, Lock, Wand2 } from "lucide-react";
+import { financeActions, useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/lib/finance-store";
+import { suggestCategoryFromHistory } from "@/lib/finance-ai";
 import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
