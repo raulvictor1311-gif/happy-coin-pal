@@ -193,6 +193,34 @@ describe("frequentCategories", () => {
   });
 });
 
+describe("suggestedQuestions", () => {
+  it("retorna sugestões de onboarding sem transações", () => {
+    const q = suggestedQuestions(baseState());
+    expect(q.length).toBe(4);
+    expect(q.some((s) => s.toLowerCase().includes("registro"))).toBe(true);
+  });
+  it("sugere reduzir a categoria de desperdício detectada", () => {
+    const state = baseState({
+      monthlyIncome: 3000,
+      transactions: [
+        tx({ kind: "receita", amount: 3000, date: thisMonth(1) }),
+        tx({ kind: "despesa", amount: 300, date: thisMonth(3), category: "Assinaturas" }),
+      ],
+    });
+    const q = suggestedQuestions(state);
+    expect(q.some((s) => s.includes("Assinaturas"))).toBe(true);
+  });
+  it("nunca retorna itens duplicados", () => {
+    const state = baseState({
+      monthlyIncome: 5000,
+      goals: [{ id: "g", title: "Viagem", target: 10000, saved: 1000, deadline: thisMonth(28, 6), emoji: "✈️" }],
+      transactions: [tx({ kind: "receita", amount: 5000, date: thisMonth(1) })],
+    });
+    const q = suggestedQuestions(state);
+    expect(new Set(q).size).toBe(q.length);
+  });
+});
+
 describe("buildFinanceContext", () => {
   it("inclui score e estabilidade no texto", () => {
     const state = baseState({
