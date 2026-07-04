@@ -196,6 +196,27 @@ function Assistente() {
           </div>
         ) : null}
 
+        {messages.length > 0 && !isLoading ? (
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {quickActions.map((label) => {
+              const Icon = iconFor(label);
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => sendMessage({ text: label })}
+                  className="flex items-center gap-1.5 shrink-0 rounded-full bg-card-elevated border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary transition-colors"
+                >
+                  <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+
+
         <PromptInput onSubmit={handleSend} className="rounded-3xl">
           <PromptInputTextarea
             ref={textareaRef}
