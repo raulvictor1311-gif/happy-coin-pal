@@ -10,6 +10,7 @@ import {
   monthlyInvestmentForGoal,
   detectRecurring,
   frequentCategories,
+  suggestedQuestions,
   buildFinanceContext,
 } from "./finance-ai";
 import { type FinanceState, type Transaction, type Asset } from "./finance-store";
