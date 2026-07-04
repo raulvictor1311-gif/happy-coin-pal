@@ -10,6 +10,7 @@ import {
   monthlyInvestmentForGoal,
   detectRecurring,
   frequentCategories,
+  suggestCategoryFromHistory,
   suggestedQuestions,
   buildFinanceContext,
 } from "./finance-ai";
