@@ -437,6 +437,66 @@ export function frequentCategories(state: FinanceState, limit = 5): { category: 
     .slice(0, limit);
 }
 
+export interface CategorySuggestion {
+  category: string;
+  /** 0..1 — confiança relativa baseada em correspondências no histórico. */
+  confidence: number;
+  /** Nº de transações passadas que sustentam a sugestão. */
+  support: number;
+}
+
+/** Sugere a categoria de uma nova transação a partir do histórico do usuário,
+ *  casando a descrição por igualdade e por tokens em comum. Retorna `null`
+ *  quando não há evidência suficiente. */
+export function suggestCategoryFromHistory(
+  state: FinanceState,
+  description: string,
+  kind: "receita" | "despesa",
+): CategorySuggestion | null {
+  const norm = normalize(description);
+  if (!norm) return null;
+  const tokens = norm.split(" ").filter((t) => t.length >= 3);
+
+  const scores = new Map<string, { score: number; support: number }>();
+  let totalScore = 0;
+
+  for (const t of state.transactions) {
+    if (t.kind !== kind) continue;
+    const tnorm = normalize(t.description || "");
+    if (!tnorm) continue;
+
+    let match = 0;
+    if (tnorm === norm) {
+      match += 6;
+    } else {
+      for (const tok of tokens) {
+        if (tnorm.includes(tok)) match += 1;
+      }
+      // Casamento parcial de estabelecimento (ex.: "posto shell" ~ "shell").
+      if (match === 0 && norm.length >= 4 && tnorm.includes(norm)) match += 3;
+    }
+
+    if (match > 0) {
+      const prev = scores.get(t.category) ?? { score: 0, support: 0 };
+      scores.set(t.category, { score: prev.score + match, support: prev.support + 1 });
+      totalScore += match;
+    }
+  }
+
+  if (scores.size === 0 || totalScore === 0) return null;
+
+  const [category, best] = Array.from(scores.entries()).sort(
+    (a, b) => b[1].score - a[1].score,
+  )[0];
+
+  return {
+    category,
+    confidence: clamp(best.score / totalScore, 0, 1),
+    support: best.support,
+  };
+}
+
+
 // ---------------------------------------------------------------------------
 // Sugestões dinâmicas de perguntas para o chat (baseadas nos dados reais).
 // ---------------------------------------------------------------------------
