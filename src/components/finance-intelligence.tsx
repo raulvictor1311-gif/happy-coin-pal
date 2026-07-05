@@ -139,7 +139,7 @@ export function FinanceIntelligence({ state, hidden }: { state: FinanceState; hi
 
         <Link
           to="/assistente"
-          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold py-2.5 text-sm active:scale-[0.98] transition-transform"
+          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold py-2.5 text-sm active:scale-[0.98] transition-transform glow-primary"
         >
           Falar com o Assessor <ArrowRight className="h-4 w-4" />
         </Link>
