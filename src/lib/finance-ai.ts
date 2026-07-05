@@ -365,6 +365,72 @@ export function monthlyInvestmentForGoal(
 }
 
 // ---------------------------------------------------------------------------
+// Snapshot numérico para as ferramentas do chat (cálculos exatos no servidor).
+// ---------------------------------------------------------------------------
+
+export interface FinanceFacts {
+  income: number;
+  spentSoFar: number;
+  projectedSavings: number;
+  projectedBalance: number;
+  daysRemaining: number;
+  safeDailySpend: number;
+  reserveCurrent: number;
+  reserveTarget: number;
+  monthlyExpense: number;
+  score: number;
+  stability: number;
+  goals: { title: string; target: number; saved: number; deadline?: string }[];
+}
+
+/** Consolida os números que as ferramentas do chat usam para simular decisões. */
+export function buildFinanceFacts(state: FinanceState, ref = new Date()): FinanceFacts {
+  const f = balanceForecast(state, ref);
+  const reserve = emergencyReserve(state, 6, ref);
+  const score = financialScore(state, ref);
+  const stability = stabilityIndex(state, ref);
+  return {
+    income: referenceIncome(state, ref),
+    spentSoFar: f.spentSoFar,
+    projectedSavings: f.projectedSavings,
+    projectedBalance: f.projectedBalance,
+    daysRemaining: f.daysRemaining,
+    safeDailySpend: safeDailySpend(state, ref),
+    reserveCurrent: reserve.current,
+    reserveTarget: reserve.target,
+    monthlyExpense: reserve.monthlyExpense,
+    score: score.score,
+    stability: stability.index,
+    goals: state.goals.slice(0, 10).map((g) => ({
+      title: g.title,
+      target: g.target,
+      saved: g.saved,
+      deadline: g.deadline || undefined,
+    })),
+  };
+}
+
+/** Versão de `affordability` que opera só sobre números (para o servidor). */
+export function affordabilityFromFacts(facts: FinanceFacts, price: number): Affordability {
+  const reserveAfter = facts.reserveCurrent - price;
+  const projectedSavings = facts.projectedSavings;
+  let verdict: Affordability["verdict"];
+  let reason: string;
+  if (price <= projectedSavings && projectedSavings > 0) {
+    verdict = "sim";
+    reason = `Cabe na economia projetada do mês (${formatBRL(projectedSavings)}) sem tocar na reserva.`;
+  } else if (reserveAfter >= facts.monthlyExpense * 3) {
+    verdict = "com_cautela";
+    reason = `Ultrapassa a economia do mês, mas restariam ${formatBRL(reserveAfter)} de reserva (acima de 3 meses de gastos).`;
+  } else {
+    verdict = "nao";
+    reason = `Comprometeria a reserva de emergência: restariam apenas ${formatBRL(Math.max(0, reserveAfter))}. Vale planejar poupando por alguns meses.`;
+  }
+  return { price, verdict, projectedSavings, reserveAfter, reason };
+}
+
+
+// ---------------------------------------------------------------------------
 // Aprendizado contínuo (via histórico): recorrências e frequências
 // ---------------------------------------------------------------------------
 
