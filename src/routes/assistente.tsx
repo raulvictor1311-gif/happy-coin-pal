@@ -48,6 +48,7 @@ function Assistente() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const context = useMemo(() => buildFinanceContext(state), [state]);
+  const facts = useMemo(() => buildFinanceFacts(state), [state]);
   const suggestions = useMemo(() => suggestedQuestions(state, new Date(), 6), [state]);
   const quickActions = useMemo(() => suggestedQuestions(state, new Date(), 3), [state]);
 
@@ -61,12 +62,12 @@ function Assistente() {
           const headers: Record<string, string> = {};
           if (token) headers.Authorization = `Bearer ${token}`;
           return {
-            body: { ...body, messages, context },
+            body: { ...body, messages, context, facts },
             headers,
           };
         },
       }),
-    [context],
+    [context, facts],
   );
 
   const STORAGE_KEY = "finlux:assistente:messages";
