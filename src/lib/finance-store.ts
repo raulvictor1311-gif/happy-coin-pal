@@ -374,6 +374,90 @@ async function pullAndReconcile<T extends { id: string }>(
   return [...localOnly, ...cloud];
 }
 
+/** Puxa TODAS as tabelas da nuvem e devolve um patch de estado.
+ *  Quando `importLocal` é true, também envia itens locais ainda não sincronizados. */
+async function pullAll(userId: string, importLocal: boolean, snap: FinanceState) {
+  const [transactions, goals, cards, assets, debts, installmentPurchases] = await Promise.all([
+    pullAndReconcile<Transaction>(
+      "transactions",
+      "id, kind, amount, category, description, date, payment_method, card_id, installments",
+      userId, rowToTx, txToRow, snap.transactions, importLocal,
+    ),
+    pullAndReconcile<Goal>(
+      "goals", "id, title, target, saved, deadline, emoji",
+      userId, rowToGoal, goalToRow, snap.goals, importLocal,
+    ),
+    pullAndReconcile<CreditCard>(
+      "cards", "id, name, brand, limit, closing_day, due_day, color",
+      userId, rowToCard, cardToRow, snap.cards, importLocal,
+    ),
+    pullAndReconcile<Asset>(
+      "assets", "id, type, name, value",
+      userId, rowToAsset, assetToRow, snap.assets, importLocal,
+    ),
+    pullAndReconcile<Debt>(
+      "debts", "id, name, value",
+      userId, rowToDebt, debtToRow, snap.debts, importLocal,
+    ),
+    pullAndReconcile<InstallmentPurchase>(
+      "installment_purchases", "id, name, total, installments, paid, card_id, category, date",
+      userId, rowToInstallment, installmentToRow, snap.installmentPurchases, importLocal,
+    ),
+  ]);
+  transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  return { transactions, goals, cards, assets, debts, installmentPurchases };
+}
+
+// ----- Realtime: reflete no app qualquer mudança feita pela nuvem (ex.: WhatsApp) -----
+
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+let refreshing = false;
+
+function teardownRealtime() {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+}
+
+function setupRealtime(userId: string) {
+  teardownRealtime();
+  const tables: TableName[] = [
+    "transactions", "goals", "cards", "assets", "debts", "installment_purchases",
+  ];
+  const channel = supabase.channel(`finance:${userId}`);
+  for (const table of tables) {
+    channel.on(
+      "postgres_changes" as any,
+      { event: "*", schema: "public", table, filter: `user_id=eq.${userId}` },
+      () => scheduleRefresh(),
+    );
+  }
+  channel.subscribe();
+  realtimeChannel = channel;
+}
+
+/** Reexecuta o pull da nuvem (debounced) sem reimportar itens locais.
+ *  Usado pelo realtime e ao voltar o foco para o app. */
+export function scheduleRefresh(delay = 400) {
+  if (refreshTimer) clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => void refreshFromCloud(), delay);
+}
+
+export async function refreshFromCloud() {
+  if (!currentUserId || refreshing || typeof window === "undefined") return;
+  refreshing = true;
+  try {
+    const patch = await pullAll(currentUserId, false, state);
+    setState((s) => ({ ...s, ...patch }));
+  } catch {
+    /* mantém o cache local em caso de falha de rede */
+  } finally {
+    refreshing = false;
+  }
+}
+
 /** Chamado quando o estado de login muda. Sincroniza TODOS os dados com a nuvem. */
 export async function setCloudUser(userId: string | null) {
   load();
@@ -381,6 +465,7 @@ export async function setCloudUser(userId: string | null) {
   if (typeof window === "undefined") return;
 
   if (!userId) {
+    teardownRealtime();
     // Logout: limpa dados sensíveis se antes havia um usuário real neste aparelho.
     // Uso anônimo (nunca logado) mantém os dados locais.
     const prevOwner = localStorage.getItem(OWNER_KEY);
@@ -406,47 +491,10 @@ export async function setCloudUser(userId: string | null) {
 
   setState((s) => ({ ...s, cloudLoading: true }));
   try {
-    const snap = state;
-    const [transactions, goals, cards, assets, debts, installmentPurchases] = await Promise.all([
-      pullAndReconcile<Transaction>(
-        "transactions",
-        "id, kind, amount, category, description, date, payment_method, card_id, installments",
-        userId, rowToTx, txToRow, snap.transactions, importLocal,
-      ),
-      pullAndReconcile<Goal>(
-        "goals", "id, title, target, saved, deadline, emoji",
-        userId, rowToGoal, goalToRow, snap.goals, importLocal,
-      ),
-      pullAndReconcile<CreditCard>(
-        "cards", "id, name, brand, limit, closing_day, due_day, color",
-        userId, rowToCard, cardToRow, snap.cards, importLocal,
-      ),
-      pullAndReconcile<Asset>(
-        "assets", "id, type, name, value",
-        userId, rowToAsset, assetToRow, snap.assets, importLocal,
-      ),
-      pullAndReconcile<Debt>(
-        "debts", "id, name, value",
-        userId, rowToDebt, debtToRow, snap.debts, importLocal,
-      ),
-      pullAndReconcile<InstallmentPurchase>(
-        "installment_purchases", "id, name, total, installments, paid, card_id, category, date",
-        userId, rowToInstallment, installmentToRow, snap.installmentPurchases, importLocal,
-      ),
-    ]);
-
-    transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date));
-    setState((s) => ({
-      ...s,
-      transactions,
-      goals,
-      cards,
-      assets,
-      debts,
-      installmentPurchases,
-      cloudLoading: false,
-    }));
+    const patch = await pullAll(userId, importLocal, state);
+    setState((s) => ({ ...s, ...patch, cloudLoading: false }));
     localStorage.setItem(OWNER_KEY, userId);
+    setupRealtime(userId);
   } catch {
     // Mantém o cache local em caso de falha de rede
     setState((s) => ({ ...s, cloudLoading: false }));

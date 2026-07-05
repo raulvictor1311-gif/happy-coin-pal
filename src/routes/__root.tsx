@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerPwa } from "../lib/pwa-register";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { setCloudUser } from "@/lib/finance-store";
+import { setCloudUser, scheduleRefresh } from "@/lib/finance-store";
 
 function NotFoundComponent() {
   return (
@@ -133,6 +133,22 @@ function CloudSync() {
     if (loading) return;
     setCloudUser(session?.user?.id ?? null);
   }, [session?.user?.id, loading]);
+
+  // Ao retornar o foco ao app (ex.: depois de registrar algo pelo WhatsApp),
+  // repuxa os dados da nuvem para refletir mudanças imediatamente.
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") scheduleRefresh(0);
+    };
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [session?.user?.id]);
+
   return null;
 }
 

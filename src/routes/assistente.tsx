@@ -23,7 +23,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useFinance } from "@/lib/finance-store";
-import { buildFinanceContext, suggestedQuestions } from "@/lib/finance-ai";
+import { buildFinanceContext, buildFinanceFacts, suggestedQuestions } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
@@ -48,6 +48,7 @@ function Assistente() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const context = useMemo(() => buildFinanceContext(state), [state]);
+  const facts = useMemo(() => buildFinanceFacts(state), [state]);
   const suggestions = useMemo(() => suggestedQuestions(state, new Date(), 6), [state]);
   const quickActions = useMemo(() => suggestedQuestions(state, new Date(), 3), [state]);
 
@@ -61,12 +62,12 @@ function Assistente() {
           const headers: Record<string, string> = {};
           if (token) headers.Authorization = `Bearer ${token}`;
           return {
-            body: { ...body, messages, context },
+            body: { ...body, messages, context, facts },
             headers,
           };
         },
       }),
-    [context],
+    [context, facts],
   );
 
   const STORAGE_KEY = "finlux:assistente:messages";
