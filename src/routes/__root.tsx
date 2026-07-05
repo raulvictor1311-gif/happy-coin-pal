@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerPwa } from "../lib/pwa-register";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { setCloudUser } from "@/lib/finance-store";
+import { setCloudUser, scheduleRefresh } from "@/lib/finance-store";
 
 function NotFoundComponent() {
   return (
