@@ -64,7 +64,9 @@ export function FinanceIntelligence({ state, hidden }: { state: FinanceState; hi
 
   return (
     <section className="px-6 mt-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="rounded-3xl bg-gradient-to-br from-card to-card-elevated border border-border p-5">
+      <div className="rounded-3xl card-premium p-5">
+
+
         <div className="flex items-center gap-2 mb-4">
           <Brain className="h-4 w-4 text-primary shrink-0" />
           <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
@@ -137,7 +139,7 @@ export function FinanceIntelligence({ state, hidden }: { state: FinanceState; hi
 
         <Link
           to="/assistente"
-          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold py-2.5 text-sm active:scale-[0.98] transition-transform"
+          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold py-2.5 text-sm active:scale-[0.98] transition-transform glow-primary"
         >
           Falar com o Assessor <ArrowRight className="h-4 w-4" />
         </Link>

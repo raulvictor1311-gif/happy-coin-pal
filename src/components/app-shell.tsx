@@ -52,12 +52,15 @@ function TabLink({ to, icon: Icon, label, active }: { to: string; icon: typeof H
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
+      className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
         active ? "text-primary" : "text-muted-foreground"
       }`}
     >
       <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
       <span className="text-[10px] font-semibold tracking-wider">{label.toUpperCase()}</span>
+      {active && (
+        <span className="absolute -top-1 h-1 w-1 rounded-full bg-primary glow-primary animate-in fade-in zoom-in duration-300" />
+      )}
     </Link>
   );
 }
