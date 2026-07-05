@@ -65,7 +65,7 @@ export function FinanceIntelligence({ state, hidden }: { state: FinanceState; hi
   return (
     <section className="px-6 mt-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="rounded-3xl card-premium p-5">
-        <div className="absolute" aria-hidden />
+
 
         <div className="flex items-center gap-2 mb-4">
           <Brain className="h-4 w-4 text-primary shrink-0" />
