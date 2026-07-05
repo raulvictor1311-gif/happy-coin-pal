@@ -133,6 +133,22 @@ function CloudSync() {
     if (loading) return;
     setCloudUser(session?.user?.id ?? null);
   }, [session?.user?.id, loading]);
+
+  // Ao retornar o foco ao app (ex.: depois de registrar algo pelo WhatsApp),
+  // repuxa os dados da nuvem para refletir mudanças imediatamente.
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") scheduleRefresh(0);
+    };
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [session?.user?.id]);
+
   return null;
 }
 
