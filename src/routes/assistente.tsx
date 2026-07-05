@@ -23,7 +23,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useFinance } from "@/lib/finance-store";
-import { buildFinanceContext, suggestedQuestions } from "@/lib/finance-ai";
+import { buildFinanceContext, buildFinanceFacts, suggestedQuestions } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
