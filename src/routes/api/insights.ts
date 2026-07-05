@@ -69,7 +69,8 @@ export const Route = createFileRoute("/api/insights")({
             prompt: `Resumo financeiro atual:\n${context}`,
             output: Output.object({ schema: InsightsSchema }),
           });
-          return new Response(JSON.stringify(output ?? { insights: [] }), {
+          const insights = (output?.insights ?? []).slice(0, 4);
+          return new Response(JSON.stringify({ insights }), {
             headers: { "content-type": "application/json" },
           });
         } catch (err) {
