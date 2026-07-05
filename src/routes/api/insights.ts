@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { generateText, Output } from "ai";
+import { generateText, Output, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { verifyRequestUser } from "@/lib/api-auth.server";
@@ -89,8 +89,16 @@ export const Route = createFileRoute("/api/insights")({
               headers: { "content-type": "application/json" },
             });
           }
-          return new Response(JSON.stringify({ error: "failed" }), {
-            status: 500,
+          // The gateway call succeeded but the model output didn't conform to the
+          // schema. Try to recover the raw JSON; otherwise degrade gracefully.
+          if (NoObjectGeneratedError.isInstance(err)) {
+            const parsed = safeParseInsights(err.text);
+            return new Response(JSON.stringify(parsed ?? { insights: [] }), {
+              headers: { "content-type": "application/json" },
+            });
+          }
+          console.error("insights generation failed", err);
+          return new Response(JSON.stringify({ insights: [] }), {
             headers: { "content-type": "application/json" },
           });
         }
@@ -98,3 +106,18 @@ export const Route = createFileRoute("/api/insights")({
     },
   },
 });
+
+/** Best-effort parse of a raw model response into the insights shape. */
+function safeParseInsights(text: string | undefined): z.infer<typeof InsightsSchema> | null {
+  if (!text) return null;
+  try {
+    const jsonStart = text.indexOf("{");
+    const jsonEnd = text.lastIndexOf("}");
+    if (jsonStart === -1 || jsonEnd === -1) return null;
+    const parsed = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+    const result = InsightsSchema.safeParse(parsed);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
