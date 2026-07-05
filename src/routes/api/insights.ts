@@ -11,16 +11,16 @@ function sanitizeContext(raw: unknown): string {
   return raw.slice(0, 4000).replace(/```/g, "").replace(/\u0000/g, "").trim();
 }
 
+// Sem bounds no schema (ex.: .max): limites em schema podem disparar
+// AI_NoObjectGeneratedError em runtime. O limite de 4 é aplicado no código.
 const InsightsSchema = z.object({
-  insights: z
-    .array(
-      z.object({
-        title: z.string(),
-        detail: z.string(),
-        tone: z.enum(["positive", "warning", "neutral"]),
-      }),
-    )
-    .max(4),
+  insights: z.array(
+    z.object({
+      title: z.string(),
+      detail: z.string(),
+      tone: z.enum(["positive", "warning", "neutral"]),
+    }),
+  ),
 });
 
 const SYSTEM_PROMPT = `Você é o analista financeiro do Finlux, um app de finanças pessoais em português do Brasil.
