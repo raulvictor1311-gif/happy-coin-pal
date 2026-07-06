@@ -335,10 +335,25 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         }
 
         if (!txs.length) {
+          // Sem transação em uma mensagem só de texto → conversa natural: o
+          // Assessor responde como consultor usando os dados reais do usuário.
+          if (numMedia === 0 && body) {
+            try {
+              const advisor = await import("@/lib/whatsapp-advisor.server");
+              const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+              const answer = await advisor.answerAdvisorQuestion(body, state, apiKey);
+              return twiml(advisor.toWhatsappText(answer));
+            } catch {
+              return twiml(
+                "Não consegui analisar agora. Tente de novo em instantes, ou registre um gasto assim: \"Gastei 35 no almoço\". 🙏",
+              );
+            }
+          }
           return twiml(
             "Não consegui entender a transação. Tente algo como: \"Gastei 35 reais no almoço\".",
           );
         }
+
 
 
         const rows = txs.map((t) => ({
