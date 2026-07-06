@@ -330,7 +330,23 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             if (cmd === "previsao") return twiml(advisor.forecastMessage(state));
             return twiml(advisor.wasteMessage(state));
           }
+
+          // Pergunta/consulta em texto → conversa natural (não registra gasto).
+          if (looksLikeQuestion(body)) {
+            try {
+              const advisor = await import("@/lib/whatsapp-advisor.server");
+              const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+              const answer = await advisor.answerAdvisorQuestion(body, state, apiKey);
+              return twiml(advisor.toWhatsappText(answer));
+            } catch {
+              return twiml(
+                "Não consegui analisar agora. Tente de novo em instantes. 🙏",
+              );
+            }
+          }
         }
+
+
 
 
         // Número verificado: coleta texto + todas as mídias (foto/áudio) enviadas.
