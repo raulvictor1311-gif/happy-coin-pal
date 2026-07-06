@@ -100,10 +100,12 @@ function brl(n: number): string {
 }
 
 const HELP_TEXT =
-  "🤖 *Finlux — Meu Assessor*\n\nMe mande o que você gastou e eu registro automaticamente:\n• ✍️ Texto: \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\nComandos rápidos:\n• *saldo* — seu saldo do mês\n• *resumo* — receitas, despesas e top categorias\n• *ajuda* — mostra esta mensagem";
+  "🤖 *Finlux — Meu Assessor*\n\nSou seu consultor financeiro. Fale comigo naturalmente!\n\n📌 *Registrar gastos/receitas:*\n• ✍️ \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\n💬 *Me pergunte qualquer coisa:*\n• \"Posso comprar um celular de 2 mil?\"\n• \"Onde estou gastando demais?\"\n• \"Quanto guardar por mês?\"\n\n⚡ *Comandos rápidos:*\n• *saldo* — saldo do mês\n• *resumo* — receitas, despesas e categorias\n• *score* — seu Score financeiro\n• *estabilidade* — Índice de Estabilidade\n• *previsão* — previsão de saldo do mês\n• *dicas* — onde economizar\n• *ajuda* — esta mensagem";
+
+type Command = "saldo" | "resumo" | "ajuda" | "score" | "estabilidade" | "previsao" | "dicas";
 
 /** Detecta comandos de consulta (não são transações). */
-function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
+function detectCommand(body: string): Command | null {
   const t = body
     .toLowerCase()
     .normalize("NFD")
@@ -112,8 +114,56 @@ function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
   if (["ajuda", "help", "menu", "comandos", "?"].includes(t)) return "ajuda";
   if (["saldo", "quanto tenho", "meu saldo"].includes(t)) return "saldo";
   if (["resumo", "resumo do mes", "relatorio", "extrato"].includes(t)) return "resumo";
+  if (["score", "meu score", "score financeiro", "pontuacao"].includes(t)) return "score";
+  if (["estabilidade", "indice", "indice de estabilidade", "estavel"].includes(t))
+    return "estabilidade";
+  if (["previsao", "previsao do mes", "futuro", "vou fechar no azul", "projecao"].includes(t))
+    return "previsao";
+  if (["dicas", "economia", "economizar", "desperdicio", "desperdicios", "onde economizar"].includes(t))
+    return "dicas";
   return null;
 }
+
+/** Heurística: a mensagem parece uma pergunta/consulta (não um registro de gasto)?
+ *  Usada para conversar naturalmente sem registrar transações hipotéticas. */
+function looksLikeQuestion(body: string): boolean {
+  const t = body
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  if (t.includes("?")) return true;
+  const starters = [
+    "posso",
+    "quanto",
+    "quando",
+    "onde",
+    "como",
+    "qual",
+    "quais",
+    "por que",
+    "porque",
+    "devo",
+    "vale a pena",
+    "sera",
+    "me ajuda",
+    "me da",
+    "me de",
+    "analis",
+    "sugere",
+    "sugestao",
+    "dica",
+    "consigo",
+    "da pra",
+    "e possivel",
+    "vou conseguir",
+    "o que voce acha",
+    "o que acha",
+    "recomenda",
+  ];
+  return starters.some((s) => t.startsWith(s) || t.includes(" " + s));
+}
+
 
 /** Gera o resumo financeiro do mês atual do usuário a partir das transações. */
 async function monthlySummary(
@@ -250,7 +300,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           );
         }
 
-        // Comandos de consulta (não são transações): saldo, resumo, ajuda.
+        // Comandos de consulta (não são transações).
         if (numMedia === 0 && body) {
           const cmd = detectCommand(body);
           if (cmd === "ajuda") return twiml(HELP_TEXT);
@@ -272,7 +322,32 @@ export const Route = createFileRoute("/api/public/whatsapp")({
               } Saldo: ${brl(s.balance)}\n\n*Onde você mais gastou:*\n${cats}`,
             );
           }
+          if (cmd === "score" || cmd === "estabilidade" || cmd === "previsao" || cmd === "dicas") {
+            const advisor = await import("@/lib/whatsapp-advisor.server");
+            const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+            if (cmd === "score") return twiml(advisor.scoreMessage(state));
+            if (cmd === "estabilidade") return twiml(advisor.stabilityMessage(state));
+            if (cmd === "previsao") return twiml(advisor.forecastMessage(state));
+            return twiml(advisor.wasteMessage(state));
+          }
+
+          // Pergunta/consulta em texto → conversa natural (não registra gasto).
+          if (looksLikeQuestion(body)) {
+            try {
+              const advisor = await import("@/lib/whatsapp-advisor.server");
+              const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+              const answer = await advisor.answerAdvisorQuestion(body, state, apiKey);
+              return twiml(advisor.toWhatsappText(answer));
+            } catch {
+              return twiml(
+                "Não consegui analisar agora. Tente de novo em instantes. 🙏",
+              );
+            }
+          }
         }
+
+
+
 
         // Número verificado: coleta texto + todas as mídias (foto/áudio) enviadas.
         const inputs: ExtractInput[] = [];
@@ -317,10 +392,25 @@ export const Route = createFileRoute("/api/public/whatsapp")({
         }
 
         if (!txs.length) {
+          // Sem transação em uma mensagem só de texto → conversa natural: o
+          // Assessor responde como consultor usando os dados reais do usuário.
+          if (numMedia === 0 && body) {
+            try {
+              const advisor = await import("@/lib/whatsapp-advisor.server");
+              const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+              const answer = await advisor.answerAdvisorQuestion(body, state, apiKey);
+              return twiml(advisor.toWhatsappText(answer));
+            } catch {
+              return twiml(
+                "Não consegui analisar agora. Tente de novo em instantes, ou registre um gasto assim: \"Gastei 35 no almoço\". 🙏",
+              );
+            }
+          }
           return twiml(
             "Não consegui entender a transação. Tente algo como: \"Gastei 35 reais no almoço\".",
           );
         }
+
 
 
         const rows = txs.map((t) => ({
