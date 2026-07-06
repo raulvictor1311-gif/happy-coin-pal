@@ -100,10 +100,12 @@ function brl(n: number): string {
 }
 
 const HELP_TEXT =
-  "🤖 *Finlux — Meu Assessor*\n\nMe mande o que você gastou e eu registro automaticamente:\n• ✍️ Texto: \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\nComandos rápidos:\n• *saldo* — seu saldo do mês\n• *resumo* — receitas, despesas e top categorias\n• *ajuda* — mostra esta mensagem";
+  "🤖 *Finlux — Meu Assessor*\n\nSou seu consultor financeiro. Fale comigo naturalmente!\n\n📌 *Registrar gastos/receitas:*\n• ✍️ \"Gastei 35 no almoço\"\n• 📷 Foto da nota/recibo\n• 🎤 Áudio contando o gasto\n\n💬 *Me pergunte qualquer coisa:*\n• \"Posso comprar um celular de 2 mil?\"\n• \"Onde estou gastando demais?\"\n• \"Quanto guardar por mês?\"\n\n⚡ *Comandos rápidos:*\n• *saldo* — saldo do mês\n• *resumo* — receitas, despesas e categorias\n• *score* — seu Score financeiro\n• *estabilidade* — Índice de Estabilidade\n• *previsão* — previsão de saldo do mês\n• *dicas* — onde economizar\n• *ajuda* — esta mensagem";
+
+type Command = "saldo" | "resumo" | "ajuda" | "score" | "estabilidade" | "previsao" | "dicas";
 
 /** Detecta comandos de consulta (não são transações). */
-function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
+function detectCommand(body: string): Command | null {
   const t = body
     .toLowerCase()
     .normalize("NFD")
@@ -112,6 +114,13 @@ function detectCommand(body: string): "saldo" | "resumo" | "ajuda" | null {
   if (["ajuda", "help", "menu", "comandos", "?"].includes(t)) return "ajuda";
   if (["saldo", "quanto tenho", "meu saldo"].includes(t)) return "saldo";
   if (["resumo", "resumo do mes", "relatorio", "extrato"].includes(t)) return "resumo";
+  if (["score", "meu score", "score financeiro", "pontuacao"].includes(t)) return "score";
+  if (["estabilidade", "indice", "indice de estabilidade", "estavel"].includes(t))
+    return "estabilidade";
+  if (["previsao", "previsao do mes", "futuro", "vou fechar no azul", "projecao"].includes(t))
+    return "previsao";
+  if (["dicas", "economia", "economizar", "desperdicio", "desperdicios", "onde economizar"].includes(t))
+    return "dicas";
   return null;
 }
 
