@@ -259,7 +259,7 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           );
         }
 
-        // Comandos de consulta (não são transações): saldo, resumo, ajuda.
+        // Comandos de consulta (não são transações).
         if (numMedia === 0 && body) {
           const cmd = detectCommand(body);
           if (cmd === "ajuda") return twiml(HELP_TEXT);
@@ -281,7 +281,16 @@ export const Route = createFileRoute("/api/public/whatsapp")({
               } Saldo: ${brl(s.balance)}\n\n*Onde você mais gastou:*\n${cats}`,
             );
           }
+          if (cmd === "score" || cmd === "estabilidade" || cmd === "previsao" || cmd === "dicas") {
+            const advisor = await import("@/lib/whatsapp-advisor.server");
+            const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
+            if (cmd === "score") return twiml(advisor.scoreMessage(state));
+            if (cmd === "estabilidade") return twiml(advisor.stabilityMessage(state));
+            if (cmd === "previsao") return twiml(advisor.forecastMessage(state));
+            return twiml(advisor.wasteMessage(state));
+          }
         }
+
 
         // Número verificado: coleta texto + todas as mídias (foto/áudio) enviadas.
         const inputs: ExtractInput[] = [];
