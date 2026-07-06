@@ -124,6 +124,47 @@ function detectCommand(body: string): Command | null {
   return null;
 }
 
+/** Heurística: a mensagem parece uma pergunta/consulta (não um registro de gasto)?
+ *  Usada para conversar naturalmente sem registrar transações hipotéticas. */
+function looksLikeQuestion(body: string): boolean {
+  const t = body
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  if (t.includes("?")) return true;
+  const starters = [
+    "posso",
+    "quanto",
+    "quando",
+    "onde",
+    "como",
+    "qual",
+    "quais",
+    "por que",
+    "porque",
+    "devo",
+    "vale a pena",
+    "sera",
+    "me ajuda",
+    "me da",
+    "me de",
+    "analis",
+    "sugere",
+    "sugestao",
+    "dica",
+    "consigo",
+    "da pra",
+    "e possivel",
+    "vou conseguir",
+    "o que voce acha",
+    "o que acha",
+    "recomenda",
+  ];
+  return starters.some((s) => t.startsWith(s) || t.includes(" " + s));
+}
+
+
 /** Gera o resumo financeiro do mês atual do usuário a partir das transações. */
 async function monthlySummary(
   supabaseAdmin: any,
