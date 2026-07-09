@@ -8,6 +8,7 @@ import { formatBRL } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsappConnect, AdvisorContact } from "@/components/whatsapp-connect";
+import { SandboxReconnect } from "@/components/sandbox-reconnect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/assessor")({
@@ -240,6 +241,8 @@ function Assessor() {
         <p className="text-sm text-muted-foreground -mt-2">
           Mande uma foto da nota, grave um áudio ou escreva o que comprou. Eu cataloguei para você.
         </p>
+
+        <SandboxReconnect />
 
         <WhatsappConnect />
 

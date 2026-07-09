@@ -1,0 +1,1 @@
+ALTER TABLE public.whatsapp_links ADD COLUMN IF NOT EXISTS sandbox_connected_at timestamptz;

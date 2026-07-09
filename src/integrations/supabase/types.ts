@@ -262,6 +262,7 @@ export type Database = {
           created_at: string
           id: string
           phone: string
+          sandbox_connected_at: string | null
           updated_at: string
           user_id: string
           verification_code: string | null
@@ -271,6 +272,7 @@ export type Database = {
           created_at?: string
           id?: string
           phone: string
+          sandbox_connected_at?: string | null
           updated_at?: string
           user_id: string
           verification_code?: string | null
@@ -280,6 +282,7 @@ export type Database = {
           created_at?: string
           id?: string
           phone?: string
+          sandbox_connected_at?: string | null
           updated_at?: string
           user_id?: string
           verification_code?: string | null

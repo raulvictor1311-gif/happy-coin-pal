@@ -7,6 +7,7 @@ import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import type { DashboardPrefs } from "@/lib/finance-store";
+import { SandboxConnectButton } from "@/components/sandbox-reconnect";
 
 export const Route = createFileRoute("/mais")({
   head: () => ({ meta: [{ title: "Mais — Finlux" }] }),
@@ -85,6 +86,7 @@ function Mais() {
     <AppShell>
       <PageHeader subtitle="Tudo do app" title="Mais" />
       <div className="px-6 space-y-3">
+        <SandboxConnectButton />
         {groups.map((group) => (
           <div key={group.label} className="space-y-3">
             <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">

@@ -42,6 +42,8 @@ export type WhatsappLink = {
   phone: string;
   verified: boolean;
   verification_code: string | null;
+  /** Última vez que o usuário esteve ativo no Sandbox (webhook). */
+  sandbox_connected_at: string | null;
 };
 
 /** Retorna o vínculo de WhatsApp do usuário atual (ou null).
@@ -53,7 +55,7 @@ export const getWhatsappLink = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("whatsapp_links")
-      .select("phone, verified, verification_code")
+      .select("phone, verified, verification_code, sandbox_connected_at")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -89,7 +91,7 @@ export const registerWhatsapp = createServerFn({ method: "POST" })
     const { data: inserted, error } = await supabaseAdmin
       .from("whatsapp_links")
       .insert({ user_id: context.userId, phone, verified: false, verification_code: code })
-      .select("phone, verified, verification_code")
+      .select("phone, verified, verification_code, sandbox_connected_at")
       .single();
     if (error) throw new Error(error.message);
     return inserted as WhatsappLink;
