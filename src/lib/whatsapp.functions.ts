@@ -91,7 +91,7 @@ export const registerWhatsapp = createServerFn({ method: "POST" })
     const { data: inserted, error } = await supabaseAdmin
       .from("whatsapp_links")
       .insert({ user_id: context.userId, phone, verified: false, verification_code: code })
-      .select("phone, verified, verification_code")
+      .select("phone, verified, verification_code, sandbox_connected_at")
       .single();
     if (error) throw new Error(error.message);
     return inserted as WhatsappLink;
