@@ -112,6 +112,7 @@ export function WhatsappConnect() {
     setSaving(true);
     try {
       await remove({});
+      clearLocalReconnect();
       await refetch();
       toast.success("WhatsApp desconectado.");
     } catch {
