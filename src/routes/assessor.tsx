@@ -242,6 +242,8 @@ function Assessor() {
           Mande uma foto da nota, grave um áudio ou escreva o que comprou. Eu cataloguei para você.
         </p>
 
+        <SandboxReconnect />
+
         <WhatsappConnect />
 
         <AdvisorContact />
