@@ -42,6 +42,8 @@ export type WhatsappLink = {
   phone: string;
   verified: boolean;
   verification_code: string | null;
+  /** Última vez que o usuário esteve ativo no Sandbox (webhook). */
+  sandbox_connected_at: string | null;
 };
 
 /** Retorna o vínculo de WhatsApp do usuário atual (ou null).
