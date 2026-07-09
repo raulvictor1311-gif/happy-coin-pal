@@ -55,7 +55,7 @@ export const getWhatsappLink = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("whatsapp_links")
-      .select("phone, verified, verification_code")
+      .select("phone, verified, verification_code, sandbox_connected_at")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
