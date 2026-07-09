@@ -13,6 +13,7 @@ import {
   advisorDisplayNumber,
   advisorWhatsappLink,
 } from "@/lib/advisor";
+import { clearLocalReconnect } from "@/lib/twilio-sandbox";
 
 /** Seção "Enviar código para o Assessor" — exibe o número e abre o WhatsApp. */
 export function AdvisorContact({ code }: { code?: string }) {
