@@ -85,6 +85,7 @@ function Mais() {
     <AppShell>
       <PageHeader subtitle="Tudo do app" title="Mais" />
       <div className="px-6 space-y-3">
+        <SandboxConnectButton />
         {groups.map((group) => (
           <div key={group.label} className="space-y-3">
             <h2 className="px-1 pt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
