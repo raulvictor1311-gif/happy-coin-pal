@@ -100,10 +100,9 @@ function ReconnectButton({
  * Renderiza apenas quando IS_TWILIO_SANDBOX e o número já foi verificado.
  */
 export function SandboxReconnect() {
-  const { status, isVerified } = useSandboxStatus();
+  const { status, isVerified, refetch } = useSandboxStatus();
   const [checking, setChecking] = useState(false);
   const [dismissedSoon, setDismissedSoon] = useState(false);
-  const { refetch } = useSandboxStatus();
 
   if (!IS_TWILIO_SANDBOX || !SANDBOX_NUMBER_CONFIGURED || !isVerified) return null;
 
@@ -120,9 +119,9 @@ export function SandboxReconnect() {
   async function handleAlreadyDone() {
     setChecking(true);
     try {
-      await refetch();
-      const fresh = computeSandboxStatus(null);
-      if (fresh.connected || status.connected) {
+      const { data } = await refetch();
+      const fresh = computeSandboxStatus(data?.sandbox_connected_at);
+      if (fresh.connected) {
         toast.success("WhatsApp reconectado! 💜");
       } else {
         toast.info("Ainda não detectei a reconexão. Envie a mensagem no WhatsApp e tente de novo.");
