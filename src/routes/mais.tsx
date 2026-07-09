@@ -7,6 +7,7 @@ import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import type { DashboardPrefs } from "@/lib/finance-store";
+import { SandboxConnectButton } from "@/components/sandbox-reconnect";
 
 export const Route = createFileRoute("/mais")({
   head: () => ({ meta: [{ title: "Mais — Finlux" }] }),
