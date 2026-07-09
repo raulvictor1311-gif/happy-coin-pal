@@ -284,7 +284,19 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           );
         }
 
-        // Etapa de confirmação do número.
+        // Toda mensagem recebida prova que o usuário está ativo no Sandbox do
+        // Twilio agora — registra o horário para o app calcular a expiração de
+        // 72h e disparar a reconexão automática quando necessário.
+        try {
+          await supabaseAdmin
+            .from("whatsapp_links")
+            .update({ sandbox_connected_at: new Date().toISOString() })
+            .eq("phone", link.phone);
+        } catch {
+          /* não bloqueia o fluxo se a atualização falhar */
+        }
+
+
         if (!link.verified) {
           if (body && link.verification_code && body.replace(/\D/g, "") === link.verification_code) {
             await supabaseAdmin
