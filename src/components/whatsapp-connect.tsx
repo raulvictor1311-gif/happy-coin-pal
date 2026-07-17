@@ -179,19 +179,32 @@ export function WhatsappConnect() {
             Quase lá! Envie o código abaixo pelo <strong>WhatsApp</strong> para o número do
             Finlux para confirmar <strong>{formatPhone(link.phone)}</strong>.
           </p>
-          {link.verification_code && (
+          {pendingCode ? (
+            <>
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(pendingCode);
+                  toast.success("Código copiado!");
+                }}
+                className="w-full flex items-center justify-center gap-3 rounded-2xl bg-primary/10 py-3 text-2xl font-bold tracking-[0.3em] text-primary"
+              >
+                {pendingCode}
+                <Copy className="h-4 w-4" />
+              </button>
+              <p className="text-[11px] text-muted-foreground text-center">
+                Válido por 10 minutos. Após confirmar, o código é apagado.
+              </p>
+            </>
+          ) : (
             <button
-              onClick={() => {
-                navigator.clipboard?.writeText(link.verification_code!);
-                toast.success("Código copiado!");
-              }}
-              className="w-full flex items-center justify-center gap-3 rounded-2xl bg-primary/10 py-3 text-2xl font-bold tracking-[0.3em] text-primary"
+              onClick={() => handleConnect(link.phone)}
+              disabled={saving}
+              className="w-full rounded-2xl bg-primary/10 py-3 text-sm font-bold text-primary disabled:opacity-60"
             >
-              {link.verification_code}
-              <Copy className="h-4 w-4" />
+              {saving ? "Gerando..." : "Gerar novo código"}
             </button>
           )}
-          <AdvisorContact code={link.verification_code ?? undefined} />
+          <AdvisorContact code={pendingCode ?? undefined} />
           <div className="flex gap-2">
             <button
               onClick={() => refetch()}
