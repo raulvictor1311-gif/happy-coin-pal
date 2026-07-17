@@ -90,18 +90,23 @@ export function WhatsappConnect() {
 
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
+  // O código em texto puro é retornado pelo servidor apenas uma vez, no momento
+  // da geração. Mantemos localmente para exibir enquanto o usuário confirma.
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
 
-  async function handleConnect() {
-    if (!phone.trim()) {
+  async function handleConnect(existingPhone?: string) {
+    const target = (existingPhone ?? phone).trim();
+    if (!target) {
       toast.error("Digite seu número de WhatsApp com DDD.");
       return;
     }
     setSaving(true);
     try {
-      await register({ data: { phone } });
+      const res = await register({ data: { phone: target } });
+      setPendingCode(res.verification_code);
       await refetch();
-      setPhone("");
-      toast.success("Número registrado! Agora confirme pelo WhatsApp.");
+      if (!existingPhone) setPhone("");
+      toast.success("Código gerado! Envie pelo WhatsApp em até 10 minutos.");
     } catch (e: any) {
       toast.error(e?.message ?? "Não consegui registrar o número.");
     } finally {
