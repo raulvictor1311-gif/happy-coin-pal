@@ -266,6 +266,9 @@ export type Database = {
           updated_at: string
           user_id: string
           verification_code: string | null
+          verification_code_expires_at: string | null
+          verification_code_hash: string | null
+          verification_code_salt: string | null
           verified: boolean
         }
         Insert: {
@@ -276,6 +279,9 @@ export type Database = {
           updated_at?: string
           user_id: string
           verification_code?: string | null
+          verification_code_expires_at?: string | null
+          verification_code_hash?: string | null
+          verification_code_salt?: string | null
           verified?: boolean
         }
         Update: {
@@ -286,6 +292,9 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verification_code?: string | null
+          verification_code_expires_at?: string | null
+          verification_code_hash?: string | null
+          verification_code_salt?: string | null
           verified?: boolean
         }
         Relationships: []
