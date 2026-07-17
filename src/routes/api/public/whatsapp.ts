@@ -274,7 +274,9 @@ export const Route = createFileRoute("/api/public/whatsapp")({
 
         const { data: link } = await supabaseAdmin
           .from("whatsapp_links")
-          .select("user_id, verified, verification_code, phone")
+          .select(
+            "user_id, verified, verification_code_hash, verification_code_salt, verification_code_expires_at, phone",
+          )
           .in("phone", phoneCandidates(phone))
           .maybeSingle();
 
@@ -298,13 +300,37 @@ export const Route = createFileRoute("/api/public/whatsapp")({
 
 
         if (!link.verified) {
-          if (body && link.verification_code && body.replace(/\D/g, "") === link.verification_code) {
-            await supabaseAdmin
-              .from("whatsapp_links")
-              .update({ verified: true, verification_code: null })
-              .eq("phone", link.phone);
+          const hash = (link as any).verification_code_hash as string | null;
+          const salt = (link as any).verification_code_salt as string | null;
+          const expiresAt = (link as any).verification_code_expires_at as string | null;
+          const notExpired = expiresAt ? new Date(expiresAt).getTime() > Date.now() : false;
+          const attempt = body.replace(/\D/g, "");
+          if (attempt.length === 6 && hash && salt && notExpired) {
+            const { hashVerificationCode } = await import("@/lib/whatsapp.functions");
+            const attemptHash = hashVerificationCode(attempt, salt);
+            const ok =
+              attemptHash.length === hash.length &&
+              timingSafeEqual(Buffer.from(attemptHash), Buffer.from(hash));
+            if (ok) {
+              // Apaga o código imediatamente após o uso.
+              await supabaseAdmin
+                .from("whatsapp_links")
+                .update({
+                  verified: true,
+                  verification_code: null,
+                  verification_code_hash: null,
+                  verification_code_salt: null,
+                  verification_code_expires_at: null,
+                } as any)
+                .eq("phone", link.phone);
+              return twiml(
+                "✅ Número confirmado! Agora é só mandar uma mensagem, foto da nota ou áudio que eu registro seu gasto automaticamente.",
+              );
+            }
+          }
+          if (hash && !notExpired) {
             return twiml(
-              "✅ Número confirmado! Agora é só mandar uma mensagem, foto da nota ou áudio que eu registro seu gasto automaticamente.",
+              "⚠️ Seu código de verificação expirou. Abra o app em *Meu Assessor* e gere um novo código.",
             );
           }
           return twiml(
