@@ -231,7 +231,7 @@ export function WhatsappConnect() {
             className="w-full bg-card-elevated rounded-2xl px-4 py-3 text-foreground outline-none focus:ring-2 ring-primary"
           />
           <button
-            onClick={handleConnect}
+            onClick={() => handleConnect()}
             disabled={saving}
             className="w-full rounded-2xl bg-primary text-primary-foreground font-bold py-3 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-transform"
           >
