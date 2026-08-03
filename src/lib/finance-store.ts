@@ -260,6 +260,7 @@ function rowToTx(r: any): Transaction {
     paymentMethod: r.payment_method ?? undefined,
     cardId: r.card_id ?? undefined,
     installments: r.installments ?? undefined,
+    invoicePaid: r.invoice_paid ?? false,
   };
 }
 function txToRow(t: Transaction, userId: string) {
@@ -274,8 +275,10 @@ function txToRow(t: Transaction, userId: string) {
     payment_method: t.paymentMethod ?? null,
     card_id: t.cardId ?? null,
     installments: t.installments ?? null,
+    invoice_paid: t.invoicePaid ?? false,
   };
 }
+
 
 function rowToGoal(r: any): Goal {
   return {
