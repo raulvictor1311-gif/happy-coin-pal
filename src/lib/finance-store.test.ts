@@ -78,12 +78,74 @@ describe("getMonthlyHistory", () => {
 
 describe("financialHealth", () => {
   it("flags healthy when saving 30%+", () => {
-    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, byCategory: [] }).tone).toBe("ok");
+    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, committed: 0, free: 400, byCategory: [] }).tone).toBe("ok");
   });
   it("flags critical when overspending", () => {
-    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, byCategory: [] }).tone).toBe("bad");
+    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, committed: 0, free: -200, byCategory: [] }).tone).toBe("bad");
   });
 });
+
+describe("saldo x cartão de crédito", () => {
+  const card = {
+    id: "card-1",
+    name: "Nubank",
+    brand: "Visa",
+    limit: 5000,
+    closingDay: 28,
+    dueDay: 5,
+    color: "#000",
+    debitMode: "on_payment" as const,
+  };
+
+  it("não desconta compras no cartão do saldo da conta", () => {
+    const state = {
+      ...baseState([
+        tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0) }),
+        tx({ kind: "despesa", amount: 500, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
+        tx({ kind: "despesa", amount: 200, date: iso(NOW.getFullYear(), 0) }),
+      ]),
+      cards: [card],
+    };
+    expect(accountBalance(state)).toBe(2800);
+    expect(committedTotal(state)).toBe(500);
+    expect(freeBalance(state)).toBe(2300);
+  });
+
+  it("desconta imediatamente quando o cartão é configurado assim", () => {
+    const state = {
+      ...baseState([
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
+        tx({ kind: "despesa", amount: 400, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
+      ]),
+      cards: [{ ...card, debitMode: "immediate" as const }],
+    };
+    expect(accountBalance(state)).toBe(600);
+    expect(committedTotal(state)).toBe(0);
+  });
+
+  it("considera a compra quitada após o pagamento da fatura", () => {
+    const state = {
+      ...baseState([
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
+        { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }), invoicePaid: true },
+      ]),
+      cards: [card],
+    };
+    expect(accountBalance(state)).toBe(700);
+    expect(committedTotal(state)).toBe(0);
+  });
+
+  it("soma compras e parcelas na fatura em aberto", () => {
+    const state = {
+      ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0), cardId: "card-1" })]),
+      cards: [card],
+    };
+    const due = cardInvoiceDue(state);
+    expect(due.amount).toBe(100);
+    expect(due.txIds).toHaveLength(1);
+  });
+});
+
 
 describe("gamification", () => {
   it("unlocks the first transaction achievement", () => {
