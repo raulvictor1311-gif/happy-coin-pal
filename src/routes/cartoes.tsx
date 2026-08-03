@@ -314,6 +314,23 @@ function AddCard({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </Field>
+        <Field label="Débito da fatura">
+          <select
+            className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none"
+            value={debitMode}
+            onChange={(e) => setDebitMode(e.target.value as DebitMode)}
+          >
+            {(Object.keys(DEBIT_MODE_LABELS) as DebitMode[]).map((m) => (
+              <option key={m} value={m}>
+                {DEBIT_MODE_LABELS[m]}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Em "Ao pagar a fatura", as compras ficam como valor comprometido e não saem do saldo até o pagamento.
+          </p>
+        </Field>
+
         <button
           className="w-full rounded-2xl bg-primary text-primary-foreground py-3.5 font-bold active:scale-[0.98] transition-transform"
           onClick={save}
