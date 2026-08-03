@@ -83,6 +83,28 @@ function Cartoes() {
                   <span>Vence dia {c.dueDay}</span>
                 </div>
               </div>
+              {/* Débito da fatura */}
+              <div className="mt-5 rounded-2xl bg-white/10 p-3 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] opacity-85 uppercase tracking-wider">Debitar da conta</span>
+                  <select
+                    aria-label="Quando debitar da conta"
+                    value={c.debitMode}
+                    onChange={(e) => financeActions.setCardDebitMode(c.id, e.target.value as DebitMode)}
+                    className="bg-black/30 text-white text-xs rounded-lg px-2 py-1.5 outline-none"
+                  >
+                    {(Object.keys(DEBIT_MODE_LABELS) as DebitMode[]).map((m) => (
+                      <option key={m} value={m} className="text-foreground">
+                        {DEBIT_MODE_LABELS[m]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {c.debitMode !== "immediate" && (
+                  <PayInvoiceRow cardId={c.id} />
+                )}
+              </div>
+
               {/* Evolução dos compromissos parcelados (6 meses) */}
               <div className="mt-5">
                 <p className="text-[11px] opacity-80 uppercase tracking-wider mb-2">
@@ -102,6 +124,7 @@ function Cartoes() {
                   })}
                 </div>
               </div>
+
             </div>
           );
         })}
