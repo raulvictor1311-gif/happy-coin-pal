@@ -303,6 +303,7 @@ function goalToRow(g: Goal, userId: string) {
 }
 
 function rowToCard(r: any): CreditCard {
+  const mode = r.debit_mode;
   return {
     id: r.id,
     name: r.name,
@@ -311,6 +312,7 @@ function rowToCard(r: any): CreditCard {
     closingDay: r.closing_day ?? 1,
     dueDay: r.due_day ?? 1,
     color: r.color || "",
+    debitMode: mode === "on_due" || mode === "immediate" ? mode : "on_payment",
   };
 }
 function cardToRow(c: CreditCard, userId: string) {
@@ -323,8 +325,10 @@ function cardToRow(c: CreditCard, userId: string) {
     closing_day: c.closingDay,
     due_day: c.dueDay,
     color: c.color,
+    debit_mode: c.debitMode ?? "on_payment",
   };
 }
+
 
 function rowToAsset(r: any): Asset {
   return { id: r.id, type: r.type, name: r.name, value: Number(r.value) || 0 };
