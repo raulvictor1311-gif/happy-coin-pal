@@ -229,7 +229,9 @@ function AddCard({ onClose }: { onClose: () => void }) {
       closingDay: closingNum,
       dueDay: dueNum,
       color,
+      debitMode,
     });
+
     toast.success("Cartão adicionado com sucesso.");
     onClose();
   }
