@@ -14,7 +14,18 @@ export interface Transaction {
   paymentMethod?: string;
   cardId?: string;
   installments?: number;
+  /** Compra no cartão já quitada via pagamento de fatura. */
+  invoicePaid?: boolean;
 }
+
+/** Quando a compra no cartão sai do saldo da conta. */
+export type DebitMode = "on_payment" | "on_due" | "immediate";
+
+export const DEBIT_MODE_LABELS: Record<DebitMode, string> = {
+  on_payment: "Ao pagar a fatura",
+  on_due: "No vencimento da fatura",
+  immediate: "Imediatamente",
+};
 
 export interface CreditCard {
   id: string;
@@ -24,7 +35,9 @@ export interface CreditCard {
   closingDay: number;
   dueDay: number;
   color: string;
+  debitMode: DebitMode;
 }
+
 
 export interface Goal {
   id: string;
