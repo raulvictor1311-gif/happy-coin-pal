@@ -692,9 +692,15 @@ export interface MonthlySummary {
   income: number;
   expense: number;
   savings: number;
+  /** Saldo real na conta (compras no cartão em aberto não são descontadas). */
   balance: number;
+  /** Valor já gasto no cartão que ainda vai sair da conta. */
+  committed: number;
+  /** Saldo livre = saldo da conta - comprometido. */
+  free: number;
   byCategory: { category: string; total: number; color: string }[];
 }
+
 
 export const CATEGORY_COLORS: Record<string, string> = {
   Alimentação: "oklch(0.72 0.23 0)",
