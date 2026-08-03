@@ -50,6 +50,7 @@ export type Database = {
           closing_day: number
           color: string
           created_at: string
+          debit_mode: string
           due_day: number
           id: string
           limit: number
@@ -62,6 +63,7 @@ export type Database = {
           closing_day?: number
           color?: string
           created_at?: string
+          debit_mode?: string
           due_day?: number
           id?: string
           limit?: number
@@ -74,6 +76,7 @@ export type Database = {
           closing_day?: number
           color?: string
           created_at?: string
+          debit_mode?: string
           due_day?: number
           id?: string
           limit?: number
@@ -149,6 +152,7 @@ export type Database = {
       installment_purchases: {
         Row: {
           card_id: string | null
+          card_id_ref: string | null
           category: string
           created_at: string
           date: string
@@ -162,6 +166,7 @@ export type Database = {
         }
         Insert: {
           card_id?: string | null
+          card_id_ref?: string | null
           category?: string
           created_at?: string
           date?: string
@@ -175,6 +180,7 @@ export type Database = {
         }
         Update: {
           card_id?: string | null
+          card_id_ref?: string | null
           category?: string
           created_at?: string
           date?: string
@@ -222,6 +228,7 @@ export type Database = {
           description: string
           id: string
           installments: number | null
+          invoice_paid: boolean
           kind: string
           payment_method: string | null
           updated_at: string
@@ -236,6 +243,7 @@ export type Database = {
           description?: string
           id?: string
           installments?: number | null
+          invoice_paid?: boolean
           kind: string
           payment_method?: string | null
           updated_at?: string
@@ -250,6 +258,7 @@ export type Database = {
           description?: string
           id?: string
           installments?: number | null
+          invoice_paid?: boolean
           kind?: string
           payment_method?: string | null
           updated_at?: string
