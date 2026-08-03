@@ -155,7 +155,36 @@ function Cartoes() {
   );
 }
 
+function PayInvoiceRow({ cardId }: { cardId: string }) {
+  const state = useFinance();
+  const due = cardInvoiceDue(state, cardId);
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[11px] opacity-85 uppercase tracking-wider">Fatura em aberto</p>
+        <p className="text-base font-bold tabular-nums">{formatBRL(due.amount)}</p>
+        <p className="text-[10px] opacity-80">
+          {due.overdue ? "Vencida" : "Vence"} em{" "}
+          {due.dueDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+        </p>
+      </div>
+      <button
+        disabled={due.amount <= 0}
+        onClick={() => {
+          const paid = financeActions.payCardInvoice(cardId);
+          if (paid > 0) toast.success(`Fatura de ${formatBRL(paid)} paga e debitada do saldo.`);
+        }}
+        className="shrink-0 rounded-xl bg-white text-black text-xs font-bold px-3 py-2 disabled:opacity-40 active:scale-95 transition-transform"
+      >
+        Pagar fatura
+      </button>
+    </div>
+  );
+}
+
 function AddCard({ onClose }: { onClose: () => void }) {
+  const [debitMode, setDebitMode] = useState<DebitMode>("on_payment");
+
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("Mastercard");
   const [limit, setLimit] = useState("");
