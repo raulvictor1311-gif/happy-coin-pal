@@ -169,20 +169,42 @@ function looksLikeQuestion(body: string): boolean {
 async function monthlySummary(
   supabaseAdmin: any,
   userId: string,
-): Promise<{ income: number; expense: number; balance: number; topCategories: [string, number][] }> {
+): Promise<{
+  income: number;
+  expense: number;
+  balance: number;
+  committed: number;
+  free: number;
+  topCategories: [string, number][];
+}> {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
-  const { data } = await supabaseAdmin
-    .from("transactions")
-    .select("kind, amount, category, date")
-    .eq("user_id", userId)
-    .gte("date", start)
-    .lt("date", end);
+  const [{ data }, { data: cardRows }] = await Promise.all([
+    supabaseAdmin
+      .from("transactions")
+      .select("kind, amount, category, date, card_id, invoice_paid")
+      .eq("user_id", userId)
+      .gte("date", start)
+      .lt("date", end),
+    supabaseAdmin.from("cards").select("id, debit_mode").eq("user_id", userId),
+  ]);
 
-  const rows: { kind: string; amount: number; category: string }[] = data ?? [];
+  const deferred = new Set<string>(
+    (cardRows ?? [])
+      .filter((c: any) => (c.debit_mode ?? "on_payment") !== "immediate")
+      .map((c: any) => c.id as string),
+  );
+  const rows: {
+    kind: string;
+    amount: number;
+    category: string;
+    card_id?: string | null;
+    invoice_paid?: boolean | null;
+  }[] = data ?? [];
   let income = 0;
   let expense = 0;
+  let committed = 0;
   const byCat = new Map<string, number>();
   for (const r of rows) {
     const amt = Number(r.amount) || 0;
@@ -191,11 +213,14 @@ async function monthlySummary(
     } else {
       expense += amt;
       byCat.set(r.category, (byCat.get(r.category) || 0) + amt);
+      if (r.card_id && deferred.has(r.card_id) && !r.invoice_paid) committed += amt;
     }
   }
   const topCategories = [...byCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
-  return { income, expense, balance: income - expense, topCategories };
+  const balance = income - (expense - committed);
+  return { income, expense, balance, committed, free: balance - committed, topCategories };
 }
+
 
 /** Baixa uma mídia do Twilio através do gateway de conectores da Lovable. */
 async function fetchTwilioMedia(
