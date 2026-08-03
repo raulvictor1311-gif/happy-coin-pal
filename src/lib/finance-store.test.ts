@@ -6,9 +6,14 @@ import {
   getAchievements,
   getChallenges,
   financialHealth,
+  accountBalance,
+  committedTotal,
+  freeBalance,
+  cardInvoiceDue,
   type FinanceState,
   type Transaction,
 } from "./finance-store";
+
 
 function tx(partial: Partial<Transaction> & { kind: Transaction["kind"]; amount: number; date: string }): Transaction {
   return {
