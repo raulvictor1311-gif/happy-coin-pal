@@ -145,7 +145,7 @@ describe("saldo x cartão de crédito", () => {
       ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0), cardId: "card-1" })]),
       cards: [card],
     };
-    const due = cardInvoiceDue(state);
+    const due = cardInvoiceDue(state, "card-1");
     expect(due.amount).toBe(100);
     expect(due.txIds).toHaveLength(1);
   });
