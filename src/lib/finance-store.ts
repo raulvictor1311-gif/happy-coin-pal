@@ -569,10 +569,51 @@ export const financeActions = {
     setState((s) => ({ ...s, cards: [...s.cards, full] }));
     if (currentUserId) void cloudInsert("cards", cardToRow(full, currentUserId));
   },
+  setCardDebitMode(id: string, debitMode: DebitMode) {
+    setState((s) => ({
+      ...s,
+      cards: s.cards.map((c) => (c.id === id ? { ...c, debitMode } : c)),
+    }));
+    void cloudUpdate("cards", id, { debit_mode: debitMode });
+  },
+  /** Paga a fatura do cartão: debita o valor do saldo e quita compras e parcelas. */
+  payCardInvoice(cardId: string, ref = new Date()): number {
+    const snapshot = state;
+    const card = snapshot.cards.find((c) => c.id === cardId);
+    const due = cardInvoiceDue(snapshot, cardId, ref);
+    if (!card || due.amount <= 0) return 0;
+
+    financeActions.addTransaction({
+      kind: "despesa",
+      amount: due.amount,
+      category: "Cartão de crédito",
+      description: `Pagamento da fatura • ${card.name}`,
+      date: new Date().toISOString(),
+      paymentMethod: "fatura",
+    });
+
+    setState((s) => ({
+      ...s,
+      transactions: s.transactions.map((t) =>
+        due.txIds.includes(t.id) ? { ...t, invoicePaid: true } : t,
+      ),
+    }));
+    for (const id of due.txIds) void cloudUpdate("transactions", id, { invoice_paid: true });
+    for (const p of due.installments) financeActions.payInstallment(p.id, p.qty);
+    return due.amount;
+  },
+  /** Cartões com débito no vencimento: quita automaticamente faturas vencidas. */
+  autoSettleDueInvoices() {
+    for (const card of state.cards.filter((c) => c.debitMode === "on_due")) {
+      const due = cardInvoiceDue(state, card.id);
+      if (due.amount > 0 && due.overdue) financeActions.payCardInvoice(card.id);
+    }
+  },
   removeCard(id: string) {
     setState((s) => ({ ...s, cards: s.cards.filter((c) => c.id !== id) }));
     void cloudDelete("cards", id);
   },
+
   addGoal(goal: Omit<Goal, "id">) {
     const full: Goal = { ...goal, id: crypto.randomUUID() };
     setState((s) => ({ ...s, goals: [...s.goals, full] }));
