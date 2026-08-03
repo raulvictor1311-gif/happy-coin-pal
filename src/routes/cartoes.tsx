@@ -10,9 +10,13 @@ import {
   futureInstallmentsTotal,
   cardCommittedTotal,
   installmentsByMonth,
+  cardInvoiceDue,
+  DEBIT_MODE_LABELS,
+  type DebitMode,
 } from "@/lib/finance-store";
 import { formatBRL, formatCompactBRL } from "@/lib/format";
 import { Plus, Trash2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/cartoes")({
   head: () => ({ meta: [{ title: "Cartões — Finlux" }] }),
