@@ -724,9 +724,8 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   });
   const income = month.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
   const expense = month.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
-  const totalIncome = s.transactions.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
-  const totalExpense = s.transactions.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
-  const balance = totalIncome - totalExpense;
+  const balance = accountBalance(s);
+  const committed = committedTotal(s);
   const catMap = new Map<string, number>();
   for (const t of month.filter((t) => t.kind === "despesa")) {
     catMap.set(t.category, (catMap.get(t.category) ?? 0) + t.amount);
@@ -734,7 +733,16 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   const byCategory = Array.from(catMap.entries())
     .map(([category, total]) => ({ category, total, color: colorForCategory(category) }))
     .sort((a, b) => b.total - a.total);
-  return { income, expense, savings: income - expense, balance, byCategory };
+  return {
+    income,
+    expense,
+    savings: income - expense,
+    balance,
+    committed,
+    free: balance - committed,
+    byCategory,
+  };
+
 }
 
 export interface MonthPoint {
