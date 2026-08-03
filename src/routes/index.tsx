@@ -38,7 +38,9 @@ function Dashboard() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
+    financeActions.autoSettleDueInvoices();
   }, []);
+
   const displayName =
     profile?.display_name ||
     user?.user_metadata?.display_name ||
