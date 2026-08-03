@@ -920,10 +920,91 @@ export function cardCommittedTotal(s: FinanceState, cardId: string): number {
   // usado para calcular limite disponível: tudo que ainda não foi pago
   const future = futureInstallmentsTotal(s, cardId);
   const txs = s.transactions
-    .filter((t) => t.cardId === cardId && t.kind === "despesa")
+    .filter((t) => t.cardId === cardId && t.kind === "despesa" && !t.invoicePaid)
     .reduce((a, t) => a + t.amount, 0);
   return future + txs;
 }
+
+// ===== Saldo da conta x valor comprometido no cartão =====
+
+export function cardDebitMode(s: FinanceState, cardId?: string): DebitMode | null {
+  if (!cardId) return null;
+  return s.cards.find((c) => c.id === cardId)?.debitMode ?? null;
+}
+
+/** Uma despesa no cartão só sai do saldo da conta quando a fatura é paga
+ *  (ou imediatamente, se o cartão estiver configurado assim). */
+export function hitsAccountBalance(s: FinanceState, t: Transaction): boolean {
+  if (t.kind !== "despesa") return false;
+  const mode = cardDebitMode(s, t.cardId);
+  if (!mode || mode === "immediate") return true;
+  return t.invoicePaid === true;
+}
+
+/** Saldo real disponível na conta (não desconta compras de cartão em aberto). */
+export function accountBalance(s: FinanceState): number {
+  const income = s.transactions.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
+  const expense = s.transactions.filter((t) => hitsAccountBalance(s, t)).reduce((a, t) => a + t.amount, 0);
+  return income - expense;
+}
+
+/** Total já gasto no cartão que ainda vai sair da conta (faturas + parcelas). */
+export function committedTotal(s: FinanceState): number {
+  const cardIds = s.cards.filter((c) => c.debitMode !== "immediate").map((c) => c.id);
+  const txs = s.transactions
+    .filter((t) => t.kind === "despesa" && !t.invoicePaid && t.cardId && cardIds.includes(t.cardId))
+    .reduce((a, t) => a + t.amount, 0);
+  const inst = s.installmentPurchases
+    .filter((p) => !p.cardId || cardIds.includes(p.cardId))
+    .reduce((a, p) => a + installmentAmount(p) * (p.installments - p.paid), 0);
+  return txs + inst;
+}
+
+/** Saldo livre = saldo da conta menos tudo que já está comprometido no cartão. */
+export function freeBalance(s: FinanceState): number {
+  return accountBalance(s) - committedTotal(s);
+}
+
+export interface InvoiceDue {
+  amount: number;
+  txIds: string[];
+  installments: { id: string; qty: number }[];
+  dueDate: Date;
+  overdue: boolean;
+}
+
+/** Fatura em aberto de um cartão até o mês de referência (inclusive). */
+export function cardInvoiceDue(s: FinanceState, cardId: string, ref = new Date()): InvoiceDue {
+  const card = s.cards.find((c) => c.id === cardId);
+  const limitTime = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59).getTime();
+  const txs = s.transactions.filter(
+    (t) =>
+      t.cardId === cardId &&
+      t.kind === "despesa" &&
+      !t.invoicePaid &&
+      new Date(t.date).getTime() <= limitTime,
+  );
+  const entries = getAllInstallmentEntries(s).filter(
+    (e) => e.cardId === cardId && !e.paid && e.date.getTime() <= limitTime,
+  );
+  const perPurchase = new Map<string, number>();
+  for (const e of entries) perPurchase.set(e.purchaseId, (perPurchase.get(e.purchaseId) ?? 0) + 1);
+  const amount =
+    txs.reduce((a, t) => a + t.amount, 0) + entries.reduce((a, e) => a + e.amount, 0);
+  const dueDate = new Date(
+    ref.getFullYear(),
+    ref.getMonth(),
+    Math.min(card?.dueDay ?? 28, 28),
+  );
+  return {
+    amount,
+    txIds: txs.map((t) => t.id),
+    installments: Array.from(perPurchase.entries()).map(([id, qty]) => ({ id, qty })),
+    dueDate,
+    overdue: amount > 0 && dueDate.getTime() < Date.now(),
+  };
+}
+
 
 // ===== Patrimônio =====
 
