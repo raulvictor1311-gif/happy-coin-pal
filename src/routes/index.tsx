@@ -214,7 +214,7 @@ function Dashboard() {
       <section className="px-6 mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
         <div className="rounded-3xl bg-gradient-to-br from-card to-card-elevated p-5 border border-border shadow-[0_8px_30px_-12px_rgba(0,0,0,0.5)]">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Saldo total</span>
+            <span className="text-sm text-muted-foreground">Saldo da conta</span>
             <button
               aria-label={hidden ? "Mostrar saldo" : "Ocultar saldo"}
               onClick={() => financeActions.toggleHideBalance()}
@@ -230,6 +230,39 @@ function Dashboard() {
             {summary.savings >= 0 ? "+" : ""}
             {hidden ? "R$ ••••" : formatBRL(summary.savings)} este mês
           </p>
+
+          {summary.committed > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              <div className="rounded-2xl bg-card p-3 border border-border">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <CreditCardIcon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Comprometido (cartão)</span>
+                </div>
+                <p className="mt-1 text-base font-bold tabular-nums text-[var(--color-warning)]">
+                  {hidden ? "R$ ••••" : formatBRL(summary.committed)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-card p-3 border border-border">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Wallet className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Saldo livre</span>
+                </div>
+                <p
+                  className="mt-1 text-base font-bold tabular-nums"
+                  style={{
+                    color: summary.free >= 0 ? "var(--color-success)" : "var(--color-destructive)",
+                  }}
+                >
+                  {hidden ? "R$ ••••" : formatBRL(summary.free)}
+                </p>
+              </div>
+            </div>
+          )}
+          {summary.committed > 0 && (
+            <p className="mt-2 text-[11px] text-muted-foreground leading-snug">
+              Compras no cartão só saem do saldo quando a fatura é paga.
+            </p>
+          )}
         </div>
 
         {/* 6 financial cards */}
@@ -239,9 +272,10 @@ function Dashboard() {
           <FinCard icon={TrendingUp} label="Recebido" value={summary.income} tone="success" hidden={hidden} />
           <FinCard icon={TrendingDown} label="Pago" value={summary.expense} tone="danger" hidden={hidden} />
           <FinCard icon={PiggyBank} label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
-          <FinCard icon={Wallet} label="Saldo" value={summary.balance} tone="accent" hidden={hidden} />
+          <FinCard icon={Wallet} label="Saldo livre" value={summary.free} tone="accent" hidden={hidden} />
         </div>
       </section>
+
 
       {/* Inteligência financeira (IA) */}
       <FinanceIntelligence state={state} hidden={hidden} />
