@@ -370,8 +370,11 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           if (cmd === "saldo") {
             const s = await monthlySummary(supabaseAdmin, link.user_id);
             const emoji = s.balance >= 0 ? "🟢" : "🔴";
+            const extra = s.committed > 0
+              ? `\n\n💳 Comprometido no cartão: ${brl(s.committed)}\n✅ Saldo livre: ${brl(s.free)}`
+              : "";
             return twiml(
-              `${emoji} *Saldo do mês:* ${brl(s.balance)}\n\nReceitas: ${brl(s.income)}\nDespesas: ${brl(s.expense)}`,
+              `${emoji} *Saldo do mês:* ${brl(s.balance)}\n\nReceitas: ${brl(s.income)}\nDespesas: ${brl(s.expense)}${extra}`,
             );
           }
           if (cmd === "resumo") {
@@ -379,12 +382,16 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             const cats = s.topCategories.length
               ? s.topCategories.map((c) => `• ${c[0]}: ${brl(c[1])}`).join("\n")
               : "Sem despesas registradas ainda.";
+            const extra = s.committed > 0
+              ? `\n💳 Comprometido no cartão: ${brl(s.committed)}\n✅ Saldo livre: ${brl(s.free)}`
+              : "";
             return twiml(
               `📊 *Resumo do mês*\n\n🟢 Receitas: ${brl(s.income)}\n🔴 Despesas: ${brl(s.expense)}\n${
                 s.balance >= 0 ? "🟢" : "🔴"
-              } Saldo: ${brl(s.balance)}\n\n*Onde você mais gastou:*\n${cats}`,
+              } Saldo: ${brl(s.balance)}${extra}\n\n*Onde você mais gastou:*\n${cats}`,
             );
           }
+
           if (cmd === "score" || cmd === "estabilidade" || cmd === "previsao" || cmd === "dicas") {
             const advisor = await import("@/lib/whatsapp-advisor.server");
             const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);
