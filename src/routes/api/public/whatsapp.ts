@@ -169,20 +169,42 @@ function looksLikeQuestion(body: string): boolean {
 async function monthlySummary(
   supabaseAdmin: any,
   userId: string,
-): Promise<{ income: number; expense: number; balance: number; topCategories: [string, number][] }> {
+): Promise<{
+  income: number;
+  expense: number;
+  balance: number;
+  committed: number;
+  free: number;
+  topCategories: [string, number][];
+}> {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
-  const { data } = await supabaseAdmin
-    .from("transactions")
-    .select("kind, amount, category, date")
-    .eq("user_id", userId)
-    .gte("date", start)
-    .lt("date", end);
+  const [{ data }, { data: cardRows }] = await Promise.all([
+    supabaseAdmin
+      .from("transactions")
+      .select("kind, amount, category, date, card_id, invoice_paid")
+      .eq("user_id", userId)
+      .gte("date", start)
+      .lt("date", end),
+    supabaseAdmin.from("cards").select("id, debit_mode").eq("user_id", userId),
+  ]);
 
-  const rows: { kind: string; amount: number; category: string }[] = data ?? [];
+  const deferred = new Set<string>(
+    (cardRows ?? [])
+      .filter((c: any) => (c.debit_mode ?? "on_payment") !== "immediate")
+      .map((c: any) => c.id as string),
+  );
+  const rows: {
+    kind: string;
+    amount: number;
+    category: string;
+    card_id?: string | null;
+    invoice_paid?: boolean | null;
+  }[] = data ?? [];
   let income = 0;
   let expense = 0;
+  let committed = 0;
   const byCat = new Map<string, number>();
   for (const r of rows) {
     const amt = Number(r.amount) || 0;
@@ -191,11 +213,14 @@ async function monthlySummary(
     } else {
       expense += amt;
       byCat.set(r.category, (byCat.get(r.category) || 0) + amt);
+      if (r.card_id && deferred.has(r.card_id) && !r.invoice_paid) committed += amt;
     }
   }
   const topCategories = [...byCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
-  return { income, expense, balance: income - expense, topCategories };
+  const balance = income - (expense - committed);
+  return { income, expense, balance, committed, free: balance - committed, topCategories };
 }
+
 
 /** Baixa uma mídia do Twilio através do gateway de conectores da Lovable. */
 async function fetchTwilioMedia(
@@ -345,8 +370,11 @@ export const Route = createFileRoute("/api/public/whatsapp")({
           if (cmd === "saldo") {
             const s = await monthlySummary(supabaseAdmin, link.user_id);
             const emoji = s.balance >= 0 ? "🟢" : "🔴";
+            const extra = s.committed > 0
+              ? `\n\n💳 Comprometido no cartão: ${brl(s.committed)}\n✅ Saldo livre: ${brl(s.free)}`
+              : "";
             return twiml(
-              `${emoji} *Saldo do mês:* ${brl(s.balance)}\n\nReceitas: ${brl(s.income)}\nDespesas: ${brl(s.expense)}`,
+              `${emoji} *Saldo do mês:* ${brl(s.balance)}\n\nReceitas: ${brl(s.income)}\nDespesas: ${brl(s.expense)}${extra}`,
             );
           }
           if (cmd === "resumo") {
@@ -354,12 +382,16 @@ export const Route = createFileRoute("/api/public/whatsapp")({
             const cats = s.topCategories.length
               ? s.topCategories.map((c) => `• ${c[0]}: ${brl(c[1])}`).join("\n")
               : "Sem despesas registradas ainda.";
+            const extra = s.committed > 0
+              ? `\n💳 Comprometido no cartão: ${brl(s.committed)}\n✅ Saldo livre: ${brl(s.free)}`
+              : "";
             return twiml(
               `📊 *Resumo do mês*\n\n🟢 Receitas: ${brl(s.income)}\n🔴 Despesas: ${brl(s.expense)}\n${
                 s.balance >= 0 ? "🟢" : "🔴"
-              } Saldo: ${brl(s.balance)}\n\n*Onde você mais gastou:*\n${cats}`,
+              } Saldo: ${brl(s.balance)}${extra}\n\n*Onde você mais gastou:*\n${cats}`,
             );
           }
+
           if (cmd === "score" || cmd === "estabilidade" || cmd === "previsao" || cmd === "dicas") {
             const advisor = await import("@/lib/whatsapp-advisor.server");
             const state = await advisor.loadFinanceState(supabaseAdmin, link.user_id);

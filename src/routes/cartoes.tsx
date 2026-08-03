@@ -10,9 +10,13 @@ import {
   futureInstallmentsTotal,
   cardCommittedTotal,
   installmentsByMonth,
+  cardInvoiceDue,
+  DEBIT_MODE_LABELS,
+  type DebitMode,
 } from "@/lib/finance-store";
 import { formatBRL, formatCompactBRL } from "@/lib/format";
 import { Plus, Trash2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/cartoes")({
   head: () => ({ meta: [{ title: "Cartões — Finlux" }] }),
@@ -79,6 +83,28 @@ function Cartoes() {
                   <span>Vence dia {c.dueDay}</span>
                 </div>
               </div>
+              {/* Débito da fatura */}
+              <div className="mt-5 rounded-2xl bg-white/10 p-3 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] opacity-85 uppercase tracking-wider">Debitar da conta</span>
+                  <select
+                    aria-label="Quando debitar da conta"
+                    value={c.debitMode}
+                    onChange={(e) => financeActions.setCardDebitMode(c.id, e.target.value as DebitMode)}
+                    className="bg-black/30 text-white text-xs rounded-lg px-2 py-1.5 outline-none"
+                  >
+                    {(Object.keys(DEBIT_MODE_LABELS) as DebitMode[]).map((m) => (
+                      <option key={m} value={m} className="text-foreground">
+                        {DEBIT_MODE_LABELS[m]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {c.debitMode !== "immediate" && (
+                  <PayInvoiceRow cardId={c.id} />
+                )}
+              </div>
+
               {/* Evolução dos compromissos parcelados (6 meses) */}
               <div className="mt-5">
                 <p className="text-[11px] opacity-80 uppercase tracking-wider mb-2">
@@ -98,6 +124,7 @@ function Cartoes() {
                   })}
                 </div>
               </div>
+
             </div>
           );
         })}
@@ -128,7 +155,36 @@ function Cartoes() {
   );
 }
 
+function PayInvoiceRow({ cardId }: { cardId: string }) {
+  const state = useFinance();
+  const due = cardInvoiceDue(state, cardId);
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[11px] opacity-85 uppercase tracking-wider">Fatura em aberto</p>
+        <p className="text-base font-bold tabular-nums">{formatBRL(due.amount)}</p>
+        <p className="text-[10px] opacity-80">
+          {due.overdue ? "Vencida" : "Vence"} em{" "}
+          {due.dueDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+        </p>
+      </div>
+      <button
+        disabled={due.amount <= 0}
+        onClick={() => {
+          const paid = financeActions.payCardInvoice(cardId);
+          if (paid > 0) toast.success(`Fatura de ${formatBRL(paid)} paga e debitada do saldo.`);
+        }}
+        className="shrink-0 rounded-xl bg-white text-black text-xs font-bold px-3 py-2 disabled:opacity-40 active:scale-95 transition-transform"
+      >
+        Pagar fatura
+      </button>
+    </div>
+  );
+}
+
 function AddCard({ onClose }: { onClose: () => void }) {
+  const [debitMode, setDebitMode] = useState<DebitMode>("on_payment");
+
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("Mastercard");
   const [limit, setLimit] = useState("");
@@ -173,7 +229,9 @@ function AddCard({ onClose }: { onClose: () => void }) {
       closingDay: closingNum,
       dueDay: dueNum,
       color,
+      debitMode,
     });
+
     toast.success("Cartão adicionado com sucesso.");
     onClose();
   }
@@ -256,6 +314,23 @@ function AddCard({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </Field>
+        <Field label="Débito da fatura">
+          <select
+            className="w-full bg-card-elevated rounded-xl px-4 py-3 text-foreground outline-none"
+            value={debitMode}
+            onChange={(e) => setDebitMode(e.target.value as DebitMode)}
+          >
+            {(Object.keys(DEBIT_MODE_LABELS) as DebitMode[]).map((m) => (
+              <option key={m} value={m}>
+                {DEBIT_MODE_LABELS[m]}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Em "Ao pagar a fatura", as compras ficam como valor comprometido e não saem do saldo até o pagamento.
+          </p>
+        </Field>
+
         <button
           className="w-full rounded-2xl bg-primary text-primary-foreground py-3.5 font-bold active:scale-[0.98] transition-transform"
           onClick={save}

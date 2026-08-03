@@ -676,7 +676,10 @@ export function buildFinanceContext(state: FinanceState, ref = new Date()): stri
     `Receitas do mês: ${formatBRL(s.income)}`,
     `Despesas do mês até agora: ${formatBRL(s.expense)}`,
     `Economia do mês: ${formatBRL(s.savings)}`,
-    `Saldo geral: ${formatBRL(s.balance)}`,
+    `Saldo da conta (sem descontar faturas em aberto): ${formatBRL(s.balance)}`,
+    `Valor comprometido em cartões (faturas e parcelas a pagar): ${formatBRL(s.committed)}`,
+    `Saldo livre (saldo da conta menos comprometido): ${formatBRL(s.free)}`,
+
     `Score financeiro: ${score.score}/100 (${score.label})`,
     `Índice de Estabilidade Financeira: ${stability.index}/100 (${stability.label})`,
     `Previsão de despesas até o fim do mês: ${formatBRL(forecast.projectedExpense)} (faltam ${forecast.daysRemaining} dias)`,

@@ -14,7 +14,18 @@ export interface Transaction {
   paymentMethod?: string;
   cardId?: string;
   installments?: number;
+  /** Compra no cartão já quitada via pagamento de fatura. */
+  invoicePaid?: boolean;
 }
+
+/** Quando a compra no cartão sai do saldo da conta. */
+export type DebitMode = "on_payment" | "on_due" | "immediate";
+
+export const DEBIT_MODE_LABELS: Record<DebitMode, string> = {
+  on_payment: "Ao pagar a fatura",
+  on_due: "No vencimento da fatura",
+  immediate: "Imediatamente",
+};
 
 export interface CreditCard {
   id: string;
@@ -24,7 +35,9 @@ export interface CreditCard {
   closingDay: number;
   dueDay: number;
   color: string;
+  debitMode: DebitMode;
 }
+
 
 export interface Goal {
   id: string;
@@ -247,6 +260,7 @@ function rowToTx(r: any): Transaction {
     paymentMethod: r.payment_method ?? undefined,
     cardId: r.card_id ?? undefined,
     installments: r.installments ?? undefined,
+    invoicePaid: r.invoice_paid ?? false,
   };
 }
 function txToRow(t: Transaction, userId: string) {
@@ -261,8 +275,10 @@ function txToRow(t: Transaction, userId: string) {
     payment_method: t.paymentMethod ?? null,
     card_id: t.cardId ?? null,
     installments: t.installments ?? null,
+    invoice_paid: t.invoicePaid ?? false,
   };
 }
+
 
 function rowToGoal(r: any): Goal {
   return {
@@ -287,6 +303,7 @@ function goalToRow(g: Goal, userId: string) {
 }
 
 function rowToCard(r: any): CreditCard {
+  const mode = r.debit_mode;
   return {
     id: r.id,
     name: r.name,
@@ -295,6 +312,7 @@ function rowToCard(r: any): CreditCard {
     closingDay: r.closing_day ?? 1,
     dueDay: r.due_day ?? 1,
     color: r.color || "",
+    debitMode: mode === "on_due" || mode === "immediate" ? mode : "on_payment",
   };
 }
 function cardToRow(c: CreditCard, userId: string) {
@@ -307,8 +325,10 @@ function cardToRow(c: CreditCard, userId: string) {
     closing_day: c.closingDay,
     due_day: c.dueDay,
     color: c.color,
+    debit_mode: c.debitMode ?? "on_payment",
   };
 }
+
 
 function rowToAsset(r: any): Asset {
   return { id: r.id, type: r.type, name: r.name, value: Number(r.value) || 0 };
@@ -549,10 +569,51 @@ export const financeActions = {
     setState((s) => ({ ...s, cards: [...s.cards, full] }));
     if (currentUserId) void cloudInsert("cards", cardToRow(full, currentUserId));
   },
+  setCardDebitMode(id: string, debitMode: DebitMode) {
+    setState((s) => ({
+      ...s,
+      cards: s.cards.map((c) => (c.id === id ? { ...c, debitMode } : c)),
+    }));
+    void cloudUpdate("cards", id, { debit_mode: debitMode });
+  },
+  /** Paga a fatura do cartão: debita o valor do saldo e quita compras e parcelas. */
+  payCardInvoice(cardId: string, ref = new Date()): number {
+    const snapshot = state;
+    const card = snapshot.cards.find((c) => c.id === cardId);
+    const due = cardInvoiceDue(snapshot, cardId, ref);
+    if (!card || due.amount <= 0) return 0;
+
+    financeActions.addTransaction({
+      kind: "despesa",
+      amount: due.amount,
+      category: "Cartão de crédito",
+      description: `Pagamento da fatura • ${card.name}`,
+      date: new Date().toISOString(),
+      paymentMethod: "fatura",
+    });
+
+    setState((s) => ({
+      ...s,
+      transactions: s.transactions.map((t) =>
+        due.txIds.includes(t.id) ? { ...t, invoicePaid: true } : t,
+      ),
+    }));
+    for (const id of due.txIds) void cloudUpdate("transactions", id, { invoice_paid: true });
+    for (const p of due.installments) financeActions.payInstallment(p.id, p.qty);
+    return due.amount;
+  },
+  /** Cartões com débito no vencimento: quita automaticamente faturas vencidas. */
+  autoSettleDueInvoices() {
+    for (const card of state.cards.filter((c) => c.debitMode === "on_due")) {
+      const due = cardInvoiceDue(state, card.id);
+      if (due.amount > 0 && due.overdue) financeActions.payCardInvoice(card.id);
+    }
+  },
   removeCard(id: string) {
     setState((s) => ({ ...s, cards: s.cards.filter((c) => c.id !== id) }));
     void cloudDelete("cards", id);
   },
+
   addGoal(goal: Omit<Goal, "id">) {
     const full: Goal = { ...goal, id: crypto.randomUUID() };
     setState((s) => ({ ...s, goals: [...s.goals, full] }));
@@ -672,9 +733,15 @@ export interface MonthlySummary {
   income: number;
   expense: number;
   savings: number;
+  /** Saldo real na conta (compras no cartão em aberto não são descontadas). */
   balance: number;
+  /** Valor já gasto no cartão que ainda vai sair da conta. */
+  committed: number;
+  /** Saldo livre = saldo da conta - comprometido. */
+  free: number;
   byCategory: { category: string; total: number; color: string }[];
 }
+
 
 export const CATEGORY_COLORS: Record<string, string> = {
   Alimentação: "oklch(0.72 0.23 0)",
@@ -704,9 +771,8 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   });
   const income = month.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
   const expense = month.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
-  const totalIncome = s.transactions.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
-  const totalExpense = s.transactions.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
-  const balance = totalIncome - totalExpense;
+  const balance = accountBalance(s);
+  const committed = committedTotal(s);
   const catMap = new Map<string, number>();
   for (const t of month.filter((t) => t.kind === "despesa")) {
     catMap.set(t.category, (catMap.get(t.category) ?? 0) + t.amount);
@@ -714,7 +780,16 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   const byCategory = Array.from(catMap.entries())
     .map(([category, total]) => ({ category, total, color: colorForCategory(category) }))
     .sort((a, b) => b.total - a.total);
-  return { income, expense, savings: income - expense, balance, byCategory };
+  return {
+    income,
+    expense,
+    savings: income - expense,
+    balance,
+    committed,
+    free: balance - committed,
+    byCategory,
+  };
+
 }
 
 export interface MonthPoint {
@@ -900,10 +975,91 @@ export function cardCommittedTotal(s: FinanceState, cardId: string): number {
   // usado para calcular limite disponível: tudo que ainda não foi pago
   const future = futureInstallmentsTotal(s, cardId);
   const txs = s.transactions
-    .filter((t) => t.cardId === cardId && t.kind === "despesa")
+    .filter((t) => t.cardId === cardId && t.kind === "despesa" && !t.invoicePaid)
     .reduce((a, t) => a + t.amount, 0);
   return future + txs;
 }
+
+// ===== Saldo da conta x valor comprometido no cartão =====
+
+export function cardDebitMode(s: FinanceState, cardId?: string): DebitMode | null {
+  if (!cardId) return null;
+  return s.cards.find((c) => c.id === cardId)?.debitMode ?? null;
+}
+
+/** Uma despesa no cartão só sai do saldo da conta quando a fatura é paga
+ *  (ou imediatamente, se o cartão estiver configurado assim). */
+export function hitsAccountBalance(s: FinanceState, t: Transaction): boolean {
+  if (t.kind !== "despesa") return false;
+  const mode = cardDebitMode(s, t.cardId);
+  if (!mode || mode === "immediate") return true;
+  return t.invoicePaid === true;
+}
+
+/** Saldo real disponível na conta (não desconta compras de cartão em aberto). */
+export function accountBalance(s: FinanceState): number {
+  const income = s.transactions.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
+  const expense = s.transactions.filter((t) => hitsAccountBalance(s, t)).reduce((a, t) => a + t.amount, 0);
+  return income - expense;
+}
+
+/** Total já gasto no cartão que ainda vai sair da conta (faturas + parcelas). */
+export function committedTotal(s: FinanceState): number {
+  const cardIds = s.cards.filter((c) => c.debitMode !== "immediate").map((c) => c.id);
+  const txs = s.transactions
+    .filter((t) => t.kind === "despesa" && !t.invoicePaid && t.cardId && cardIds.includes(t.cardId))
+    .reduce((a, t) => a + t.amount, 0);
+  const inst = s.installmentPurchases
+    .filter((p) => !p.cardId || cardIds.includes(p.cardId))
+    .reduce((a, p) => a + installmentAmount(p) * (p.installments - p.paid), 0);
+  return txs + inst;
+}
+
+/** Saldo livre = saldo da conta menos tudo que já está comprometido no cartão. */
+export function freeBalance(s: FinanceState): number {
+  return accountBalance(s) - committedTotal(s);
+}
+
+export interface InvoiceDue {
+  amount: number;
+  txIds: string[];
+  installments: { id: string; qty: number }[];
+  dueDate: Date;
+  overdue: boolean;
+}
+
+/** Fatura em aberto de um cartão até o mês de referência (inclusive). */
+export function cardInvoiceDue(s: FinanceState, cardId: string, ref = new Date()): InvoiceDue {
+  const card = s.cards.find((c) => c.id === cardId);
+  const limitTime = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59).getTime();
+  const txs = s.transactions.filter(
+    (t) =>
+      t.cardId === cardId &&
+      t.kind === "despesa" &&
+      !t.invoicePaid &&
+      new Date(t.date).getTime() <= limitTime,
+  );
+  const entries = getAllInstallmentEntries(s).filter(
+    (e) => e.cardId === cardId && !e.paid && e.date.getTime() <= limitTime,
+  );
+  const perPurchase = new Map<string, number>();
+  for (const e of entries) perPurchase.set(e.purchaseId, (perPurchase.get(e.purchaseId) ?? 0) + 1);
+  const amount =
+    txs.reduce((a, t) => a + t.amount, 0) + entries.reduce((a, e) => a + e.amount, 0);
+  const dueDate = new Date(
+    ref.getFullYear(),
+    ref.getMonth(),
+    Math.min(card?.dueDay ?? 28, 28),
+  );
+  return {
+    amount,
+    txIds: txs.map((t) => t.id),
+    installments: Array.from(perPurchase.entries()).map(([id, qty]) => ({ id, qty })),
+    dueDate,
+    overdue: amount > 0 && dueDate.getTime() < Date.now(),
+  };
+}
+
 
 // ===== Patrimônio =====
 
