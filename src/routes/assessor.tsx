@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { WhatsappConnect, AdvisorContact } from "@/components/whatsapp-connect";
 import { SandboxReconnect } from "@/components/sandbox-reconnect";
 import { toast } from "sonner";
+import { LuxBubble } from "@/components/lux/lux-bubble";
+import { luxPhrase } from "@/lib/lux";
 
 export const Route = createFileRoute("/assessor")({
   head: () => ({ meta: [{ title: "Meu Assessor — Finlux" }] }),
@@ -209,7 +211,7 @@ function Assessor() {
   if (!authLoading && !session) {
     return (
       <AppShell>
-        <PageHeader subtitle="Registro inteligente" title="Meu Assessor" />
+        <PageHeader subtitle="Lux IA · Registro inteligente" title="Meu Assessor" />
         <div className="px-6">
           <div className="rounded-3xl bg-card border border-border p-6 text-center space-y-4">
             <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center">
@@ -236,11 +238,19 @@ function Assessor() {
   return (
 
     <AppShell>
-      <PageHeader subtitle="Registro inteligente" title="Meu Assessor" />
+      <PageHeader subtitle="Lux IA · Registro inteligente" title="Meu Assessor" />
       <div className="px-6 space-y-4">
-        <p className="text-sm text-muted-foreground -mt-2">
-          Mande uma foto da nota, grave um áudio ou escreva o que comprou. Eu cataloguei para você.
-        </p>
+        <LuxBubble
+          emotion={loading ? "processando" : extracted.length > 0 ? "comemorando" : "recepcionando"}
+          size={60}
+          className="-mt-2"
+        >
+          {loading
+            ? luxPhrase("processando", extracted.length)
+            : extracted.length > 0
+            ? luxPhrase("conquista", extracted.length)
+            : "Sou o Lux. Mande uma foto da nota, grave um áudio ou escreva o que comprou — eu catalogo tudo pra você."}
+        </LuxBubble>
 
         <SandboxReconnect />
 
