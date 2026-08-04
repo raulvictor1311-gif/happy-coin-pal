@@ -19,6 +19,7 @@ import {
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { AiInsights } from "@/components/ai-insights";
+import { LuxCard } from "@/components/lux/lux-card";
 import { FinanceIntelligence } from "@/components/finance-intelligence";
 
 export const Route = createFileRoute("/")({
@@ -183,6 +184,9 @@ function Dashboard() {
           )}
         </div>
       </header>
+
+      {/* Central do Lux */}
+      <LuxCard hideValues={hidden} />
 
       {/* Level */}
       <section className="px-6 mt-5">

@@ -25,10 +25,27 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useFinance } from "@/lib/finance-store";
 import { buildFinanceContext, buildFinanceFacts, suggestedQuestions } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
+import { LuxAvatar } from "@/components/lux/lux-avatar";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
-  head: () => ({ meta: [{ title: "Assistente IA — Finlux" }] }),
+  head: () => ({
+    meta: [
+      { title: "Lux IA — seu parceiro financeiro | Finlux" },
+      {
+        name: "description",
+        content:
+          "Converse com o Lux IA: análises de gastos, projeções de saldo e recomendações financeiras personalizadas no Finlux.",
+      },
+      { property: "og:title", content: "Lux IA — seu parceiro financeiro" },
+      {
+        property: "og:description",
+        content: "Assistente financeiro inteligente do Finlux, com análises e recomendações personalizadas.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Assistente,
 });
 
@@ -121,7 +138,7 @@ function Assistente() {
 
   return (
     <AppShell>
-      <PageHeader subtitle="Inteligência financeira" title="Assistente IA" />
+      <PageHeader subtitle="Seu parceiro financeiro" title="Lux IA" />
       {messages.length > 0 ? (
         <div className="px-6 -mt-4 mb-2 flex justify-end">
           <button
@@ -139,9 +156,9 @@ function Assistente() {
           <ConversationContent className="px-4 py-4">
             {messages.length === 0 ? (
               <ConversationEmptyState
-                icon={<Sparkles className="h-8 w-8 text-primary" />}
-                title="Como posso te ajudar hoje?"
-                description="Analiso seus gastos, sugiro economias, projeto saldo e respondo dúvidas financeiras."
+                icon={<LuxAvatar emotion="recepcionando" size={96} />}
+                title="Oi! Sou o Lux."
+                description="Analiso seus gastos, sugiro economias, projeto seu saldo e explico finanças de forma simples."
               >
                 <div className="mt-4 grid gap-2 w-full">
                   {suggestions.map((label) => {
@@ -181,7 +198,10 @@ function Assistente() {
                 {status === "submitted" ? (
                   <Message from="assistant">
                     <MessageContent>
-                      <Shimmer>Pensando...</Shimmer>
+                      <span className="flex items-center gap-2">
+                        <LuxAvatar emotion="processando" size={28} particles={false} />
+                        <Shimmer>Pensando...</Shimmer>
+                      </span>
                     </MessageContent>
                   </Message>
                 ) : null}
