@@ -25,6 +25,7 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useFinance } from "@/lib/finance-store";
 import { buildFinanceContext, buildFinanceFacts, suggestedQuestions } from "@/lib/finance-ai";
 import { supabase } from "@/integrations/supabase/client";
+import { LuxAvatar } from "@/components/lux/lux-avatar";
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, ShoppingCart, Target } from "lucide-react";
 
 export const Route = createFileRoute("/assistente")({
