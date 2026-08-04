@@ -79,15 +79,7 @@ export function LuxCard({ hideValues = false }: { hideValues?: boolean }) {
   );
 }
 
-function Stat({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: typeof Flame;
-}) {
+function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Flame }) {
   return (
     <div className="rounded-2xl bg-card-elevated border border-border px-3 py-2.5">
       <Icon className="h-3.5 w-3.5 text-primary" />

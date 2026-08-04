@@ -4,12 +4,7 @@
 // vínculo emocional. Não altera nenhuma regra financeira existente.
 // ============================================================
 
-import {
-  getLevel,
-  getStreak,
-  netWorth,
-  type FinanceState,
-} from "@/lib/finance-store";
+import { getLevel, getStreak, netWorth, type FinanceState } from "@/lib/finance-store";
 import { financialScore } from "@/lib/finance-ai";
 
 /** Estados emocionais do Lux. Cada um mapeia para uma pose/animação. */
@@ -49,7 +44,12 @@ export const LUX_POSES: Record<LuxEmotion, LuxPose> = {
   recepcionando: { art: "hello", energy: 0.6, aura: "primary", alt: "Lux acenando um olá" },
   feliz: { art: "hello", energy: 0.5, aura: "primary", alt: "Lux sorrindo" },
   muito_feliz: { art: "celebrating", energy: 0.8, aura: "success", alt: "Lux muito animado" },
-  comemorando: { art: "celebrating", energy: 1, aura: "success", alt: "Lux comemorando com os braços erguidos" },
+  comemorando: {
+    art: "celebrating",
+    energy: 1,
+    aura: "success",
+    alt: "Lux comemorando com os braços erguidos",
+  },
   orgulhoso: { art: "celebrating", energy: 0.7, aura: "success", alt: "Lux orgulhoso de você" },
   pensando: { art: "thinking", energy: 0.35, aura: "primary", alt: "Lux pensando" },
   processando: { art: "thinking", energy: 0.9, aura: "primary", alt: "Lux processando dados" },
@@ -60,10 +60,20 @@ export const LUX_POSES: Record<LuxEmotion, LuxPose> = {
   investindo: { art: "thinking", energy: 0.5, aura: "success", alt: "Lux investindo" },
   planejando: { art: "thinking", energy: 0.45, aura: "primary", alt: "Lux planejando" },
   seguranca: { art: "hello", energy: 0.3, aura: "success", alt: "Lux protegendo seus dados" },
-  alerta: { art: "thinking", energy: 0.6, aura: "warning", alt: "Lux com uma observação importante" },
+  alerta: {
+    art: "thinking",
+    energy: 0.6,
+    aura: "warning",
+    alt: "Lux com uma observação importante",
+  },
   dormindo: { art: "thinking", energy: 0.15, aura: "primary", alt: "Lux descansando" },
   motivando: { art: "celebrating", energy: 0.75, aura: "primary", alt: "Lux te motivando" },
-  recompensando: { art: "celebrating", energy: 0.85, aura: "success", alt: "Lux entregando uma recompensa" },
+  recompensando: {
+    art: "celebrating",
+    energy: 0.85,
+    aura: "success",
+    alt: "Lux entregando uma recompensa",
+  },
 };
 
 // ------------------------------------------------------------
@@ -80,14 +90,45 @@ export type LuxRank = {
 };
 
 export const LUX_RANKS: LuxRank[] = [
-  { key: "aprendiz", name: "Lux Aprendiz", minLevel: 1, unlocks: "Falas de boas-vindas e dicas básicas" },
-  { key: "analista", name: "Lux Analista", minLevel: 3, unlocks: "Análises de categorias e alertas amigáveis" },
-  { key: "especialista", name: "Lux Especialista", minLevel: 5, unlocks: "Projeções e recomendações avançadas" },
-  { key: "mestre", name: "Lux Mestre Financeiro", minLevel: 8, unlocks: "Celebrações exclusivas e plano de patrimônio" },
-  { key: "lendario", name: "Lux Lendário", minLevel: 12, unlocks: "Aparência lendária e falas raras" },
+  {
+    key: "aprendiz",
+    name: "Lux Aprendiz",
+    minLevel: 1,
+    unlocks: "Falas de boas-vindas e dicas básicas",
+  },
+  {
+    key: "analista",
+    name: "Lux Analista",
+    minLevel: 3,
+    unlocks: "Análises de categorias e alertas amigáveis",
+  },
+  {
+    key: "especialista",
+    name: "Lux Especialista",
+    minLevel: 5,
+    unlocks: "Projeções e recomendações avançadas",
+  },
+  {
+    key: "mestre",
+    name: "Lux Mestre Financeiro",
+    minLevel: 8,
+    unlocks: "Celebrações exclusivas e plano de patrimônio",
+  },
+  {
+    key: "lendario",
+    name: "Lux Lendário",
+    minLevel: 12,
+    unlocks: "Aparência lendária e falas raras",
+  },
 ];
 
-export function luxRank(state: FinanceState): { rank: LuxRank; next: LuxRank | null; level: number; xp: number; nextXp: number } {
+export function luxRank(state: FinanceState): {
+  rank: LuxRank;
+  next: LuxRank | null;
+  level: number;
+  xp: number;
+  nextXp: number;
+} {
   const lvl = getLevel(state);
   let idx = 0;
   LUX_RANKS.forEach((r, i) => {
@@ -248,20 +289,38 @@ export function luxGreeting(
   const bond = luxBond(state, ref);
 
   if (state.transactions.length === 0) {
-    return { emotion: "recepcionando", text: `${who}vamos começar? Registre sua primeira transação e eu cuido da análise.` };
+    return {
+      emotion: "recepcionando",
+      text: `${who}vamos começar? Registre sua primeira transação e eu cuido da análise.`,
+    };
   }
   if (hour >= 0 && hour < 5) {
-    return { emotion: "dormindo", text: `${who}acordado essa hora? Deixa que eu vigio suas finanças.` };
+    return {
+      emotion: "dormindo",
+      text: `${who}acordado essa hora? Deixa que eu vigio suas finanças.`,
+    };
   }
   if (bond.streak >= 7) {
-    return { emotion: "orgulhoso", text: `${who}${bond.streak} dias seguidos registrando. Isso é disciplina de verdade!` };
+    return {
+      emotion: "orgulhoso",
+      text: `${who}${bond.streak} dias seguidos registrando. Isso é disciplina de verdade!`,
+    };
   }
   if (bond.score >= 75) {
-    return { emotion: "muito_feliz", text: `${who}suas finanças estão em ótima forma. Score ${bond.score}/100.` };
+    return {
+      emotion: "muito_feliz",
+      text: `${who}suas finanças estão em ótima forma. Score ${bond.score}/100.`,
+    };
   }
   if (bond.score < 35) {
-    return { emotion: "alerta", text: `${who}dá pra melhorar o mês. Me deixa te mostrar por onde começar?` };
+    return {
+      emotion: "alerta",
+      text: `${who}dá pra melhorar o mês. Me deixa te mostrar por onde começar?`,
+    };
   }
   const saudacao = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
-  return { emotion: "feliz", text: `${saudacao}${first ? `, ${first}` : ""}! Estamos juntos há ${bond.daysTogether} dias.` };
+  return {
+    emotion: "feliz",
+    text: `${saudacao}${first ? `, ${first}` : ""}! Estamos juntos há ${bond.daysTogether} dias.`,
+  };
 }
