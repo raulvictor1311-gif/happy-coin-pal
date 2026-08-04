@@ -180,3 +180,62 @@
   -webkit-background-clip: text;
   color: transparent;
 }
+
+/* ============================================================
+   Lux IA — microanimações do mascote (transform/opacity only)
+   ============================================================ */
+@keyframes lux-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.6deg);
+  }
+  50% {
+    transform: translateY(-5%) rotate(0.8deg);
+  }
+}
+@keyframes lux-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+@keyframes lux-particle {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.6);
+  }
+}
+
+.lux-float {
+  animation: lux-float 3s ease-in-out infinite;
+  will-change: transform;
+}
+.lux-pulse {
+  animation: lux-pulse 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.lux-particle {
+  animation: lux-particle 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lux-float,
+  .lux-pulse,
+  .lux-particle {
+    animation: none;
+  }
+}
