@@ -71,12 +71,10 @@ function AuthPage() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-2xl font-black text-primary-foreground">
-            F
-          </div>
-          <h1 className="mt-4 text-3xl font-bold">Finlux</h1>
+          <LuxAvatar emotion="recepcionando" size={112} className="mx-auto" />
+          <h1 className="mt-2 text-3xl font-bold">Finlux</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Seu controle financeiro, simples e visual.
+            Sou o Lux, seu parceiro financeiro. Vamos começar?
           </p>
         </div>
 
