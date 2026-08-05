@@ -55,9 +55,19 @@ function Dashboard() {
   const streak = now ? getStreak(state, now) : 0;
   const tips = getSmartTips(state);
   const showOnboarding = now !== null && !state.onboardingDone;
-  const notifs = getNotifications(state);
+  const notifUnread = useMemo(
+    () =>
+      now
+        ? unreadCount(
+            applyPrefs(generateNotifications(state, now), state.notifPrefs, now),
+            state.notifMeta,
+            state.dismissedNotifs,
+          )
+        : 0,
+    [state, now],
+  );
   const level = getLevel(state);
-  const [notifOpen, setNotifOpen] = useState(false);
+
   const prefs = state.dashboardPrefs;
   const userReady = now !== null && !loading;
   const hasFinanceData = state.transactions.length > 0;
