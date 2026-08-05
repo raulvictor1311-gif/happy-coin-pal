@@ -1,5 +1,4 @@
 // ============================================================================
-import { DEFAULT_NOTIF_PREFS } from "@/lib/notifications";
 // "Meu Assessor" no WhatsApp — versão consultor financeiro.
 // Reaproveita TODA a IA Financeira (finance-ai) sobre os dados salvos do
 // usuário para responder perguntas naturais e comandos avançados (score,
@@ -7,6 +6,7 @@ import { DEFAULT_NOTIF_PREFS } from "@/lib/notifications";
 // Só é importado pelo webhook do WhatsApp (server-only, sufixo .server).
 // ============================================================================
 
+import { DEFAULT_NOTIF_PREFS } from "@/lib/notifications";
 import type { FinanceState, Transaction } from "./finance-store";
 import {
   balanceForecast,
