@@ -1,4 +1,5 @@
 // ============================================================================
+import { DEFAULT_NOTIF_PREFS } from "@/lib/notifications";
 // "Meu Assessor" no WhatsApp — versão consultor financeiro.
 // Reaproveita TODA a IA Financeira (finance-ai) sobre os dados salvos do
 // usuário para responder perguntas naturais e comandos avançados (score,
@@ -63,6 +64,8 @@ export async function loadFinanceState(
   return {
     userName: "",
     hideBalance: false,
+    notifPrefs: DEFAULT_NOTIF_PREFS,
+    notifMeta: {},
     transactions: (tx.data ?? []).map(mapTx),
     cards: (cards.data ?? []).map((r: any) => ({
       id: r.id,
