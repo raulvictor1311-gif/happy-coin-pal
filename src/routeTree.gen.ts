@@ -13,6 +13,7 @@ import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as PatrimonioRouteImport } from './routes/patrimonio'
 import { Route as ParcelasRouteImport } from './routes/parcelas'
 import { Route as NovaRouteImport } from './routes/nova'
+import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as MetasRouteImport } from './routes/metas'
 import { Route as MaisRouteImport } from './routes/mais'
 import { Route as IndicarRouteImport } from './routes/indicar'
@@ -49,6 +50,11 @@ const ParcelasRoute = ParcelasRouteImport.update({
 const NovaRoute = NovaRouteImport.update({
   id: '/nova',
   path: '/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificacoesRoute = NotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MetasRoute = MetasRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/indicar': typeof IndicarRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/indicar': typeof IndicarRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/indicar': typeof IndicarRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/indicar'
     | '/mais'
     | '/metas'
+    | '/notificacoes'
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/indicar'
     | '/mais'
     | '/metas'
+    | '/notificacoes'
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/indicar'
     | '/mais'
     | '/metas'
+    | '/notificacoes'
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   IndicarRoute: typeof IndicarRoute
   MaisRoute: typeof MaisRoute
   MetasRoute: typeof MetasRoute
+  NotificacoesRoute: typeof NotificacoesRoute
   NovaRoute: typeof NovaRoute
   ParcelasRoute: typeof ParcelasRoute
   PatrimonioRoute: typeof PatrimonioRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/nova'
       fullPath: '/nova'
       preLoaderRoute: typeof NovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notificacoes': {
+      id: '/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof NotificacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/metas': {
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndicarRoute: IndicarRoute,
   MaisRoute: MaisRoute,
   MetasRoute: MetasRoute,
+  NotificacoesRoute: NotificacoesRoute,
   NovaRoute: NovaRoute,
   ParcelasRoute: ParcelasRoute,
   PatrimonioRoute: PatrimonioRoute,
@@ -481,13 +502,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
