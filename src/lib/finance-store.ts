@@ -1,6 +1,12 @@
 import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DEFAULT_NOTIF_PREFS,
+  type NotifCategory,
+  type NotifMeta,
+  type NotifPrefs,
+} from "@/lib/notifications";
 
 export type TxKind = "receita" | "despesa";
 
@@ -104,6 +110,10 @@ export interface FinanceState {
   referralCode: string;
   dashboardPrefs: DashboardPrefs;
   dismissedNotifs: string[];
+  /** Preferências da central de notificações. */
+  notifPrefs: NotifPrefs;
+  /** Estado por notificação: lida, favorita, arquivada. */
+  notifMeta: Record<string, NotifMeta>;
   cloudLoading: boolean;
 }
 
@@ -130,6 +140,8 @@ const DEFAULT_STATE: FinanceState = {
     showRecents: true,
   },
   dismissedNotifs: [],
+  notifPrefs: DEFAULT_NOTIF_PREFS,
+  notifMeta: {},
   cloudLoading: false,
 };
 
@@ -143,7 +155,16 @@ function load() {
   initialized = true;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = { ...DEFAULT_STATE, ...JSON.parse(raw), cloudLoading: false };
+    if (raw) {
+      const saved = JSON.parse(raw) as Partial<FinanceState>;
+      state = {
+        ...DEFAULT_STATE,
+        ...saved,
+        notifPrefs: { ...DEFAULT_NOTIF_PREFS, ...(saved.notifPrefs ?? {}) },
+        notifMeta: saved.notifMeta ?? {},
+        cloudLoading: false,
+      };
+    }
   } catch {}
 }
 
@@ -724,6 +745,57 @@ export const financeActions = {
   },
   clearDismissedNotifications() {
     setState((s) => ({ ...s, dismissedNotifs: [] }));
+  },
+
+  // ===== Central de notificações =====
+  setNotifMeta(id: string, patch: NotifMeta) {
+    setState((s) => ({
+      ...s,
+      notifMeta: { ...s.notifMeta, [id]: { ...(s.notifMeta[id] ?? {}), ...patch } },
+    }));
+  },
+  markNotifRead(id: string, read = true) {
+    financeActions.setNotifMeta(id, { read });
+  },
+  toggleNotifStar(id: string) {
+    setState((s) => {
+      const current = s.notifMeta[id] ?? {};
+      return {
+        ...s,
+        notifMeta: { ...s.notifMeta, [id]: { ...current, starred: !current.starred } },
+      };
+    });
+  },
+  archiveNotif(id: string, archived = true) {
+    financeActions.setNotifMeta(id, { archived, read: true });
+  },
+  markAllNotifsRead(ids: string[]) {
+    setState((s) => {
+      const meta = { ...s.notifMeta };
+      for (const id of ids) meta[id] = { ...(meta[id] ?? {}), read: true };
+      return { ...s, notifMeta: meta };
+    });
+  },
+  setNotifPrefs(patch: Partial<NotifPrefs>) {
+    setState((s) => ({ ...s, notifPrefs: { ...s.notifPrefs, ...patch } }));
+  },
+  toggleNotifCategory(category: NotifCategory) {
+    setState((s) => {
+      const disabled = s.notifPrefs.disabled.includes(category)
+        ? s.notifPrefs.disabled.filter((c) => c !== category)
+        : [...s.notifPrefs.disabled, category];
+      return { ...s, notifPrefs: { ...s.notifPrefs, disabled } };
+    });
+  },
+  muteNotifsFor(hours: number) {
+    setState((s) => ({
+      ...s,
+      notifPrefs: {
+        ...s.notifPrefs,
+        mutedUntil:
+          hours <= 0 ? undefined : new Date(Date.now() + hours * 3_600_000).toISOString(),
+      },
+    }));
   },
 };
 
