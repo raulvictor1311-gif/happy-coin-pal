@@ -117,6 +117,17 @@ const iso = (d: Date) => d.toISOString();
 const daysBetween = (a: Date, b: Date) =>
   Math.round((a.setHours(0, 0, 0, 0) - new Date(b).setHours(0, 0, 0, 0)) / 86_400_000);
 
+/** Dia do mês típico (mediana simples) de uma despesa recorrente. */
+function typicalDay(state: FinanceState, description: string): number | null {
+  const key = description.trim().toLowerCase();
+  const days = state.transactions
+    .filter((t) => (t.description || t.category).trim().toLowerCase() === key)
+    .map((t) => new Date(t.date).getDate())
+    .sort((a, b) => a - b);
+  if (days.length === 0) return null;
+  return days[Math.floor(days.length / 2)];
+}
+
 /**
  * Gera todas as notificações possíveis a partir dos dados reais.
  * Função pura: mesma entrada, mesma saída (ids estáveis).
