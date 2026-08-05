@@ -220,13 +220,16 @@ export function generateNotifications(state: FinanceState, ref = new Date()): Lu
 
   // ---------- Contas recorrentes / assinaturas ----------
   for (const item of detectRecurring(state, ref)) {
-    const diff = item.nextDay - ref.getDate();
+    if (item.kind !== "despesa") continue;
+    const dueDay = typicalDay(state, item.description);
+    if (dueDay === null) continue;
+    const diff = dueDay - ref.getDate();
     if (diff >= 0 && diff <= 3) {
       push({
         id: `recurring-${item.description.toLowerCase().replace(/\s+/g, "-")}-${monthKey}`,
         category: "recorrentes",
         title: `${item.description} vence em breve`,
-        body: `Costuma ser ${brl(item.amount)} por mês${diff === 0 ? " — é hoje." : ` — em ${diff} dia${diff > 1 ? "s" : ""}.`}`,
+        body: `Costuma ser ${brl(item.avgAmount)} por mês${diff === 0 ? " — é hoje." : ` — em ${diff} dia${diff > 1 ? "s" : ""}.`}`,
         emoji: "📅",
         priority: "media",
         tone: "info",
@@ -236,6 +239,7 @@ export function generateNotifications(state: FinanceState, ref = new Date()): Lu
       });
     }
   }
+
 
   // ---------- Metas ----------
   for (const g of state.goals) {
