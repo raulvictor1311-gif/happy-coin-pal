@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw, CreditCard as CreditCardIcon } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import {
   useFinance,
@@ -11,11 +11,11 @@ import {
   financialHealth,
   getStreak,
   getSmartTips,
-  getNotifications,
   getLevel,
   getMonthlyHistory,
   type FinanceState,
 } from "@/lib/finance-store";
+import { applyPrefs, generateNotifications, unreadCount } from "@/lib/notifications";
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { AiInsights } from "@/components/ai-insights";
@@ -55,9 +55,19 @@ function Dashboard() {
   const streak = now ? getStreak(state, now) : 0;
   const tips = getSmartTips(state);
   const showOnboarding = now !== null && !state.onboardingDone;
-  const notifs = getNotifications(state);
+  const notifUnread = useMemo(
+    () =>
+      now
+        ? unreadCount(
+            applyPrefs(generateNotifications(state, now), state.notifPrefs, now),
+            state.notifMeta,
+            state.dismissedNotifs,
+          )
+        : 0,
+    [state, now],
+  );
   const level = getLevel(state);
-  const [notifOpen, setNotifOpen] = useState(false);
+
   const prefs = state.dashboardPrefs;
   const userReady = now !== null && !loading;
   const hasFinanceData = state.transactions.length > 0;
@@ -109,56 +119,19 @@ function Dashboard() {
           >
             <Settings className="h-5 w-5" />
           </Link>
-          <button
-            aria-label="Notificações"
-            onClick={() => setNotifOpen((v) => !v)}
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground"
+          <Link
+            to="/notificacoes"
+            aria-label={`Notificações${notifUnread > 0 ? `, ${notifUnread} não lidas` : ""}`}
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground active:scale-95 transition-transform"
           >
             <Bell className="h-5 w-5" />
-            {notifs.length > 0 && (
+            {notifUnread > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-[var(--color-destructive)] text-[10px] font-bold text-white flex items-center justify-center px-1">
-                {notifs.length}
+                {notifUnread > 9 ? "9+" : notifUnread}
               </span>
             )}
-          </button>
-          {notifOpen && (
-            <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-card border border-border shadow-xl overflow-hidden z-30">
-              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notificações</p>
-                {notifs.length > 0 && (
-                  <button
-                    onClick={() => notifs.forEach((n) => financeActions.dismissNotification(n.id))}
-                    className="text-[11px] font-semibold text-primary"
-                  >
-                    Limpar
-                  </button>
-                )}
-              </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-border">
-                {notifs.length === 0 && (
-                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-                    Nada por aqui. Tudo certo!
-                  </p>
-                )}
-                {notifs.map((n) => (
-                  <div key={n.id} className="px-4 py-3 flex gap-3">
-                    <span className="text-xl">{n.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-foreground">{n.title}</p>
-                      <p className="text-xs text-muted-foreground">{n.body}</p>
-                    </div>
-                    <button
-                      onClick={() => financeActions.dismissNotification(n.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                      aria-label="Dispensar"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </Link>
+
           <button
             aria-label="Perfil"
             onClick={() => setMenuOpen((v) => !v)}

@@ -6,6 +6,7 @@
 // Só é importado pelo webhook do WhatsApp (server-only, sufixo .server).
 // ============================================================================
 
+import { DEFAULT_NOTIF_PREFS } from "@/lib/notifications";
 import type { FinanceState, Transaction } from "./finance-store";
 import {
   balanceForecast,
@@ -63,6 +64,8 @@ export async function loadFinanceState(
   return {
     userName: "",
     hideBalance: false,
+    notifPrefs: DEFAULT_NOTIF_PREFS,
+    notifMeta: {},
     transactions: (tx.data ?? []).map(mapTx),
     cards: (cards.data ?? []).map((r: any) => ({
       id: r.id,
