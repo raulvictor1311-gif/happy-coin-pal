@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw, CreditCard as CreditCardIcon } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import {
   useFinance,
@@ -11,11 +11,11 @@ import {
   financialHealth,
   getStreak,
   getSmartTips,
-  getNotifications,
   getLevel,
   getMonthlyHistory,
   type FinanceState,
 } from "@/lib/finance-store";
+import { applyPrefs, generateNotifications, unreadCount } from "@/lib/notifications";
 import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/format";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { AiInsights } from "@/components/ai-insights";
