@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
-import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles, Mic, Trash2, AlertTriangle } from "lucide-react";
+import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles, Mic, Trash2, AlertTriangle, Repeat } from "lucide-react";
 import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
@@ -56,6 +56,7 @@ function Mais() {
       items: [
         { to: "/patrimonio", icon: Wallet, title: "Patrimônio e investimentos", desc: "Bens, dívidas e simulador" },
         { to: "/parcelas", icon: CreditCard, title: "Compras parceladas", desc: "Controle as parcelas do cartão" },
+        { to: "/recorrentes", icon: Repeat, title: "Contas recorrentes", desc: "Assinaturas e contas fixas do mês" },
       ],
     },
     {

@@ -245,7 +245,7 @@ export function generateNotifications(state: FinanceState, ref = new Date()): Lu
         priority: "media",
         tone: "info",
         date: iso(ref),
-        href: "/extrato",
+        href: "/recorrentes",
         emotion: "planejando",
       });
     }
