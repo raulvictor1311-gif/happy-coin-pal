@@ -83,9 +83,10 @@ export function LuxOnboarding({ name }: { name: string }) {
           <LuxAvatar emotion={current.emotion} size={96} />
         </div>
 
-        <LuxBubble emotion={current.emotion} size={0} className="mt-4">
+        <div className="mt-4 rounded-2xl rounded-tl-sm bg-card-elevated border border-border px-4 py-3 text-sm leading-snug text-foreground animate-in fade-in duration-300">
           {current.speech}
-        </LuxBubble>
+        </div>
+
 
         <div className="mt-4 flex items-start gap-3 rounded-2xl bg-card-elevated border border-border p-4">
           <current.icon className="h-5 w-5 shrink-0 text-[var(--color-primary)] mt-0.5" />
