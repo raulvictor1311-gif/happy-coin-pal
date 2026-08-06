@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
+import { Route as RecorrentesRouteImport } from './routes/recorrentes'
 import { Route as PatrimonioRouteImport } from './routes/patrimonio'
 import { Route as ParcelasRouteImport } from './routes/parcelas'
 import { Route as NovaRouteImport } from './routes/nova'
@@ -35,6 +36,11 @@ import { Route as ApiPublicWhatsappRouteImport } from './routes/api/public/whats
 const RelatorioRoute = RelatorioRouteImport.update({
   id: '/relatorio',
   path: '/relatorio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecorrentesRoute = RecorrentesRouteImport.update({
+  id: '/recorrentes',
+  path: '/recorrentes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatrimonioRoute = PatrimonioRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/recorrentes': typeof RecorrentesRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/recorrentes': typeof RecorrentesRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/nova': typeof NovaRoute
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/recorrentes': typeof RecorrentesRoute
   '/relatorio': typeof RelatorioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
+    | '/recorrentes'
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
+    | '/recorrentes'
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/nova'
     | '/parcelas'
     | '/patrimonio'
+    | '/recorrentes'
     | '/relatorio'
     | '/api/chat'
     | '/api/extract-tx'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   NovaRoute: typeof NovaRoute
   ParcelasRoute: typeof ParcelasRoute
   PatrimonioRoute: typeof PatrimonioRoute
+  RecorrentesRoute: typeof RecorrentesRoute
   RelatorioRoute: typeof RelatorioRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiExtractTxRoute: typeof ApiExtractTxRoute
@@ -323,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorio'
       fullPath: '/relatorio'
       preLoaderRoute: typeof RelatorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recorrentes': {
+      id: '/recorrentes'
+      path: '/recorrentes'
+      fullPath: '/recorrentes'
+      preLoaderRoute: typeof RecorrentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patrimonio': {
@@ -493,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   NovaRoute: NovaRoute,
   ParcelasRoute: ParcelasRoute,
   PatrimonioRoute: PatrimonioRoute,
+  RecorrentesRoute: RecorrentesRoute,
   RelatorioRoute: RelatorioRoute,
   ApiChatRoute: ApiChatRoute,
   ApiExtractTxRoute: ApiExtractTxRoute,
