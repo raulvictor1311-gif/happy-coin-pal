@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { LuxAvatar } from "@/components/lux/lux-avatar";
-import { LuxBubble } from "@/components/lux/lux-bubble";
 import { financeActions } from "@/lib/finance-store";
 import type { LuxEmotion } from "@/lib/lux";
 
