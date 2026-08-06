@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, X, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw, CreditCard as CreditCardIcon } from "lucide-react";
+import { Eye, EyeOff, LogOut, Flame, Lightbulb, Sparkles, Bell, Trophy, Settings, ArrowDownLeft, ArrowUpRight, PiggyBank, Wallet, TrendingDown, TrendingUp, BarChart3, RefreshCw, CreditCard as CreditCardIcon } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 
 import { useEffect, useMemo, useState } from "react";
@@ -20,6 +20,7 @@ import { formatBRL, formatCompactBRL, greetingFor, initialsOf } from "@/lib/form
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { AiInsights } from "@/components/ai-insights";
 import { LuxCard } from "@/components/lux/lux-card";
+import { LuxOnboarding } from "@/components/lux/lux-onboarding";
 import { FinanceIntelligence } from "@/components/finance-intelligence";
 
 export const Route = createFileRoute("/")({
@@ -491,7 +492,7 @@ function Dashboard() {
       </section>
       )}
 
-      {showOnboarding && <OnboardingModal name={displayName} />}
+      {showOnboarding && <LuxOnboarding name={displayName} />}
     </AppShell>
   );
 }
@@ -619,51 +620,6 @@ function HealthRing({ score, tone }: { score: number; tone: "ok" | "warn" | "bad
     >
       <div className="h-12 w-12 rounded-full bg-card flex items-center justify-center">
         <span className="text-sm font-bold text-foreground tabular-nums">{score}%</span>
-      </div>
-    </div>
-  );
-}
-
-function OnboardingModal({ name }: { name: string }) {
-  const [open, setOpen] = useState(true);
-  if (!open) return null;
-  const close = () => {
-    financeActions.completeOnboarding();
-    setOpen(false);
-  };
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 relative">
-        <button
-          onClick={close}
-          aria-label="Fechar"
-          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
-        <div className="text-4xl mb-3">👋</div>
-        <h2 className="text-xl font-bold text-foreground">Bem-vindo(a), {name}!</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Em 3 passos você assume o controle das suas finanças:
-        </p>
-        <ol className="mt-4 space-y-2.5 text-sm text-foreground">
-          <li className="flex gap-2"><span className="font-bold text-primary">1.</span> Registre uma receita ou despesa</li>
-          <li className="flex gap-2"><span className="font-bold text-primary">2.</span> Crie uma meta financeira</li>
-          <li className="flex gap-2"><span className="font-bold text-primary">3.</span> Acompanhe sua saúde financeira aqui</li>
-        </ol>
-        <Link
-          to="/nova"
-          onClick={close}
-          className="mt-5 block w-full rounded-2xl bg-primary text-primary-foreground py-3 text-center font-bold"
-        >
-          Registrar primeira transação
-        </Link>
-        <button
-          onClick={close}
-          className="mt-2 w-full rounded-2xl bg-card-elevated py-3 text-sm font-semibold text-foreground"
-        >
-          Explorar primeiro
-        </button>
       </div>
     </div>
   );
