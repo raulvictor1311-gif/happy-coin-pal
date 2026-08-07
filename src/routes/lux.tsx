@@ -36,7 +36,7 @@ export const Route = createFileRoute("/lux")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: LuxCentral;
+  component: LuxCentral,
 });
 
 const DAILY: { category: LuxPhraseCategory; emotion: LuxEmotion; label: string }[] = [
