@@ -17,6 +17,7 @@ import { Route as NovaRouteImport } from './routes/nova'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as MetasRouteImport } from './routes/metas'
 import { Route as MaisRouteImport } from './routes/mais'
+import { Route as LuxRouteImport } from './routes/lux'
 import { Route as IndicarRouteImport } from './routes/indicar'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as ExtratoRouteImport } from './routes/extrato'
@@ -71,6 +72,11 @@ const MetasRoute = MetasRouteImport.update({
 const MaisRoute = MaisRouteImport.update({
   id: '/mais',
   path: '/mais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LuxRoute = LuxRouteImport.update({
+  id: '/lux',
+  path: '/lux',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndicarRoute = IndicarRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/extrato': typeof ExtratoRoute
   '/feedback': typeof FeedbackRoute
   '/indicar': typeof IndicarRoute
+  '/lux': typeof LuxRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/extrato': typeof ExtratoRoute
   '/feedback': typeof FeedbackRoute
   '/indicar': typeof IndicarRoute
+  '/lux': typeof LuxRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/extrato': typeof ExtratoRoute
   '/feedback': typeof FeedbackRoute
   '/indicar': typeof IndicarRoute
+  '/lux': typeof LuxRoute
   '/mais': typeof MaisRoute
   '/metas': typeof MetasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/extrato'
     | '/feedback'
     | '/indicar'
+    | '/lux'
     | '/mais'
     | '/metas'
     | '/notificacoes'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/extrato'
     | '/feedback'
     | '/indicar'
+    | '/lux'
     | '/mais'
     | '/metas'
     | '/notificacoes'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/extrato'
     | '/feedback'
     | '/indicar'
+    | '/lux'
     | '/mais'
     | '/metas'
     | '/notificacoes'
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   ExtratoRoute: typeof ExtratoRoute
   FeedbackRoute: typeof FeedbackRoute
   IndicarRoute: typeof IndicarRoute
+  LuxRoute: typeof LuxRoute
   MaisRoute: typeof MaisRoute
   MetasRoute: typeof MetasRoute
   NotificacoesRoute: typeof NotificacoesRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       path: '/mais'
       fullPath: '/mais'
       preLoaderRoute: typeof MaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lux': {
+      id: '/lux'
+      path: '/lux'
+      fullPath: '/lux'
+      preLoaderRoute: typeof LuxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/indicar': {
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExtratoRoute: ExtratoRoute,
   FeedbackRoute: FeedbackRoute,
   IndicarRoute: IndicarRoute,
+  LuxRoute: LuxRoute,
   MaisRoute: MaisRoute,
   MetasRoute: MetasRoute,
   NotificacoesRoute: NotificacoesRoute,
@@ -523,13 +544,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
