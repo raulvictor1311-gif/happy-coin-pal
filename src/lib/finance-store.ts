@@ -551,6 +551,23 @@ export const financeActions = {
     if (currentUserId) void cloudInsert("transactions", txToRow(full, currentUserId));
     return id;
   },
+  /** Edita campos de uma transação existente (estado + nuvem). */
+  updateTransaction(
+    id: string,
+    patch: Partial<Pick<Transaction, "kind" | "amount" | "category" | "description" | "date">>,
+  ) {
+    setState((s) => ({
+      ...s,
+      transactions: s.transactions.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    }));
+    const row: Record<string, unknown> = {};
+    if (patch.kind !== undefined) row['kind'] = patch.kind;
+    if (patch.amount !== undefined) row['amount'] = patch.amount;
+    if (patch.category !== undefined) row['category'] = patch.category;
+    if (patch.description !== undefined) row['description'] = patch.description;
+    if (patch.date !== undefined) row['date'] = new Date(patch.date).toISOString();
+    if (Object.keys(row).length > 0) void cloudUpdate("transactions", id, row);
+  },
   async removeTransaction(id: string) {
     const uid = await resolveUserId();
     if (uid) {
