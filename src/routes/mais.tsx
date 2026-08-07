@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
-import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles, Mic, Trash2, AlertTriangle, Repeat } from "lucide-react";
+import { Target, Wallet, CreditCard, FileText, ChevronRight, LogOut, Trophy, MessageSquare, Gift, Flag, HelpCircle, LayoutGrid, Download, Sparkles, Mic, Trash2, AlertTriangle, Repeat, Bot } from "lucide-react";
 import { signOut } from "@/hooks/use-auth";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ function Mais() {
     {
       label: "Inteligência Financeira",
       items: [
+        { to: "/lux", icon: Bot, title: "Central do Lux IA", desc: "Evolução, vínculo e dicas do seu assessor" },
         { to: "/assessor", icon: Mic, title: "Meu Assessor", desc: "Registre por foto, áudio ou texto" },
         { to: "/assistente", icon: Sparkles, title: "Assistente IA", desc: "Insights e dicas com inteligência" },
         { to: "/relatorio", icon: FileText, title: "Relatório mensal", desc: "Receitas, despesas e insights" },
