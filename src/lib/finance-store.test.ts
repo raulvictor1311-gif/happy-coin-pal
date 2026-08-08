@@ -107,9 +107,9 @@ describe("saldo x cartão de crédito", () => {
   it("não desconta compras no cartão do saldo da conta", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0) }),
-        tx({ kind: "despesa", amount: 500, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
-        tx({ kind: "despesa", amount: 200, date: iso(NOW.getFullYear(), 0) }),
+        tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0, 1) }),
+        tx({ kind: "despesa", amount: 500, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }),
+        tx({ kind: "despesa", amount: 200, date: iso(NOW.getFullYear(), 0, 1) }),
       ]),
       cards: [card],
     };
@@ -121,8 +121,8 @@ describe("saldo x cartão de crédito", () => {
   it("desconta imediatamente quando o cartão é configurado assim", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
-        tx({ kind: "despesa", amount: 400, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }),
+        tx({ kind: "despesa", amount: 400, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }),
       ]),
       cards: [{ ...card, debitMode: "immediate" as const }],
     };
@@ -133,10 +133,10 @@ describe("saldo x cartão de crédito", () => {
   it("não debita duas vezes: compra quitada + transação de pagamento da fatura", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
-        { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }), invoicePaid: true },
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }),
+        { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }), invoicePaid: true },
         // débito real da conta é a transação de pagamento da fatura
-        tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), category: "Cartão de crédito" }),
+        tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0, 1), category: "Cartão de crédito" }),
       ]),
       cards: [card],
     };
@@ -147,8 +147,8 @@ describe("saldo x cartão de crédito", () => {
   it("despesa futura recorrente não reduz o saldo atual, apenas o comprometido", () => {
     const future = new Date(NOW.getFullYear(), NOW.getMonth() + 1, 10).toISOString();
     const state = baseState([
-      tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0) }),
-      { ...tx({ kind: "despesa", amount: 1000, date: iso(NOW.getFullYear(), 0) }), date: future },
+      tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0, 1) }),
+      { ...tx({ kind: "despesa", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }), date: future },
     ]);
     expect(accountBalance(state, NOW)).toBe(3000);
     expect(committedTotal(state, NOW)).toBe(1000);
@@ -159,7 +159,7 @@ describe("saldo x cartão de crédito", () => {
 
   it("soma compras e parcelas na fatura em aberto", () => {
     const state = {
-      ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0), cardId: "card-1" })]),
+      ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" })]),
       cards: [card],
     };
     const due = cardInvoiceDue(state, "card-1");
@@ -171,7 +171,7 @@ describe("saldo x cartão de crédito", () => {
 
 describe("gamification", () => {
   it("unlocks the first transaction achievement", () => {
-    const state = baseState([tx({ kind: "receita", amount: 10, date: iso(NOW.getFullYear(), 0) })]);
+    const state = baseState([tx({ kind: "receita", amount: 10, date: iso(NOW.getFullYear(), 0, 1) })]);
     const first = getAchievements(state).find((a) => a.id === "first-tx");
     expect(first?.unlocked).toBe(true);
   });
