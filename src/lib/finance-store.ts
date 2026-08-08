@@ -863,8 +863,9 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
   });
   const income = month.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
   const expense = month.filter((t) => t.kind === "despesa").reduce((a, t) => a + t.amount, 0);
-  const balance = accountBalance(s);
-  const committed = committedTotal(s);
+  const balance = accountBalance(s, ref);
+  const committed = committedTotal(s, ref);
+  const futureIncome = futureIncomeTotal(s, ref);
   const catMap = new Map<string, number>();
   for (const t of month.filter((t) => t.kind === "despesa")) {
     catMap.set(t.category, (catMap.get(t.category) ?? 0) + t.amount);
@@ -879,8 +880,10 @@ export function getMonthlySummary(s: FinanceState, ref = new Date()): MonthlySum
     balance,
     committed,
     free: balance - committed,
+    projected: balance + futureIncome - committed,
     byCategory,
   };
+
 
 }
 
