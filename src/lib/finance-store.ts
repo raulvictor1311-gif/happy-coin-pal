@@ -1076,38 +1076,61 @@ export function cardDebitMode(s: FinanceState, cardId?: string): DebitMode | nul
   return s.cards.find((c) => c.id === cardId)?.debitMode ?? null;
 }
 
-/** Uma despesa no cartão só sai do saldo da conta quando a fatura é paga
- *  (ou imediatamente, se o cartão estiver configurado assim). */
+/** Uma despesa em cartão de crédito com débito diferido NUNCA sai direto da conta:
+ *  o débito acontece pela transação "Pagamento da fatura". Evita dupla dedução. */
 export function hitsAccountBalance(s: FinanceState, t: Transaction): boolean {
   if (t.kind !== "despesa") return false;
   const mode = cardDebitMode(s, t.cardId);
-  if (!mode || mode === "immediate") return true;
-  return t.invoicePaid === true;
+  return !mode || mode === "immediate";
 }
 
-/** Saldo real disponível na conta (não desconta compras de cartão em aberto). */
-export function accountBalance(s: FinanceState): number {
-  const income = s.transactions.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
-  const expense = s.transactions.filter((t) => hitsAccountBalance(s, t)).reduce((a, t) => a + t.amount, 0);
+/** Uma transação só entra no saldo atual depois da sua data de competência. */
+function alreadyHappened(t: Transaction, ref: Date): boolean {
+  return new Date(t.date).getTime() <= ref.getTime();
+}
+
+/** Saldo atual da conta: só movimentações já ocorridas, sem compras de cartão em aberto. */
+export function accountBalance(s: FinanceState, ref = new Date()): number {
+  const done = s.transactions.filter((t) => alreadyHappened(t, ref));
+  const income = done.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
+  const expense = done.filter((t) => hitsAccountBalance(s, t)).reduce((a, t) => a + t.amount, 0);
   return income - expense;
 }
 
-/** Total já gasto no cartão que ainda vai sair da conta (faturas + parcelas). */
-export function committedTotal(s: FinanceState): number {
+/** Tudo que já está comprometido e ainda vai sair da conta:
+ *  faturas de cartão em aberto + parcelas restantes + despesas futuras já lançadas. */
+export function committedTotal(s: FinanceState, ref = new Date()): number {
   const cardIds = s.cards.filter((c) => c.debitMode !== "immediate").map((c) => c.id);
-  const txs = s.transactions
+  const cardTxs = s.transactions
     .filter((t) => t.kind === "despesa" && !t.invoicePaid && t.cardId && cardIds.includes(t.cardId))
     .reduce((a, t) => a + t.amount, 0);
   const inst = s.installmentPurchases
     .filter((p) => !p.cardId || cardIds.includes(p.cardId))
     .reduce((a, p) => a + installmentAmount(p) * (p.installments - p.paid), 0);
-  return txs + inst;
+  // Despesas futuras (recorrentes/agendadas) que ainda não saíram da conta.
+  const future = s.transactions
+    .filter((t) => !alreadyHappened(t, ref) && hitsAccountBalance(s, t))
+    .reduce((a, t) => a + t.amount, 0);
+  return cardTxs + inst + future;
 }
 
-/** Saldo livre = saldo da conta menos tudo que já está comprometido no cartão. */
-export function freeBalance(s: FinanceState): number {
-  return accountBalance(s) - committedTotal(s);
+/** Receitas já lançadas com data futura (salário agendado, recorrências). */
+export function futureIncomeTotal(s: FinanceState, ref = new Date()): number {
+  return s.transactions
+    .filter((t) => t.kind === "receita" && !alreadyHappened(t, ref))
+    .reduce((a, t) => a + t.amount, 0);
 }
+
+/** Saldo disponível = saldo atual menos o que já está comprometido. */
+export function freeBalance(s: FinanceState, ref = new Date()): number {
+  return accountBalance(s, ref) - committedTotal(s, ref);
+}
+
+/** Saldo projetado = saldo atual + receitas futuras − comprometido. */
+export function projectedBalance(s: FinanceState, ref = new Date()): number {
+  return accountBalance(s, ref) + futureIncomeTotal(s, ref) - committedTotal(s, ref);
+}
+
 
 export interface InvoiceDue {
   amount: number;
