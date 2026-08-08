@@ -83,10 +83,11 @@ describe("getMonthlyHistory", () => {
 
 describe("financialHealth", () => {
   it("flags healthy when saving 30%+", () => {
-    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, committed: 0, free: 400, byCategory: [] }).tone).toBe("ok");
+    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, committed: 0, free: 400, projected: 400, byCategory: [] }).tone).toBe("ok");
   });
   it("flags critical when overspending", () => {
-    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, committed: 0, free: -200, byCategory: [] }).tone).toBe("bad");
+    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, committed: 0, free: -200, projected: -200, byCategory: [] }).tone).toBe("bad");
+
   });
 });
 
