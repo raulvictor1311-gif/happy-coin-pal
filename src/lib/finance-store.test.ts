@@ -129,17 +129,32 @@ describe("saldo x cartão de crédito", () => {
     expect(committedTotal(state)).toBe(0);
   });
 
-  it("considera a compra quitada após o pagamento da fatura", () => {
+  it("não debita duas vezes: compra quitada + transação de pagamento da fatura", () => {
     const state = {
       ...baseState([
         tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
         { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }), invoicePaid: true },
+        // débito real da conta é a transação de pagamento da fatura
+        tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), category: "Cartão de crédito" }),
       ]),
       cards: [card],
     };
     expect(accountBalance(state)).toBe(700);
     expect(committedTotal(state)).toBe(0);
   });
+
+  it("despesa futura recorrente não reduz o saldo atual, apenas o comprometido", () => {
+    const future = new Date(NOW.getFullYear(), NOW.getMonth() + 1, 10).toISOString();
+    const state = baseState([
+      tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0) }),
+      { ...tx({ kind: "despesa", amount: 1000, date: iso(NOW.getFullYear(), 0) }), date: future },
+    ]);
+    expect(accountBalance(state, NOW)).toBe(3000);
+    expect(committedTotal(state, NOW)).toBe(1000);
+    expect(freeBalance(state, NOW)).toBe(2000);
+    expect(projectedBalance(state, NOW)).toBe(2000);
+  });
+
 
   it("soma compras e parcelas na fatura em aberto", () => {
     const state = {
