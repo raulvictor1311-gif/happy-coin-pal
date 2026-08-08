@@ -9,6 +9,7 @@ import {
   accountBalance,
   committedTotal,
   freeBalance,
+  projectedBalance,
   cardInvoiceDue,
   type FinanceState,
   type Transaction,
