@@ -391,7 +391,9 @@ function installmentToRow(p: InstallmentPurchase, userId: string) {
   };
 }
 
-/** Busca uma tabela na nuvem e reconcilia com itens locais ainda não enviados. */
+/** Busca uma tabela na nuvem e reconcilia com itens locais ainda não enviados.
+ *  Itens que só existem localmente (criados offline ou cujo insert falhou) NUNCA são
+ *  descartados: eles são reenviados para a nuvem em background e mantidos no estado. */
 async function pullAndReconcile<T extends { id: string }>(
   table: TableName,
   select: string,
@@ -399,21 +401,23 @@ async function pullAndReconcile<T extends { id: string }>(
   rowToItem: (r: any) => T,
   itemToRow: (t: T, uid: string) => Record<string, unknown>,
   local: T[],
-  importLocal: boolean,
+  _importLocal: boolean,
 ): Promise<T[]> {
   const { data, error } = await supabase.from(table).select(select).eq("user_id", uid);
   if (error) throw error;
   const cloud = (data ?? []).map(rowToItem);
   const cloudIds = new Set(cloud.map((c) => c.id));
-  let localOnly: T[] = [];
-  if (importLocal) {
-    localOnly = local.filter((l) => !cloudIds.has(l.id));
-    if (localOnly.length) {
-      await (supabase.from(table) as any).insert(localOnly.map((l) => itemToRow(l, uid)));
+  const localOnly = local.filter((l) => !cloudIds.has(l.id));
+  if (localOnly.length) {
+    try {
+      await (supabase.from(table) as any).upsert(localOnly.map((l) => itemToRow(l, uid)));
+    } catch {
+      // mantém os itens locais; nova tentativa no próximo refresh
     }
   }
   return [...localOnly, ...cloud];
 }
+
 
 /** Puxa TODAS as tabelas da nuvem e devolve um patch de estado.
  *  Quando `importLocal` é true, também envia itens locais ainda não sincronizados. */
