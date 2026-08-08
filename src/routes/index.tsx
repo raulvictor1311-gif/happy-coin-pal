@@ -216,7 +216,7 @@ function Dashboard() {
               <div className="rounded-2xl bg-card p-3 border border-border">
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <CreditCardIcon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">Comprometido (cartão)</span>
+                  <span className="truncate">Comprometido</span>
                 </div>
                 <p className="mt-1 text-base font-bold tabular-nums text-[var(--color-warning)]">
                   {hidden ? "R$ ••••" : formatBRL(summary.committed)}
@@ -225,7 +225,7 @@ function Dashboard() {
               <div className="rounded-2xl bg-card p-3 border border-border">
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <Wallet className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">Saldo livre</span>
+                  <span className="truncate">Disponível</span>
                 </div>
                 <p
                   className="mt-1 text-base font-bold tabular-nums"
@@ -240,7 +240,7 @@ function Dashboard() {
           )}
           {summary.committed > 0 && (
             <p className="mt-2 text-[11px] text-muted-foreground leading-snug">
-              Compras no cartão só saem do saldo quando a fatura é paga.
+              Compras no cartão e contas futuras só saem do saldo quando são pagas.
             </p>
           )}
         </div>
@@ -249,10 +249,12 @@ function Dashboard() {
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <FinCard icon={ArrowDownLeft} label="Receitas" value={summary.income} tone="success" hidden={hidden} />
           <FinCard icon={ArrowUpRight} label="Despesas" value={summary.expense} tone="danger" hidden={hidden} />
-          <FinCard icon={TrendingUp} label="Recebido" value={summary.income} tone="success" hidden={hidden} />
-          <FinCard icon={TrendingDown} label="Pago" value={summary.expense} tone="danger" hidden={hidden} />
+          <FinCard icon={CreditCardIcon} label="Comprometido" value={summary.committed} tone="danger" hidden={hidden} />
+          <FinCard icon={TrendingUp} label="Projetado" value={summary.projected} tone="accent" hidden={hidden} />
           <FinCard icon={PiggyBank} label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
-          <FinCard icon={Wallet} label="Saldo livre" value={summary.free} tone="accent" hidden={hidden} />
+          <FinCard icon={Wallet} label="Disponível" value={summary.free} tone="accent" hidden={hidden} />
+        </div>
+
         </div>
       </section>
 
