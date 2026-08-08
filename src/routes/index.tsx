@@ -254,9 +254,8 @@ function Dashboard() {
           <FinCard icon={PiggyBank} label="Economia" value={summary.savings} tone="accent" hidden={hidden} />
           <FinCard icon={Wallet} label="Disponível" value={summary.free} tone="accent" hidden={hidden} />
         </div>
-
-        </div>
       </section>
+
 
 
       {/* Inteligência financeira (IA) */}
