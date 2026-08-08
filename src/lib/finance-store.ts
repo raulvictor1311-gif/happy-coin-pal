@@ -822,13 +822,16 @@ export interface MonthlySummary {
   income: number;
   expense: number;
   savings: number;
-  /** Saldo real na conta (compras no cartão em aberto não são descontadas). */
+  /** Saldo atual da conta (compras no cartão em aberto e lançamentos futuros não são descontados). */
   balance: number;
-  /** Valor já gasto no cartão que ainda vai sair da conta. */
+  /** Faturas em aberto + parcelas restantes + despesas futuras já lançadas. */
   committed: number;
-  /** Saldo livre = saldo da conta - comprometido. */
+  /** Saldo disponível = saldo atual - comprometido. */
   free: number;
+  /** Saldo projetado = saldo atual + receitas futuras - comprometido. */
+  projected: number;
   byCategory: { category: string; total: number; color: string }[];
+
 }
 
 
