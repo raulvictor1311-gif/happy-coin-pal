@@ -9,6 +9,7 @@ import {
   accountBalance,
   committedTotal,
   freeBalance,
+  projectedBalance,
   cardInvoiceDue,
   type FinanceState,
   type Transaction,
@@ -83,10 +84,11 @@ describe("getMonthlyHistory", () => {
 
 describe("financialHealth", () => {
   it("flags healthy when saving 30%+", () => {
-    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, committed: 0, free: 400, byCategory: [] }).tone).toBe("ok");
+    expect(financialHealth({ income: 1000, expense: 600, savings: 400, balance: 400, committed: 0, free: 400, projected: 400, byCategory: [] }).tone).toBe("ok");
   });
   it("flags critical when overspending", () => {
-    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, committed: 0, free: -200, byCategory: [] }).tone).toBe("bad");
+    expect(financialHealth({ income: 1000, expense: 1200, savings: -200, balance: -200, committed: 0, free: -200, projected: -200, byCategory: [] }).tone).toBe("bad");
+
   });
 });
 
@@ -105,9 +107,9 @@ describe("saldo x cartão de crédito", () => {
   it("não desconta compras no cartão do saldo da conta", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0) }),
-        tx({ kind: "despesa", amount: 500, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
-        tx({ kind: "despesa", amount: 200, date: iso(NOW.getFullYear(), 0) }),
+        tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0, 1) }),
+        tx({ kind: "despesa", amount: 500, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }),
+        tx({ kind: "despesa", amount: 200, date: iso(NOW.getFullYear(), 0, 1) }),
       ]),
       cards: [card],
     };
@@ -119,8 +121,8 @@ describe("saldo x cartão de crédito", () => {
   it("desconta imediatamente quando o cartão é configurado assim", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
-        tx({ kind: "despesa", amount: 400, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }),
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }),
+        tx({ kind: "despesa", amount: 400, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }),
       ]),
       cards: [{ ...card, debitMode: "immediate" as const }],
     };
@@ -128,11 +130,13 @@ describe("saldo x cartão de crédito", () => {
     expect(committedTotal(state)).toBe(0);
   });
 
-  it("considera a compra quitada após o pagamento da fatura", () => {
+  it("não debita duas vezes: compra quitada + transação de pagamento da fatura", () => {
     const state = {
       ...baseState([
-        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0) }),
-        { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0), cardId: "card-1" }), invoicePaid: true },
+        tx({ kind: "receita", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }),
+        { ...tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" }), invoicePaid: true },
+        // débito real da conta é a transação de pagamento da fatura
+        tx({ kind: "despesa", amount: 300, date: iso(NOW.getFullYear(), 0, 1), category: "Cartão de crédito" }),
       ]),
       cards: [card],
     };
@@ -140,9 +144,22 @@ describe("saldo x cartão de crédito", () => {
     expect(committedTotal(state)).toBe(0);
   });
 
+  it("despesa futura recorrente não reduz o saldo atual, apenas o comprometido", () => {
+    const future = new Date(NOW.getFullYear(), NOW.getMonth() + 1, 10).toISOString();
+    const state = baseState([
+      tx({ kind: "receita", amount: 3000, date: iso(NOW.getFullYear(), 0, 1) }),
+      { ...tx({ kind: "despesa", amount: 1000, date: iso(NOW.getFullYear(), 0, 1) }), date: future },
+    ]);
+    expect(accountBalance(state, NOW)).toBe(3000);
+    expect(committedTotal(state, NOW)).toBe(1000);
+    expect(freeBalance(state, NOW)).toBe(2000);
+    expect(projectedBalance(state, NOW)).toBe(2000);
+  });
+
+
   it("soma compras e parcelas na fatura em aberto", () => {
     const state = {
-      ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0), cardId: "card-1" })]),
+      ...baseState([tx({ kind: "despesa", amount: 100, date: iso(NOW.getFullYear(), 0, 1), cardId: "card-1" })]),
       cards: [card],
     };
     const due = cardInvoiceDue(state, "card-1");
@@ -154,7 +171,7 @@ describe("saldo x cartão de crédito", () => {
 
 describe("gamification", () => {
   it("unlocks the first transaction achievement", () => {
-    const state = baseState([tx({ kind: "receita", amount: 10, date: iso(NOW.getFullYear(), 0) })]);
+    const state = baseState([tx({ kind: "receita", amount: 10, date: iso(NOW.getFullYear(), 0, 1) })]);
     const first = getAchievements(state).find((a) => a.id === "first-tx");
     expect(first?.unlocked).toBe(true);
   });
