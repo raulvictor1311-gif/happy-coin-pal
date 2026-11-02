@@ -86,6 +86,201 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_card_invoices: {
+        Row: {
+          card_id: string
+          closing_date: string
+          connection_id: string
+          due_date: string
+          external_id: string
+          id: string
+          paid: number
+          status: string
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          closing_date: string
+          connection_id: string
+          due_date: string
+          external_id: string
+          id?: string
+          paid?: number
+          status: string
+          total: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          closing_date?: string
+          connection_id?: string
+          due_date?: string
+          external_id?: string
+          id?: string
+          paid?: number
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_card_invoices_card_id_user_id_fkey"
+            columns: ["card_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "credit_card_invoices_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      credit_card_transactions: {
+        Row: {
+          amount: number
+          card_id: string
+          category: string
+          connection_id: string
+          date: string
+          description: string
+          external_id: string
+          id: string
+          installment_number: number
+          installments: number
+          invoice_id: string | null
+          invoice_paid: boolean
+          manually_categorized: boolean
+          matched_transaction_id: string | null
+          review_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          card_id: string
+          category: string
+          connection_id: string
+          date: string
+          description: string
+          external_id: string
+          id?: string
+          installment_number?: number
+          installments?: number
+          invoice_id?: string | null
+          invoice_paid?: boolean
+          manually_categorized?: boolean
+          matched_transaction_id?: string | null
+          review_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          card_id?: string
+          category?: string
+          connection_id?: string
+          date?: string
+          description?: string
+          external_id?: string
+          id?: string
+          installment_number?: number
+          installments?: number
+          invoice_id?: string | null
+          invoice_paid?: boolean
+          manually_categorized?: boolean
+          matched_transaction_id?: string | null
+          review_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_card_transactions_card_id_user_id_fkey"
+            columns: ["card_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "credit_card_transactions_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "credit_card_transactions_invoice_id_user_id_fkey"
+            columns: ["invoice_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "credit_card_invoices"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      credit_cards: {
+        Row: {
+          available_limit: number
+          brand: string
+          closing_date: string | null
+          connection_id: string
+          due_date: string | null
+          external_id: string
+          id: string
+          included: boolean
+          name: string
+          total_limit: number
+          updated_at: string
+          used_limit: number
+          user_id: string
+        }
+        Insert: {
+          available_limit: number
+          brand: string
+          closing_date?: string | null
+          connection_id: string
+          due_date?: string | null
+          external_id: string
+          id?: string
+          included?: boolean
+          name: string
+          total_limit: number
+          updated_at?: string
+          used_limit: number
+          user_id: string
+        }
+        Update: {
+          available_limit?: number
+          brand?: string
+          closing_date?: string | null
+          connection_id?: string
+          due_date?: string | null
+          external_id?: string
+          id?: string
+          included?: boolean
+          name?: string
+          total_limit?: number
+          updated_at?: string
+          used_limit?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_cards_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       debts: {
         Row: {
           created_at: string
@@ -112,6 +307,188 @@ export type Database = {
           value?: number
         }
         Relationships: []
+      }
+      financial_accounts: {
+        Row: {
+          balance: number
+          balance_at: string
+          connection_id: string
+          created_at: string
+          currency: string
+          external_id: string
+          id: string
+          included: boolean
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          balance_at?: string
+          connection_id: string
+          created_at?: string
+          currency?: string
+          external_id: string
+          id?: string
+          included?: boolean
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          balance_at?: string
+          connection_id?: string
+          created_at?: string
+          currency?: string
+          external_id?: string
+          id?: string
+          included?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_accounts_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      financial_connections: {
+        Row: {
+          authorization_expires_at: string | null
+          authorization_hash: string | null
+          connected_at: string | null
+          created_at: string
+          environment: string
+          expires_at: string | null
+          external_connection_id: string | null
+          id: string
+          institution_id: string
+          institution_logo: string | null
+          institution_name: string
+          last_sync_at: string | null
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          authorization_expires_at?: string | null
+          authorization_hash?: string | null
+          connected_at?: string | null
+          created_at?: string
+          environment: string
+          expires_at?: string | null
+          external_connection_id?: string | null
+          id?: string
+          institution_id: string
+          institution_logo?: string | null
+          institution_name: string
+          last_sync_at?: string | null
+          provider: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          authorization_expires_at?: string | null
+          authorization_hash?: string | null
+          connected_at?: string | null
+          created_at?: string
+          environment?: string
+          expires_at?: string | null
+          external_connection_id?: string | null
+          id?: string
+          institution_id?: string
+          institution_logo?: string | null
+          institution_name?: string
+          last_sync_at?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          category: string
+          connection_id: string
+          date: string
+          description: string
+          external_id: string
+          id: string
+          kind: string
+          manually_categorized: boolean
+          matched_transaction_id: string | null
+          review_status: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          category: string
+          connection_id: string
+          date: string
+          description: string
+          external_id: string
+          id?: string
+          kind: string
+          manually_categorized?: boolean
+          matched_transaction_id?: string | null
+          review_status?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          category?: string
+          connection_id?: string
+          date?: string
+          description?: string
+          external_id?: string
+          id?: string
+          kind?: string
+          manually_categorized?: boolean
+          matched_transaction_id?: string | null
+          review_status?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_account_id_user_id_fkey"
+            columns: ["account_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_accounts"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       goals: {
         Row: {
@@ -194,6 +571,62 @@ export type Database = {
         }
         Relationships: []
       }
+      open_finance_consents: {
+        Row: {
+          authorized_at: string | null
+          connection_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          policy_version: string
+          purpose: string
+          recipient: string
+          revoked_at: string | null
+          scopes: string[]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          authorized_at?: string | null
+          connection_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          policy_version?: string
+          purpose: string
+          recipient?: string
+          revoked_at?: string | null
+          scopes: string[]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          authorized_at?: string | null
+          connection_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          policy_version?: string
+          purpose?: string
+          recipient?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_finance_consents_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -218,6 +651,41 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_logs: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          event: string
+          id: string
+          result: string
+          user_id: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          result?: string
+          user_id: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          result?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_logs_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "financial_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -226,11 +694,15 @@ export type Database = {
           created_at: string
           date: string
           description: string
+          financial_account_id: string | null
+          financial_institution_id: string | null
           id: string
           installments: number | null
           invoice_paid: boolean
           kind: string
           payment_method: string | null
+          reconciled_open_finance_id: string | null
+          source: string
           updated_at: string
           user_id: string
         }
@@ -241,11 +713,15 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string
+          financial_account_id?: string | null
+          financial_institution_id?: string | null
           id?: string
           installments?: number | null
           invoice_paid?: boolean
           kind: string
           payment_method?: string | null
+          reconciled_open_finance_id?: string | null
+          source?: string
           updated_at?: string
           user_id: string
         }
@@ -256,11 +732,15 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string
+          financial_account_id?: string | null
+          financial_institution_id?: string | null
           id?: string
           installments?: number | null
           invoice_paid?: boolean
           kind?: string
           payment_method?: string | null
+          reconciled_open_finance_id?: string | null
+          source?: string
           updated_at?: string
           user_id?: string
         }
