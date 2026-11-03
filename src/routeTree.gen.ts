@@ -13,6 +13,7 @@ import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as RecorrentesRouteImport } from './routes/recorrentes'
 import { Route as PatrimonioRouteImport } from './routes/patrimonio'
 import { Route as ParcelasRouteImport } from './routes/parcelas'
+import { Route as OpenFinanceRouteImport } from './routes/open-finance'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as MetasRouteImport } from './routes/metas'
@@ -29,6 +30,14 @@ import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as AssessorRouteImport } from './routes/assessor'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OpenFinanceIndexRouteImport } from './routes/open-finance.index'
+import { Route as OpenFinancePrivacidadeRouteImport } from './routes/open-finance.privacidade'
+import { Route as OpenFinanceMovimentacoesRouteImport } from './routes/open-finance.movimentacoes'
+import { Route as OpenFinanceFaturasRouteImport } from './routes/open-finance.faturas'
+import { Route as OpenFinanceContasRouteImport } from './routes/open-finance.contas'
+import { Route as OpenFinanceConsentimentosRouteImport } from './routes/open-finance.consentimentos'
+import { Route as OpenFinanceConexoesRouteImport } from './routes/open-finance.conexoes'
+import { Route as OpenFinanceAutorizarRouteImport } from './routes/open-finance.autorizar'
 import { Route as ApiInsightsRouteImport } from './routes/api/insights'
 import { Route as ApiExtractTxRouteImport } from './routes/api/extract-tx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -52,6 +61,11 @@ const PatrimonioRoute = PatrimonioRouteImport.update({
 const ParcelasRoute = ParcelasRouteImport.update({
   id: '/parcelas',
   path: '/parcelas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenFinanceRoute = OpenFinanceRouteImport.update({
+  id: '/open-finance',
+  path: '/open-finance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NovaRoute = NovaRouteImport.update({
@@ -134,6 +148,48 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpenFinanceIndexRoute = OpenFinanceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
+const OpenFinancePrivacidadeRoute = OpenFinancePrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
+const OpenFinanceMovimentacoesRoute =
+  OpenFinanceMovimentacoesRouteImport.update({
+    id: '/movimentacoes',
+    path: '/movimentacoes',
+    getParentRoute: () => OpenFinanceRoute,
+  } as any)
+const OpenFinanceFaturasRoute = OpenFinanceFaturasRouteImport.update({
+  id: '/faturas',
+  path: '/faturas',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
+const OpenFinanceContasRoute = OpenFinanceContasRouteImport.update({
+  id: '/contas',
+  path: '/contas',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
+const OpenFinanceConsentimentosRoute =
+  OpenFinanceConsentimentosRouteImport.update({
+    id: '/consentimentos',
+    path: '/consentimentos',
+    getParentRoute: () => OpenFinanceRoute,
+  } as any)
+const OpenFinanceConexoesRoute = OpenFinanceConexoesRouteImport.update({
+  id: '/conexoes',
+  path: '/conexoes',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
+const OpenFinanceAutorizarRoute = OpenFinanceAutorizarRouteImport.update({
+  id: '/autorizar',
+  path: '/autorizar',
+  getParentRoute: () => OpenFinanceRoute,
+} as any)
 const ApiInsightsRoute = ApiInsightsRouteImport.update({
   id: '/api/insights',
   path: '/api/insights',
@@ -172,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/metas': typeof MetasRoute
   '/notificacoes': typeof NotificacoesRoute
   '/nova': typeof NovaRoute
+  '/open-finance': typeof OpenFinanceRouteWithChildren
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
   '/recorrentes': typeof RecorrentesRoute
@@ -179,6 +236,14 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
   '/api/insights': typeof ApiInsightsRoute
+  '/open-finance/autorizar': typeof OpenFinanceAutorizarRoute
+  '/open-finance/conexoes': typeof OpenFinanceConexoesRoute
+  '/open-finance/consentimentos': typeof OpenFinanceConsentimentosRoute
+  '/open-finance/contas': typeof OpenFinanceContasRoute
+  '/open-finance/faturas': typeof OpenFinanceFaturasRoute
+  '/open-finance/movimentacoes': typeof OpenFinanceMovimentacoesRoute
+  '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
+  '/open-finance/': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRoutesByTo {
@@ -205,6 +270,14 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
   '/api/insights': typeof ApiInsightsRoute
+  '/open-finance/autorizar': typeof OpenFinanceAutorizarRoute
+  '/open-finance/conexoes': typeof OpenFinanceConexoesRoute
+  '/open-finance/consentimentos': typeof OpenFinanceConsentimentosRoute
+  '/open-finance/contas': typeof OpenFinanceContasRoute
+  '/open-finance/faturas': typeof OpenFinanceFaturasRoute
+  '/open-finance/movimentacoes': typeof OpenFinanceMovimentacoesRoute
+  '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
+  '/open-finance': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRoutesById {
@@ -225,6 +298,7 @@ export interface FileRoutesById {
   '/metas': typeof MetasRoute
   '/notificacoes': typeof NotificacoesRoute
   '/nova': typeof NovaRoute
+  '/open-finance': typeof OpenFinanceRouteWithChildren
   '/parcelas': typeof ParcelasRoute
   '/patrimonio': typeof PatrimonioRoute
   '/recorrentes': typeof RecorrentesRoute
@@ -232,6 +306,14 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/extract-tx': typeof ApiExtractTxRoute
   '/api/insights': typeof ApiInsightsRoute
+  '/open-finance/autorizar': typeof OpenFinanceAutorizarRoute
+  '/open-finance/conexoes': typeof OpenFinanceConexoesRoute
+  '/open-finance/consentimentos': typeof OpenFinanceConsentimentosRoute
+  '/open-finance/contas': typeof OpenFinanceContasRoute
+  '/open-finance/faturas': typeof OpenFinanceFaturasRoute
+  '/open-finance/movimentacoes': typeof OpenFinanceMovimentacoesRoute
+  '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
+  '/open-finance/': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
 }
 export interface FileRouteTypes {
@@ -253,6 +335,7 @@ export interface FileRouteTypes {
     | '/metas'
     | '/notificacoes'
     | '/nova'
+    | '/open-finance'
     | '/parcelas'
     | '/patrimonio'
     | '/recorrentes'
@@ -260,6 +343,14 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/extract-tx'
     | '/api/insights'
+    | '/open-finance/autorizar'
+    | '/open-finance/conexoes'
+    | '/open-finance/consentimentos'
+    | '/open-finance/contas'
+    | '/open-finance/faturas'
+    | '/open-finance/movimentacoes'
+    | '/open-finance/privacidade'
+    | '/open-finance/'
     | '/api/public/whatsapp'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -286,6 +377,14 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/extract-tx'
     | '/api/insights'
+    | '/open-finance/autorizar'
+    | '/open-finance/conexoes'
+    | '/open-finance/consentimentos'
+    | '/open-finance/contas'
+    | '/open-finance/faturas'
+    | '/open-finance/movimentacoes'
+    | '/open-finance/privacidade'
+    | '/open-finance'
     | '/api/public/whatsapp'
   id:
     | '__root__'
@@ -305,6 +404,7 @@ export interface FileRouteTypes {
     | '/metas'
     | '/notificacoes'
     | '/nova'
+    | '/open-finance'
     | '/parcelas'
     | '/patrimonio'
     | '/recorrentes'
@@ -312,6 +412,14 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/extract-tx'
     | '/api/insights'
+    | '/open-finance/autorizar'
+    | '/open-finance/conexoes'
+    | '/open-finance/consentimentos'
+    | '/open-finance/contas'
+    | '/open-finance/faturas'
+    | '/open-finance/movimentacoes'
+    | '/open-finance/privacidade'
+    | '/open-finance/'
     | '/api/public/whatsapp'
   fileRoutesById: FileRoutesById
 }
@@ -332,6 +440,7 @@ export interface RootRouteChildren {
   MetasRoute: typeof MetasRoute
   NotificacoesRoute: typeof NotificacoesRoute
   NovaRoute: typeof NovaRoute
+  OpenFinanceRoute: typeof OpenFinanceRouteWithChildren
   ParcelasRoute: typeof ParcelasRoute
   PatrimonioRoute: typeof PatrimonioRoute
   RecorrentesRoute: typeof RecorrentesRoute
@@ -370,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/parcelas'
       fullPath: '/parcelas'
       preLoaderRoute: typeof ParcelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/open-finance': {
+      id: '/open-finance'
+      path: '/open-finance'
+      fullPath: '/open-finance'
+      preLoaderRoute: typeof OpenFinanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nova': {
@@ -484,6 +600,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/open-finance/': {
+      id: '/open-finance/'
+      path: '/'
+      fullPath: '/open-finance/'
+      preLoaderRoute: typeof OpenFinanceIndexRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/privacidade': {
+      id: '/open-finance/privacidade'
+      path: '/privacidade'
+      fullPath: '/open-finance/privacidade'
+      preLoaderRoute: typeof OpenFinancePrivacidadeRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/movimentacoes': {
+      id: '/open-finance/movimentacoes'
+      path: '/movimentacoes'
+      fullPath: '/open-finance/movimentacoes'
+      preLoaderRoute: typeof OpenFinanceMovimentacoesRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/faturas': {
+      id: '/open-finance/faturas'
+      path: '/faturas'
+      fullPath: '/open-finance/faturas'
+      preLoaderRoute: typeof OpenFinanceFaturasRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/contas': {
+      id: '/open-finance/contas'
+      path: '/contas'
+      fullPath: '/open-finance/contas'
+      preLoaderRoute: typeof OpenFinanceContasRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/consentimentos': {
+      id: '/open-finance/consentimentos'
+      path: '/consentimentos'
+      fullPath: '/open-finance/consentimentos'
+      preLoaderRoute: typeof OpenFinanceConsentimentosRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/conexoes': {
+      id: '/open-finance/conexoes'
+      path: '/conexoes'
+      fullPath: '/open-finance/conexoes'
+      preLoaderRoute: typeof OpenFinanceConexoesRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
+    '/open-finance/autorizar': {
+      id: '/open-finance/autorizar'
+      path: '/autorizar'
+      fullPath: '/open-finance/autorizar'
+      preLoaderRoute: typeof OpenFinanceAutorizarRouteImport
+      parentRoute: typeof OpenFinanceRoute
+    }
     '/api/insights': {
       id: '/api/insights'
       path: '/api/insights'
@@ -515,6 +687,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface OpenFinanceRouteChildren {
+  OpenFinanceAutorizarRoute: typeof OpenFinanceAutorizarRoute
+  OpenFinanceConexoesRoute: typeof OpenFinanceConexoesRoute
+  OpenFinanceConsentimentosRoute: typeof OpenFinanceConsentimentosRoute
+  OpenFinanceContasRoute: typeof OpenFinanceContasRoute
+  OpenFinanceFaturasRoute: typeof OpenFinanceFaturasRoute
+  OpenFinanceMovimentacoesRoute: typeof OpenFinanceMovimentacoesRoute
+  OpenFinancePrivacidadeRoute: typeof OpenFinancePrivacidadeRoute
+  OpenFinanceIndexRoute: typeof OpenFinanceIndexRoute
+}
+
+const OpenFinanceRouteChildren: OpenFinanceRouteChildren = {
+  OpenFinanceAutorizarRoute: OpenFinanceAutorizarRoute,
+  OpenFinanceConexoesRoute: OpenFinanceConexoesRoute,
+  OpenFinanceConsentimentosRoute: OpenFinanceConsentimentosRoute,
+  OpenFinanceContasRoute: OpenFinanceContasRoute,
+  OpenFinanceFaturasRoute: OpenFinanceFaturasRoute,
+  OpenFinanceMovimentacoesRoute: OpenFinanceMovimentacoesRoute,
+  OpenFinancePrivacidadeRoute: OpenFinancePrivacidadeRoute,
+  OpenFinanceIndexRoute: OpenFinanceIndexRoute,
+}
+
+const OpenFinanceRouteWithChildren = OpenFinanceRoute._addFileChildren(
+  OpenFinanceRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjudaRoute: AjudaRoute,
@@ -532,6 +730,7 @@ const rootRouteChildren: RootRouteChildren = {
   MetasRoute: MetasRoute,
   NotificacoesRoute: NotificacoesRoute,
   NovaRoute: NovaRoute,
+  OpenFinanceRoute: OpenFinanceRouteWithChildren,
   ParcelasRoute: ParcelasRoute,
   PatrimonioRoute: PatrimonioRoute,
   RecorrentesRoute: RecorrentesRoute,
