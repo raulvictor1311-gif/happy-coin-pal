@@ -8,6 +8,13 @@
       "when": 1793591677518,
       "tag": "0000_open_finance_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793700830388,
+      "tag": "0001_open_finance_commands",
+      "breakpoints": true
     }
   ]
 }
