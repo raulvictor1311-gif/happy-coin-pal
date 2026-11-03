@@ -793,7 +793,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      of_command: {
+        Args: { p_action: string; p_data: Json; p_user: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
