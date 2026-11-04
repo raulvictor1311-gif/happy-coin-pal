@@ -22,6 +22,12 @@ export interface Transaction {
   installments?: number;
   /** Compra no cartão já quitada via pagamento de fatura. */
   invoicePaid?: boolean;
+  source?: "manual" | "open_finance";
+  financialAccountId?: string;
+  /** Movimento já refletido no saldo importado da conta (não recalcula saldo). */
+  snapshotCovered?: boolean;
+  sandbox?: boolean;
+  reconciledOpenFinanceId?: string;
 }
 
 /** Quando a compra no cartão sai do saldo da conta. */
@@ -42,6 +48,7 @@ export interface CreditCard {
   dueDay: number;
   color: string;
   debitMode: DebitMode;
+  source?: "manual" | "open_finance";
 }
 
 
@@ -115,6 +122,11 @@ export interface FinanceState {
   /** Estado por notificação: lida, favorita, arquivada. */
   notifMeta: Record<string, NotifMeta>;
   cloudLoading: boolean;
+  /** Camada Open Finance (somente leitura, mesclada em tempo de leitura). */
+  openFinance?: OpenFinanceData;
+  openFinanceBalance?: number;
+  openFinanceCommitted?: number;
+  openFinanceSandbox?: boolean;
 }
 
 const STORAGE_KEY = "finlux:v2";
