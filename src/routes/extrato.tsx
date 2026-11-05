@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import {
@@ -119,6 +119,7 @@ function Extrato() {
   return (
     <AppShell>
       <PageHeader subtitle="Movimentos" title="Extrato" />
+      {state.openFinance && <Link to="/open-finance/movimentacoes" className="mx-6 mb-4 block text-sm text-primary">Movimentações importadas e possíveis duplicidades →</Link>}
 
       {/* Search + filter button */}
       <div className="px-6 flex items-center gap-2 animate-in fade-in duration-300">
@@ -270,6 +271,7 @@ function Extrato() {
                             style={{ backgroundColor: color }}
                           />
                           {t.category}
+                          {t.source === 'open_finance' && <span className="text-primary">· Open Finance{t.sandbox ? ' · Sandbox' : ''}</span>}
                         </p>
                       </div>
                       <span
@@ -284,14 +286,14 @@ function Extrato() {
                         {t.kind === "receita" ? "+" : "-"}
                         {formatBRL(t.amount)}
                       </span>
-                      <button
+                      {t.source !== 'open_finance' && <button
                         onClick={() => setEditing(t)}
                         aria-label="Editar"
                         className="text-muted-foreground hover:text-primary ml-1 transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
+                      </button>}
+                      {t.source !== 'open_finance' && <button
                         onClick={() => handleRemove(t.id)}
                         disabled={deletingId === t.id}
                         aria-label="Remover"
@@ -302,7 +304,7 @@ function Extrato() {
                         ) : (
                           <Trash2 className="h-4 w-4" />
                         )}
-                      </button>
+                      </button>}
                     </div>
                   );
                 })}
