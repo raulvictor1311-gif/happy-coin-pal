@@ -31,6 +31,7 @@ function Cartoes() {
     <AppShell>
       <PageHeader subtitle="Crédito" title="Cartões" />
       <div className="px-6 space-y-4">
+        {state.openFinance && <Link to="/open-finance/faturas" className="block rounded-3xl border border-border bg-card p-5 text-primary font-bold">Cartões e faturas do Open Finance →</Link>}
         {state.cards.filter(c => c.source !== 'open_finance').map((c) => {
           const invoice = cardCurrentInvoice(state, c.id);
           const future = futureInstallmentsTotal(state, c.id);

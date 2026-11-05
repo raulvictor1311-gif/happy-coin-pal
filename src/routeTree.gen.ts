@@ -42,6 +42,8 @@ import { Route as ApiInsightsRouteImport } from './routes/api/insights'
 import { Route as ApiExtractTxRouteImport } from './routes/api/extract-tx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiPublicWhatsappRouteImport } from './routes/api/public/whatsapp'
+import { Route as ApiPublicOpenFinanceWebhookRouteImport } from './routes/api/public/open-finance/webhook'
+import { Route as ApiPublicOpenFinanceCallbackRouteImport } from './routes/api/public/open-finance/callback'
 
 const RelatorioRoute = RelatorioRouteImport.update({
   id: '/relatorio',
@@ -210,6 +212,18 @@ const ApiPublicWhatsappRoute = ApiPublicWhatsappRouteImport.update({
   path: '/api/public/whatsapp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOpenFinanceWebhookRoute =
+  ApiPublicOpenFinanceWebhookRouteImport.update({
+    id: '/api/public/open-finance/webhook',
+    path: '/api/public/open-finance/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicOpenFinanceCallbackRoute =
+  ApiPublicOpenFinanceCallbackRouteImport.update({
+    id: '/api/public/open-finance/callback',
+    path: '/api/public/open-finance/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -245,6 +259,8 @@ export interface FileRoutesByFullPath {
   '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
   '/open-finance/': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
+  '/api/public/open-finance/callback': typeof ApiPublicOpenFinanceCallbackRoute
+  '/api/public/open-finance/webhook': typeof ApiPublicOpenFinanceWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -279,6 +295,8 @@ export interface FileRoutesByTo {
   '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
   '/open-finance': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
+  '/api/public/open-finance/callback': typeof ApiPublicOpenFinanceCallbackRoute
+  '/api/public/open-finance/webhook': typeof ApiPublicOpenFinanceWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -315,6 +333,8 @@ export interface FileRoutesById {
   '/open-finance/privacidade': typeof OpenFinancePrivacidadeRoute
   '/open-finance/': typeof OpenFinanceIndexRoute
   '/api/public/whatsapp': typeof ApiPublicWhatsappRoute
+  '/api/public/open-finance/callback': typeof ApiPublicOpenFinanceCallbackRoute
+  '/api/public/open-finance/webhook': typeof ApiPublicOpenFinanceWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -352,6 +372,8 @@ export interface FileRouteTypes {
     | '/open-finance/privacidade'
     | '/open-finance/'
     | '/api/public/whatsapp'
+    | '/api/public/open-finance/callback'
+    | '/api/public/open-finance/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -386,6 +408,8 @@ export interface FileRouteTypes {
     | '/open-finance/privacidade'
     | '/open-finance'
     | '/api/public/whatsapp'
+    | '/api/public/open-finance/callback'
+    | '/api/public/open-finance/webhook'
   id:
     | '__root__'
     | '/'
@@ -421,6 +445,8 @@ export interface FileRouteTypes {
     | '/open-finance/privacidade'
     | '/open-finance/'
     | '/api/public/whatsapp'
+    | '/api/public/open-finance/callback'
+    | '/api/public/open-finance/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -449,6 +475,8 @@ export interface RootRouteChildren {
   ApiExtractTxRoute: typeof ApiExtractTxRoute
   ApiInsightsRoute: typeof ApiInsightsRoute
   ApiPublicWhatsappRoute: typeof ApiPublicWhatsappRoute
+  ApiPublicOpenFinanceCallbackRoute: typeof ApiPublicOpenFinanceCallbackRoute
+  ApiPublicOpenFinanceWebhookRoute: typeof ApiPublicOpenFinanceWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -684,6 +712,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/open-finance/webhook': {
+      id: '/api/public/open-finance/webhook'
+      path: '/api/public/open-finance/webhook'
+      fullPath: '/api/public/open-finance/webhook'
+      preLoaderRoute: typeof ApiPublicOpenFinanceWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/open-finance/callback': {
+      id: '/api/public/open-finance/callback'
+      path: '/api/public/open-finance/callback'
+      fullPath: '/api/public/open-finance/callback'
+      preLoaderRoute: typeof ApiPublicOpenFinanceCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -739,6 +781,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiExtractTxRoute: ApiExtractTxRoute,
   ApiInsightsRoute: ApiInsightsRoute,
   ApiPublicWhatsappRoute: ApiPublicWhatsappRoute,
+  ApiPublicOpenFinanceCallbackRoute: ApiPublicOpenFinanceCallbackRoute,
+  ApiPublicOpenFinanceWebhookRoute: ApiPublicOpenFinanceWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
