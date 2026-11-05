@@ -15,6 +15,7 @@ import { registerPwa } from "../lib/pwa-register";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { setCloudUser, scheduleRefresh } from "@/lib/finance-store";
+import { OpenFinanceSync } from "@/components/open-finance-sync";
 
 function NotFoundComponent() {
   return (
@@ -97,8 +98,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Finlux — Controle Financeiro Pessoal" },
       { name: "twitter:description", content: "Controle de receitas, despesas, cartões e metas em um app simples e bonito." },
-      { property: "og:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/96573864-e742-41fd-9608-30a932177c94/finlux-cover-v2.png" },
-      { name: "twitter:image", content: "https://finlux-controle-financeiro.lovable.app/__l5e/assets-v1/96573864-e742-41fd-9608-30a932177c94/finlux-cover-v2.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -162,6 +161,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CloudSync />
+      <OpenFinanceSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster />

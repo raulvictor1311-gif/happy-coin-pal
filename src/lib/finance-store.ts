@@ -1,6 +1,13 @@
 import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useAuth } from "@/hooks/use-auth";
+import { listOpenFinance } from "@/services/openfinance/openfinance.functions";
+import type { OpenFinanceData } from "@/services/openfinance/data";
+import { mergeOpenFinance } from "@/services/openfinance/finance.mapper";
+import { useMemo } from "react";
 import {
   DEFAULT_NOTIF_PREFS,
   type NotifCategory,
@@ -209,7 +216,11 @@ function getServerSnapshot() {
 }
 
 export function useFinance() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const manual = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const { user } = useAuth();
+  const read = useServerFn(listOpenFinance);
+  const { data } = useQuery({ queryKey: ['open-finance', user?.id], queryFn: () => read(), enabled: !!user, staleTime: 60_000, refetchOnWindowFocus: false });
+  return useMemo(() => mergeOpenFinance(manual, user ? data : undefined), [manual, data, user?.id]);
 }
 
 // ===== Sincronização com a nuvem =====
@@ -294,6 +305,9 @@ function rowToTx(r: any): Transaction {
     cardId: r.card_id ?? undefined,
     installments: r.installments ?? undefined,
     invoicePaid: r.invoice_paid ?? false,
+    source: r.source ?? "manual",
+    financialAccountId: r.financial_account_id ?? undefined,
+    reconciledOpenFinanceId: r.reconciled_open_finance_id ?? undefined,
   };
 }
 function txToRow(t: Transaction, userId: string) {
@@ -309,6 +323,9 @@ function txToRow(t: Transaction, userId: string) {
     card_id: t.cardId ?? null,
     installments: t.installments ?? null,
     invoice_paid: t.invoicePaid ?? false,
+    source: t.source ?? "manual",
+    financial_account_id: t.financialAccountId ?? null,
+    reconciled_open_finance_id: t.reconciledOpenFinanceId ?? null,
   };
 }
 
@@ -419,7 +436,7 @@ async function pullAndReconcile<T extends { id: string }>(
   if (error) throw error;
   const cloud = (data ?? []).map(rowToItem);
   const cloudIds = new Set(cloud.map((c) => c.id));
-  const localOnly = local.filter((l) => !cloudIds.has(l.id));
+  const localOnly = _importLocal ? local.filter((l) => !cloudIds.has(l.id)) : [];
   if (localOnly.length) {
     try {
       await (supabase.from(table) as any).upsert(localOnly.map((l) => itemToRow(l, uid)));
@@ -437,7 +454,7 @@ async function pullAll(userId: string, importLocal: boolean, snap: FinanceState)
   const [transactions, goals, cards, assets, debts, installmentPurchases] = await Promise.all([
     pullAndReconcile<Transaction>(
       "transactions",
-      "id, kind, amount, category, description, date, payment_method, card_id, installments",
+      "id, kind, amount, category, description, date, payment_method, card_id, installments, invoice_paid, source, financial_account_id, reconciled_open_finance_id",
       userId, rowToTx, txToRow, snap.transactions, importLocal,
     ),
     pullAndReconcile<Goal>(
@@ -445,7 +462,7 @@ async function pullAll(userId: string, importLocal: boolean, snap: FinanceState)
       userId, rowToGoal, goalToRow, snap.goals, importLocal,
     ),
     pullAndReconcile<CreditCard>(
-      "cards", "id, name, brand, limit, closing_day, due_day, color",
+      "cards", "id, name, brand, limit, closing_day, due_day, color, debit_mode",
       userId, rowToCard, cardToRow, snap.cards, importLocal,
     ),
     pullAndReconcile<Asset>(
@@ -506,7 +523,9 @@ export async function refreshFromCloud() {
   if (!currentUserId || refreshing || typeof window === "undefined") return;
   refreshing = true;
   try {
-    const patch = await pullAll(currentUserId, false, state);
+    const uid = currentUserId;
+    const patch = await pullAll(uid, true, state);
+    if (currentUserId !== uid) return;
     setState((s) => ({ ...s, ...patch }));
   } catch {
     /* mantém o cache local em caso de falha de rede */
@@ -546,9 +565,12 @@ export async function setCloudUser(userId: string | null) {
   const prevOwner = localStorage.getItem(OWNER_KEY);
   const importLocal = prevOwner === null || prevOwner === "anon" || prevOwner === userId;
 
+  if (!importLocal) setState(() => ({ ...DEFAULT_STATE, cloudLoading: true }));
+
   setState((s) => ({ ...s, cloudLoading: true }));
   try {
     const patch = await pullAll(userId, importLocal, state);
+    if (currentUserId !== userId) return;
     setState((s) => ({ ...s, ...patch, cloudLoading: false }));
     localStorage.setItem(OWNER_KEY, userId);
     setupRealtime(userId);
@@ -1113,10 +1135,10 @@ function alreadyHappened(t: Transaction, ref: Date): boolean {
 
 /** Saldo atual da conta: só movimentações já ocorridas, sem compras de cartão em aberto. */
 export function accountBalance(s: FinanceState, ref = new Date()): number {
-  const done = s.transactions.filter((t) => alreadyHappened(t, ref));
+  const done = s.transactions.filter((t) => !t.snapshotCovered && alreadyHappened(t, ref));
   const income = done.filter((t) => t.kind === "receita").reduce((a, t) => a + t.amount, 0);
   const expense = done.filter((t) => hitsAccountBalance(s, t)).reduce((a, t) => a + t.amount, 0);
-  return income - expense;
+  return income - expense + (s.openFinanceBalance ?? 0);
 }
 
 /** Tudo que já está comprometido e ainda vai sair da conta:
@@ -1124,7 +1146,7 @@ export function accountBalance(s: FinanceState, ref = new Date()): number {
 export function committedTotal(s: FinanceState, ref = new Date()): number {
   const cardIds = s.cards.filter((c) => c.debitMode !== "immediate").map((c) => c.id);
   const cardTxs = s.transactions
-    .filter((t) => t.kind === "despesa" && !t.invoicePaid && t.cardId && cardIds.includes(t.cardId))
+    .filter((t) => t.source !== "open_finance" && t.kind === "despesa" && !t.invoicePaid && t.cardId && cardIds.includes(t.cardId))
     .reduce((a, t) => a + t.amount, 0);
   const inst = s.installmentPurchases
     .filter((p) => !p.cardId || cardIds.includes(p.cardId))
@@ -1133,7 +1155,7 @@ export function committedTotal(s: FinanceState, ref = new Date()): number {
   const future = s.transactions
     .filter((t) => !alreadyHappened(t, ref) && hitsAccountBalance(s, t))
     .reduce((a, t) => a + t.amount, 0);
-  return cardTxs + inst + future;
+  return cardTxs + inst + future + (s.openFinanceCommitted ?? 0);
 }
 
 /** Receitas já lançadas com data futura (salário agendado, recorrências). */
@@ -1198,8 +1220,8 @@ export function cardInvoiceDue(s: FinanceState, cardId: string, ref = new Date()
 // ===== Patrimônio =====
 
 export function netWorth(s: FinanceState): { assets: number; debts: number; net: number } {
-  const assets = s.assets.reduce((a, x) => a + x.value, 0);
-  const debts = s.debts.reduce((a, x) => a + x.value, 0) + futureInstallmentsTotal(s);
+  const assets = s.assets.reduce((a, x) => a + x.value, 0) + (s.openFinanceBalance ?? 0);
+  const debts = s.debts.reduce((a, x) => a + x.value, 0) + futureInstallmentsTotal(s) + (s.openFinanceCommitted ?? 0);
   return { assets, debts, net: assets - debts };
 }
 

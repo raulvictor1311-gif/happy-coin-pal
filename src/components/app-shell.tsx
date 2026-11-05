@@ -3,6 +3,7 @@ import { Home, Receipt, CreditCard, Plus, MoreHorizontal } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { PlusMenu } from "@/components/plus-menu";
+import { OpenFinanceNotice } from "@/components/open-finance-notice";
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
@@ -23,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md min-h-screen pb-32 animate-in fade-in duration-300">
+        <OpenFinanceNotice />
         {children}
       </div>
       <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[min(28rem,calc(100%-1.5rem))] z-40">
