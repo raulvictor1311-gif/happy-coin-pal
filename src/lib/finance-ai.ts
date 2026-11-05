@@ -671,6 +671,8 @@ export function buildFinanceContext(state: FinanceState, ref = new Date()): stri
     .join("\n");
 
   return [
+    state.openFinanceSandbox ? 'IMPORTANTE: os valores consolidados incluem dados fictícios de MODO SANDBOX. Identifique-os como simulação em toda resposta; não afirme acesso bancário real.' : '',
+    state.openFinance ? `Contas selecionadas Open Finance: ${formatBRL(state.openFinanceBalance ?? 0)}. Comprometido importado: ${formatBRL(state.openFinanceCommitted ?? 0)}. Somente dados autorizados e selecionados; não efetuar movimentações.` : '',
     `Data de referência: ${ref.toLocaleDateString("pt-BR")}`,
     `Renda mensal de referência: ${formatBRL(income)}`,
     `Receitas do mês: ${formatBRL(s.income)}`,

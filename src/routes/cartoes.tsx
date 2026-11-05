@@ -31,7 +31,7 @@ function Cartoes() {
     <AppShell>
       <PageHeader subtitle="Crédito" title="Cartões" />
       <div className="px-6 space-y-4">
-        {state.cards.map((c) => {
+        {state.cards.filter(c => c.source !== 'open_finance').map((c) => {
           const invoice = cardCurrentInvoice(state, c.id);
           const future = futureInstallmentsTotal(state, c.id);
           const committed = cardCommittedTotal(state, c.id);
