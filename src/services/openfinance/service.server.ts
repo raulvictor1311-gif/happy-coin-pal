@@ -1,13 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { createHash, randomBytes } from 'node:crypto';
-import { snapshotSchema } from './provider';
+import { snapshotSchema, type OpenFinanceProvider } from './provider';
 import { SandboxProvider } from './providers/sandbox.provider';
 import { productionProvider } from './providers/production.provider';
 import type { OpenFinanceData } from './data';
 import { categorize } from './mappers/transaction.mapper';
 
-export function providerForEnvironment() {
+export function providerForEnvironment(): OpenFinanceProvider {
   const environment = process.env['OPEN_FINANCE_ENVIRONMENT'] ?? 'sandbox';
   const provider = process.env['OPEN_FINANCE_PROVIDER'] ?? 'sandbox';
   if (environment !== 'sandbox' || provider !== 'sandbox') return productionProvider();
@@ -48,7 +48,9 @@ export class OpenFinanceService {
     const institution = institutions.find(i=>i.id===institutionId);
     if (!institution) throw new Error('Instituição não disponível.');
     const state = randomBytes(32).toString('hex');
-    const authorization = await provider.createConnection(institutionId,state);
+    let authorization;
+    try { authorization = await provider.createConnection(institutionId,state); }
+    catch { throw new Error('Esta instituição está indisponível agora. Tente novamente em alguns minutos.'); }
     const payload = {institution_id:institution.id,institution_name:institution.name,hash:stateHash(state)};
     const result = reconnectId ? (await this.ownedConnection(reconnectId), await this.command('reconnect',{...payload,connection_id:reconnectId})) : await this.command('begin',payload);
     return { connectionId:result.id, state, authorizationPath:authorization.authorizationPath };
