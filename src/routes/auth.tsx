@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { LuxAvatar } from "@/components/lux/lux-avatar";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Entrar — Finlux" }] }),
+  head: () => finluxMeta('Entrar — Finlux', 'Entre na sua conta Finlux para acompanhar suas finanças.'),
   component: AuthPage,
 });
 

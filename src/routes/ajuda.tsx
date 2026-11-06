@@ -1,10 +1,11 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/ajuda")({
-  head: () => ({ meta: [{ title: "Ajuda — Finlux" }] }),
+  head: () => finluxMeta('Ajuda — Finlux', 'Respostas sobre lançamentos, parcelas, patrimônio e uso do Finlux.'),
   component: Ajuda,
 });
 

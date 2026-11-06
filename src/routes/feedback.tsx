@@ -1,10 +1,11 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, financeActions } from "@/lib/finance-store";
 
 export const Route = createFileRoute("/feedback")({
-  head: () => ({ meta: [{ title: "Feedback — Finlux" }] }),
+  head: () => finluxMeta('Feedback — Finlux', 'Compartilhe sua avaliação e sugestões para o Finlux.'),
   component: Feedback,
 });
 

@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -10,7 +11,7 @@ import type { DashboardPrefs } from "@/lib/finance-store";
 import { SandboxConnectButton } from "@/components/sandbox-reconnect";
 
 export const Route = createFileRoute("/mais")({
-  head: () => ({ meta: [{ title: "Mais — Finlux" }] }),
+  head: () => finluxMeta('Mais — Finlux', 'Acesse planejamento, Open Finance e configurações do Finlux.'),
   component: Mais,
 });
 

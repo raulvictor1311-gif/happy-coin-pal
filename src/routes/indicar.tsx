@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -5,7 +6,7 @@ import { useFinance } from "@/lib/finance-store";
 import { Copy, Check, Gift } from "lucide-react";
 
 export const Route = createFileRoute("/indicar")({
-  head: () => ({ meta: [{ title: "Indicar amigos — Finlux" }] }),
+  head: () => finluxMeta('Indicar amigos — Finlux', 'Compartilhe o Finlux com seus amigos.'),
   component: Indicar,
 });
 

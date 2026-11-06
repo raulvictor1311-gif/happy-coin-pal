@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -19,7 +20,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 
 export const Route = createFileRoute("/cartoes")({
-  head: () => ({ meta: [{ title: "Cartões — Finlux" }] }),
+  head: () => finluxMeta('Cartões — Finlux', 'Acompanhe limites, faturas e compromissos dos seus cartões.'),
   component: Cartoes,
 });
 

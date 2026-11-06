@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -8,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Trash2, Target, TrendingUp, Sparkles, X } from "lucide-react";
 
 export const Route = createFileRoute("/metas")({
-  head: () => ({ meta: [{ title: "Metas — Finlux" }] }),
+  head: () => finluxMeta('Metas — Finlux', 'Acompanhe suas metas financeiras e valores reservados.'),
   component: Metas,
 });
 

@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useRef, useState } from "react";
@@ -14,7 +15,7 @@ import { LuxBubble } from "@/components/lux/lux-bubble";
 import { luxPhrase } from "@/lib/lux";
 
 export const Route = createFileRoute("/assessor")({
-  head: () => ({ meta: [{ title: "Meu Assessor — Finlux" }] }),
+  head: () => finluxMeta('Meu Assessor — Finlux', 'Registre movimentações por foto, voz ou texto com o Lux IA.'),
   component: Assessor,
 });
 
