@@ -47,6 +47,10 @@ export class OpenFinanceService {
     const institutions = await provider.listInstitutions('');
     const institution = institutions.find(i=>i.id===institutionId);
     if (!institution) throw new Error('Instituição não disponível.');
+    if (reconnectId) {
+      const existing = await this.ownedConnection(reconnectId);
+      if (existing.institution_id !== institutionId || existing.environment !== provider.environment) throw new Error('A instituição não corresponde a esta conexão.');
+    }
     const state = randomBytes(32).toString('hex');
     let authorization;
     try { authorization = await provider.createConnection(institutionId,state); }
@@ -88,6 +92,13 @@ export class OpenFinanceService {
   }
   async change(action: 'toggle'|'resolve', payload: Record<string,unknown> & {connection_id:string}) {
     await this.ownedConnection(payload.connection_id);
+    if (action==='resolve') {
+      const table = payload['table'] === 'financial_transactions' ? 'financial_transactions' : 'credit_card_transactions';
+      const {data: resource,error} = await this.client.from(table).select('id,review_status').eq('id',String(payload['resource_id'])).eq('connection_id',payload.connection_id).eq('user_id',this.userId).maybeSingle();
+      if (error || !resource) throw new Error('Movimentação indisponível para esta conta.');
+      // Category changes are not decisions on duplicate review.
+      if (payload['category'] && resource.review_status==='possible_duplicate') payload={...payload,review_status:'possible_duplicate'};
+    }
     return this.command(action,payload);
   }
 }
