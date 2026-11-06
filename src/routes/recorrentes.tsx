@@ -23,6 +23,8 @@ export const Route = createFileRoute("/recorrentes")({
         property: "og:description",
         content: "O Lux identifica o que repete todo mês e avisa antes de vencer.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Recorrentes,

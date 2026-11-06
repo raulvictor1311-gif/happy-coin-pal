@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, getAchievements, getStreak, getLevel } from "@/lib/finance-store";
@@ -5,7 +6,7 @@ import { Flame, Trophy } from "lucide-react";
 
 
 export const Route = createFileRoute("/conquistas")({
-  head: () => ({ meta: [{ title: "Conquistas — Finlux" }] }),
+  head: () => finluxMeta('Conquistas — Finlux', 'Veja conquistas e hábitos financeiros reconhecidos pelo Finlux.'),
   component: Conquistas,
 });
 

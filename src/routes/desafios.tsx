@@ -1,9 +1,10 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { useFinance, getChallenges } from "@/lib/finance-store";
 
 export const Route = createFileRoute("/desafios")({
-  head: () => ({ meta: [{ title: "Desafios — Finlux" }] }),
+  head: () => finluxMeta('Desafios — Finlux', 'Acompanhe desafios e objetivos financeiros do mês.'),
   component: Desafios,
 });
 

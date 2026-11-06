@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -16,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/extrato")({
-  head: () => ({ meta: [{ title: "Extrato — Finlux" }] }),
+  head: () => finluxMeta('Extrato — Finlux', 'Consulte receitas, despesas e movimentações do Finlux.'),
   component: Extrato,
 });
 

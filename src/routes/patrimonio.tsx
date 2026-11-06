@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -14,7 +15,7 @@ import { Plus, Trash2, TrendingUp } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip } from "recharts";
 
 export const Route = createFileRoute("/patrimonio")({
-  head: () => ({ meta: [{ title: "Patrimônio — Finlux" }] }),
+  head: () => finluxMeta('Patrimônio — Finlux', 'Consulte bens, investimentos, dívidas e patrimônio líquido.'),
   component: Patrimonio,
 });
 

@@ -28,6 +28,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Finlux — Seu painel financeiro" },
       { name: "description", content: "Veja saldo, receitas, despesas e saúde financeira em segundos." },
+      { property: "og:title", content: "Finlux — Seu painel financeiro" },
+      { property: "og:description", content: "Saldo, receitas, despesas e saúde financeira no seu painel Finlux." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,

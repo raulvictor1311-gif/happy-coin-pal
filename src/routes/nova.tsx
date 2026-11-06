@@ -1,3 +1,4 @@
+import { finluxMeta } from '@/lib/route-meta';
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
@@ -35,7 +36,7 @@ type InstallmentMode = "avista" | "parcelada";
 type NovaSearch = { kind?: Kind };
 
 export const Route = createFileRoute("/nova")({
-  head: () => ({ meta: [{ title: "Nova transação — Finlux" }] }),
+  head: () => finluxMeta('Nova transação — Finlux', 'Registre receitas, despesas e transferências no Finlux.'),
   validateSearch: (s: Record<string, unknown>): NovaSearch => {
     const k = s.kind;
     if (k === "receita" || k === "despesa" || k === "transferencia") return { kind: k };
